@@ -1,0 +1,72 @@
+---
+title: "A PRIORI DECIDED PROCEDURE for 'ruff sperm' project"
+author: "Martin Bulla, Wolfgang Forstmeier, Clemens Küpper, David B Lank & Bart Kempenaers"
+date: "`r Sys.time()`"
+output: 
+    html_document:
+        code_folding: hide
+bibliography: ruff_sperm.xml
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+***
+
+Code to load tools and prepare data:  
+```{r tools, results="hide", warning = FALSE, message = FALSE}
+  require(here)
+  source(here::here('R/tools.R'))
+
+  v = data.table(read_excel(here::here('Data/ruff_sperm_Vancouver_2018.xlsx'), sheet = 1))
+  v = v[!is.na(sample_ID)]
+  x = v[!duplicated(bird_ID)]
+  
+  s = data.table(read_excel(here::here('Data/ruff_males_Seewiesen.xlsx'), sheet = 1))
+
+```
+
+***
+
+### Background ###
+Ruff is a leking shorebird with three strikingly different male mating morphs (aggressive ‘independents’, semicooperative ‘satellites’ and female-mimic ‘faeders’) [@vanRhijn1991; @Widemo1998; @Jukema2006]. The major differences in body and testis size, ornamentation, and mating behaviors of 'satellites' and 'feaders' develop via an autosomal inversion [@Kupper2015; @Lamichhaney2015]. 'Feathers' are rare and their  chances for copulation sporadic. Thus, to compete with the other morphs 'feathers' sperm  shall be optimized for swimming speed. Here, we investigated how the three morphs differ in sperm morphology, variation and swimming speed. 
+
+### Question ###
+Do the three ruff morphs differ is sperm morphology, variation and swimming speed?
+
+### Methods ###
+
+#### Sperm samples ####
+MB collected sperm of `r nrow(x)` males (51 independents, 20 satelites, 15 feathers) from the Simon Fraser University  colony using abdominal massage or cloacal lavage (cit; ADD VIDEOs and detailed preotocol below). The  colony was founded with 110 ruffs hatched from wild eggs collected in Finland in 1985, 1989 and 1990 plus two faeder males from the Netherlands in 2006 [@Lank1995; @Lank2013]. 
+
+Compared to passerines, shorebirds do not have a cloacal proturbarance (**cit**). Thus, abdominal massage and cloaca lavage often leads to unclean samples contaminated by excrements. Such samples are then unsuitable to measure sperm swimming speed. Hence, in 2021 breeding season we plan to collect sperm of all males from the Max Planck Institute for Ornithology colony - founded in 2018 from the Simon Fraser Universtiy colony. The sperm will be collected by abdominal massage, cloaca lavage and/or by electro‐stimulation [@Lierz2013], for which the  length and diameter of the probe, as well as the electric current and the number of electric impulses will be adapted to the size of the ruff and size of its morphs.
+
+Collected sperm samples were/will be pipetted from the cloaca (unclean samples diluted with 10 - 20 μl of PBS) and fixed in 100 μl of 5% formalin solution. 
+
+In addition, as a part of a different project in 2018 we extracted and stored in 5% formalin  vas deference of 10 sacrificed males (3 independents, 4 satellites and 3 faeders) from the Simon Fraser University colony. Sperm was then extracted **so and so**. 
+
+From each sample, we will pippet a 10 μl aliquot onto a microscope slide, making 5-7 lines (like when ploughing a field) and let those air-dry. Then we will wash the slide gently under the water to wash away the dried formalin. We will inspect all samples with a Zeiss Axio Imager.M2 microscope with ???bright field optics?? and  photograph up to 10 sperm per slide at 400× magnification with 'Zeiss Axiocam 506 color' 6 megapixel camera (i.e. photographs with 2752 x 2208 pixel resolution).
+
+#### Sperm morphometry ####
+We will measure sperm head and flagellum length (if possible mid-piece and tail) from the photographs using open sources software ImageJ. We will calculate total sperm length as the sum of the two (respectively three) measurements. We will measure only normal‐looking spermatozoa. To minimize observer error, all measurements will be taken by one person. However, all measured sperm and lines will be numbered, stored within the picture and referenced in the database, which facilitates transparency and, if later needed, allows re-measurement of the same sperm by the same or different person for a possible calculation of repeatability. 
+
+We will then calculate the repeatability of sperm measurements per male and morph (which will be
+obtained through 1,000 parametric bootstrap iterations (Stoffel, Nakagawa, & Schielzeth, 2017), as well as coefficients of variation (CV = [SD/mean]) both within males and between males of each morph, and adjusted them to correct for variation in sample size (CVadj = [1 + 1/(4n)]*CV; Sokal & Rohlf, 1981). The adjusted coefficient of variation within males was denoted as CVwm and for between males as CVbm.
+
+Because our sperm samples came and will come from males bred in captivity, we expect higher levels of inbreeding compared with males from wild populations. In birds and mammals inbred males have higher proportion of abnormal sperm and lower sperm velocicty thann outbred males (Gomendio, Cassinello, & Roldan, 2000; Heber et al., 2012; Opatová et al., 2016). However, there is no evidence for difference between inbred and outbred males in the  morphology (e.g., length, CV) of normal‐looking sperm of fish, fruit flies and birds (Ala‐Honkola et al., 2013; Mehlis, Frommen, Rahn, & Bakker, 2012; Opatová et al., 2016). Specifically, in zebra finches (Taeniopygia guttata) inbreeding depression seems to have no more than a modest effect on the length (Cohen's d = −0.55) and a small effect on the CV (d = 0.24) of normal-looking sperm (Opatová et al., 2016). We therefore assume that our results reflect the variation in sperm morphology observed in wild ruffs.
+
+
+#### Sperm swimming speed ####
+The sperm (ca. 0.5–3 ll) will be diluted within 20 s of collection in a preheated (40°C) Dulbecco’s Modified Eagle’s Medium (Advanced DMEM, Invitrogen) and pipetted onto a standard 20 μm two-chamber count slide (Leja, The Netherlands). Each sperm sample will be recorded for approximately 45 s in eight different Leja slide fields using a 100x magnification on a CX41 Olympus microscope (Olympus, Tokyo, Japan) fitted with a heating table (kept at a constant temperature of 40°C), phase contrast and a UI-1540-C Olympus digital camera (Olympus, Japan) with SO and SO resolution. Each recording field will be then analysed using the CEROS computer-assisted sperm analysis system (Hamilton Thorne Inc., Beverly, Massa- chusetts, USA). Each tracking session will be visually inspected and non-sperm objects manually excluded from the analysis. Spermatozoa with a straight line velocity of <20.5 μm s^-1^ will be considered static and a priory (WHAT DOES THAT MEAN) excluded from motility analysis. As the in vitro Dulbecco’s Modified Eagle’s Medium  does not contain spermatozoa attractants (see also Laskemoen et al. 2010), only curvilinear velocity will be used for statistical analysis of each male’s sperm.
+
+#### Statistical analyses ####
+
+
+
+### Not used ###
+The development into 'satellites' and 'faeders' is determined by an autosomal inversion, leading to major differences in body and testis size, ornamentation, and mating behaviors [@Kupper2015; @Lamichhaney2015]. 
+
+Whether the three morphs differ also in sperm morphology and swimming speed remains unexplored. Here, we investigated how the three morphs differ in sperm morphology, variation and swimming speed. We predict the sperm of feathers to be selected for speed and hence less variable.
+
+#### References ####

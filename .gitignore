@@ -1,0 +1,25 @@
+# Ignore everything
+/*
+
+# also in subdirectories
+/*/
+
+# Except for (add what you want to track)
+!README.md
+!version_log.md
+!.gitattributes
+!.gitignore
+!*.sublime-project
+!LICENSE
+!LICENSE.txt
+!to_do.txt
+
+!/Data/
+!/R/
+!/Output/
+!/Permits/
+!/Protocols/
+
+# Ignore everything in freeze (even if in Except)
+freeze/
+.DS_Store

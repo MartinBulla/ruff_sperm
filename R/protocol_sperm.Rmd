@@ -1,0 +1,100 @@
+---
+title: "Sperm sampling and sample preparation protocol"  
+author: "Martin Bulla, Hanna Vitnerova, Kim Telscher"  
+date: "`r Sys.time()`"
+output:
+   html_document: default
+bibliography: ruff_sperm.xml
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### General ###  
+- PBS solution (**KIM can you tell the company and full name of the PBS we use**): mix one PBS tablet with 200ml water (use gloves, if you touch the tablet)
+- eppies with 100 microl of 5% formalin (for passerines some use 200 microl) -  do not use big volumes  
+- use a new pipet tip for each bird/wash
+- **mix all samples with 10-20 microl of PBS**, else the sperm may clump and stick to each other making measurements of single cells harder
+- breeding status of the bird does not matter (some say that very early and very late breeding season should be avoided)
+- if killing birds
+    - take the testes, weigh them and take picture with scale; store one teste in 5% formalin, from the other prepare the slide by taking the upper part and mixing it with 200 µl PBS
+    - take vas deferens and 
+        - prepare immediately sperm sample ACOORDING TO WHOM? Tom  OR
+        - store HOW TO DO Tom
+-   slides with sperm can be air-dried, no stains
+
+### Sperm collection ###
+#### Abdominal massage #### 
+1.  pipette 10 microl of PBS into the formalin-eppi lid, 
+2.  do the massage 
+3.  pipette the sperm or all the wet-liquid part of the feacal sample
+4.  mix it (by pipetting gently up and down 2-3 times) with the pbs in the lid, and pipette everything directly INTO the formalin, mix gently by pipetting up and down
+5.  if the feaces is too solid - wet (liquidize) it by putting the PBS on the feaces and then pipette
+6.  use a new tip for each bird/wash
+
+#### Cloaca lavage ####
+1.  pipette 10 microl of PBS
+2.  insert the pipette tip gently into the cloaca,
+3.  wash the cloaca with PBS by pipetting up and down, 
+4.  empty the lavage into the eppi with 5% formaldehyde, mix gently by pipetting up and down
+5.  use a new tip for each bird/wash
+
+#### Vas deferens #### 
+1. Extract vas deferens (e.g. according to [pictures in Anex](https://www.dropbox.com/s/ntbem4qdm0ltk9g/vas_deferens_extraction.pdf?dl=0) of [@Morcillo2017])
+2a. Store in 5% formaldehyde
+2b. Flushing method - likely inappropriate in our case: 
+    - inject 1.5 mL of an extender (see below) at 38ºC into the proximal extreme of the vas deferens using a 27G needle attached to a 2 mL syringe. 
+    - place the entire volume of the extender and the collected sperm in a sterile plastic Petri dish and  transfer to a polystyrene tube (2 mL). 
+    - incubated at 38ºC for 15 min
+2c. Float-out method  likely inappropriate in our case:
+    - cut the vas deferens into 0.5 cm-long pieces 
+    - submerge in 1.5 mL of an Lake-Ravie extender at 38ºC in a 2 ml tube. 
+    - incubate at 38ºC for 15 min.
+
+### Preparing slides ###   
+#### from abdominal massage / cloaca lavage samples / fresh testes ####  
+1.  pippete 10-20 microl of the liquid formalin-fixed sample (avoid feaces) / or fresh testes mixed with PBS and 
+2.  **prepare 5-7 lines** on the slide (like when ploughing a field) WOULD BE NICE TO HAVE A PICTURE OR VIDEO
+3.  let air-dry
+4.  gently wash with distilled water (this will wash away the dried crystallized formalin). The water stream shall be applied to  the sperm free part of the slide letting flow over the part with the sperm sample
+5.  sperm cells should stay “glued” on the glass
+
+#### from testes stored in formalin### - not the best method as immature sperm is present ####
+1.  cut testes in half longitudinally, remove a small piece from the middle (~1mm x 1mm),
+2.  put into 200 µl 5% formalin and crush with a pipette tip.
+3.  spin 500rpm x 1 minute (you will see - it shall separate the light immature cells from the mature ones - maybe not needed), but note that often the results are same without spinning
+4.  Pipette 20 µl from the upper half onto a slide, spread and dry on a 56°C block, rinse and dry again
+
+
+#### from freshly extracted vas deferens TO DO) ####
+
+
+#### from vas deferens - in formalin (check for  published protocols - ASK KIM/TOM) ####
+1.  cut the tubes remove a small piece from the middle (~1mm x 1mm),
+2.  wash with 5% formalin
+3.  pippete onto a slide, spread and dry on a 56°C block, rinse and dry again
+
+### Picture taking ### 
+1.  place the slide under the microscope (ideally with objective size 40 and ocular 10: 40*10, i.e. 400 magnification) 
+2.  take picture of 10+ nice sperm cells, ideally more than 10, as we can then choose the nicest ones; focus on the best sperm – i.e. one with clear (thinner non-broken) tail end 
+3.  ideally the picture should have 300 dpi and dimensions of about 4080 x 3072 pixels (i.e. camera with 12Megapixel resolution)
+4.  include scale on each picture
+5.  take picture of ideally >10 individuals/species and >5 sperm/individual
+
+
+  Camera SET UP STUDENEC
+
+  - microscop Olympus BX51
+  - three part camera 
+      - Olympus DP71 
+      - Olympus U-CMAD3
+      - Olympus U-TV1X-2
+      The DP71 represents Olympus' most technically advanced digital camera for use with industrial microscopes. High resolution 4080 x 3072 pixel images are the result of a powerful 1.45 million pixel CCD and a sophisticated pixel-shift algorithm
+
+
+  Camera SET UP SEEWIESEN
+
+  - Seewisen makes lower resolution because the camera is only 6Megapixel and not 12Megapixel
+
+### Refernces ###

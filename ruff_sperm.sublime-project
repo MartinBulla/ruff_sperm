@@ -1,0 +1,8 @@
+{
+    "folders":[{
+        "name": "ruff_sperm",
+        "path": "./",
+        "folder_exclude_patterns": ["*_cache", "cache", "figure", "*_files", ".Rproj.user",".here",".Rhistory",".httr-oauth", "hend,]", ".=swp", ".=.swp", ".=.swo"]
+        }]
+
+}
