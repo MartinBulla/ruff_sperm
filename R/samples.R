@@ -8,6 +8,8 @@
   
   s = data.table(read_excel(here::here('Data/ruff_males_Seewiesen.xlsx'), sheet = 1))
 
+  d = data.table(read_excel(here::here('Data/ruff_vas-deferens.xlsx'), sheet = 1))
+
 # EXPLORE
   nrow(v)
   
@@ -20,6 +22,9 @@
 
   sv = x[bird_ID%in%s$Ind_ID]
   table(sv$morph)
+
+
+  nrow(d[ID%in%unique(v$bird_ID)])
 
   Seewiesen
    N = 100 males
