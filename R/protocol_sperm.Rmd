@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ### General ###  
-- PBS solution (**KIM can you tell the company and full name of the PBS we use**): mix one PBS tablet with 200ml water (use gloves, if you touch the tablet)
+- Phosphate buffered saline solution (PBS) solution: mix one PBS tablet (Sigma; product number P-4417) with 200ml water (use gloves, if you touch the tablet)
 - eppies with 100 microl of 5% formalin (for passerines some use 200 microl) -  do not use big volumes  
 - use a new pipet tip for each bird/wash
 - **mix all samples with 10-20 microl of PBS**, else the sperm may clump and stick to each other making measurements of single cells harder
@@ -20,8 +20,8 @@ knitr::opts_chunk$set(echo = TRUE)
 - if killing birds
     - take the testes, weigh them and take picture with scale; store one teste in 5% formalin, from the other prepare the slide by taking the upper part and mixing it with 200 µl PBS
     - take vas deferens and 
-        - prepare immediately sperm sample ACOORDING TO WHOM? Tom  OR
-        - store HOW TO DO Tom
+        - prepare immediately (see below)
+        - store in 5% formalin
 -   slides with sperm can be air-dried, no stains
 
 ### Sperm collection ###
@@ -37,27 +37,28 @@ knitr::opts_chunk$set(echo = TRUE)
 1.  pipette 10 microl of PBS
 2.  insert the pipette tip gently into the cloaca,
 3.  wash the cloaca with PBS by pipetting up and down, 
-4.  empty the lavage into the eppi with 5% formaldehyde, mix gently by pipetting up and down
+4.  empty the lavage into the eppi with 5% formalin, mix gently by pipetting up and down
 5.  use a new tip for each bird/wash
 
 #### Vas deferens #### 
-1. Extract vas deferens (e.g. according to [pictures in Anex](https://www.dropbox.com/s/ntbem4qdm0ltk9g/vas_deferens_extraction.pdf?dl=0) of [@Morcillo2017])
-2a. Store in 5% formaldehyde
-2b. Flushing method - likely inappropriate in our case: 
+1. Extract vas deferens (e.g. according to [pictures in Anex](https://www.dropbox.com/s/ntbem4qdm0ltk9g/vas_deferens_extraction.pdf?dl=0) of [@Morcillo2017])  
+2. further processing:
+a. Store in 5% formalin for later use  
+b. Flushing method (38ºC extender and incubation superfluous if sperm not used for artificial insemination):   
     - inject 1.5 mL of an extender (see below) at 38ºC into the proximal extreme of the vas deferens using a 27G needle attached to a 2 mL syringe. 
     - place the entire volume of the extender and the collected sperm in a sterile plastic Petri dish and  transfer to a polystyrene tube (2 mL). 
-    - incubated at 38ºC for 15 min
-2c. Float-out method  likely inappropriate in our case:
+    - incubated at 38ºC for 15 min  
+c. Float-out method  likely inappropriate in our case:  
     - cut the vas deferens into 0.5 cm-long pieces 
     - submerge in 1.5 mL of an Lake-Ravie extender at 38ºC in a 2 ml tube. 
     - incubate at 38ºC for 15 min.
 
-### Preparing slides ###   
-#### from abdominal massage / cloaca lavage samples / fresh testes ####  
-1.  pippete 10-20 microl of the liquid formalin-fixed sample (avoid feaces) / or fresh testes mixed with PBS and 
+### Preparing slides ###   ADD STAINING
+#### from abdominal massage / cloaca lavage samples / fresh testes / fresh vas deferens ####  
+1.  pippete 10-20 microl of the liquid formalin-fixed sample (avoid feaces) or fresh testes mixed with PBS or or solution with vas deferens  
 2.  **prepare 5-7 lines** on the slide (like when ploughing a field) WOULD BE NICE TO HAVE A PICTURE OR VIDEO
 3.  let air-dry
-4.  gently wash with distilled water (this will wash away the dried crystallized formalin). The water stream shall be applied to  the sperm free part of the slide letting flow over the part with the sperm sample
+4.  gently wash with distilled water (this will wash away the dried crystallized formalin). The water stream shall be applied to the sperm free part of the slide letting the water flow over the part with the sperm sample
 5.  sperm cells should stay “glued” on the glass
 
 #### from testes stored in formalin### - not the best method as immature sperm is present ####
@@ -67,10 +68,7 @@ knitr::opts_chunk$set(echo = TRUE)
 4.  Pipette 20 µl from the upper half onto a slide, spread and dry on a 56°C block, rinse and dry again
 
 
-#### from freshly extracted vas deferens TO DO) ####
-
-
-#### from vas deferens - in formalin (check for  published protocols - ASK KIM/TOM) ####
+#### from vas deferens - in formalin (What is the source?; check for  published protocols - ASK KIM/TOM) ####
 1.  cut the tubes remove a small piece from the middle (~1mm x 1mm),
 2.  wash with 5% formalin
 3.  pippete onto a slide, spread and dry on a 56°C block, rinse and dry again
