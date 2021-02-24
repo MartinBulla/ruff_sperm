@@ -13,7 +13,7 @@ using<-function(...) {
 }
 
 # load/install packages
-    packages = c('data.table', 'ggplot2', 'ggthemes', "gg3D",'glue','grid', 'htmlTable', 'lattice', 'lubridate', 'magrittr', 'maptools', 'plyr','raster','RColorBrewer','readxl','scales','stringr','zoo','writexl')
+    packages = c('data.table', 'ggplot2', 'ggthemes','glue','grid', 'htmlTable', 'lattice', 'lubridate', 'magrittr', 'maptools', 'plyr','raster','RColorBrewer','readxl','scales','scatterplot3d','stringr','zoo','viridis','writexl')
   sapply(packages, function(x) suppressPackageStartupMessages(using(x)) )
 
 # Set system time
