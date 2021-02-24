@@ -1,9 +1,12 @@
 ---
 title: "A PRIORI DECIDED PROCEDURE for 'ruff sperm' project"
-author: "Martin Bulla, Wolfgang Forstmeier, Katrin Martin, Kim Teltscher, Tomas Albrecht, Clemens Küpper, David B Lank & Bart Kempenaers"
+author: "Martin Bulla, Wolfgang Forstmeier, Katrin Martin, Kim Teltscher, ?Jasmine Loveland?, Clemens Küpper, Michael Lierz, Tomas Albrecht, David B Lank & Bart Kempenaers"
 date: "`r Sys.time()`"
 output: 
     html_document:
+        toc: true
+        toc_float: true
+        toc_depth: 5
         code_folding: hide
 bibliography: ruff_sperm.xml
 link-citations: yes
@@ -19,6 +22,7 @@ Code to load tools and prepare data:
 ```{r tools, results="hide", warning = FALSE, message = FALSE}
   require(here)
   source(here::here('R/tools.R'))
+  colors <- c("#999999", "#E69F00", "#56B4E9") #viridis(3)
 
   v = data.table(read_excel(here::here('Data/ruff_sperm_Vancouver_2018.xlsx'), sheet = 1))
   v = v[!is.na(sample_ID)]
@@ -36,14 +40,15 @@ Code to load tools and prepare data:
 Ruff is a lekking shorebird with three strikingly different male mating morphs (aggressive ‘independents’, semi-cooperative ‘satellites’ and female-mimic ‘faeders’) [@vanRhijn1991; @Widemo1998; @Jukema2006]. The major differences in body and testis size, ornamentation, and mating behaviors of 'satellites' and 'feaders' develop via an autosomal inversion [@Kupper2015; @Lamichhaney2015]. Whether the inversion links also to the morph differences in sperm morphology and velocity has not been investigated. 
 
 ### Research question ###
-Do the three ruff morphs differ is sperm morphology and velocity and in variation of these traits?  If so, can the two most different sperm traits predict the male morph?  
-If velocity is morph specific, can sperm traits predict the velocity?
+Do the three ruff morphs differ is sperm morphology and velocity and in variation of these traits?  
+* If so, can the two most different sperm traits predict male morph?  
+* If velocity is morph specific, can sperm traits predict velocity?
 
 ### Predictions ###
 
 The morphs differ little in spermatogenesis related gene expression in testis (cit Jasmin's paper as soon as it is out). Thus, we expect no differences between the morph in sperm morphology and velocity. 
 
-```{r Predictionons,  warning = FALSE, message = FALSE, fig.align="center", fig.width=3, fig.height=3, out.extra='style="float:right; padding:10px"'}
+```{r Predictions,  warning = FALSE, message = FALSE, fig.align="center", fig.width=3, fig.height=3, out.extra='style="float:right; padding:10px"'}
   set.seed(1)
   d = data.table(morph = factor(c( rep('independent', 60),
                                    rep('satelite', 30),
@@ -58,19 +63,63 @@ The morphs differ little in spermatogenesis related gene expression in testis (c
                 )
   #dev.new(width = 3.5, height = 3.5)
   ggplot(d, aes(x = morph, y = sperm_trait, col = morph)) +  
-    geom_jitter() + theme_MB +  theme(legend.position="none") + xlab('Morph') + ylab('Sperm trait')
+    geom_jitter() + theme_MB +  theme(legend.position="none") + xlab('Morph') + ylab('Sperm trait') +
+    scale_colour_manual(values = colors)
  
 ```
 
-If, nonetheless, the three morphs differ in the sperm traits, we expect 'feaders' sperm to be optimized for speed and to differ the most from the sperm of 'independents', while we expect 'satelites' sperm to be intermediate between the two. Specifically, we predict that 'feaders' have sperm with the longest midpeace and tail and have sperm that is quickest of the three morphs. Consequently, as a part of exploratory analyses, we predict the coefficient of variation in the sperm morphometry and velocity to be the smallest in 'feaders'. Such optimization shall increase 'feaders' chances of inseminating a female despite 'feaders' rarity - less than 1% of males [@Jukema2006; @Jaatinen2010] - and despite 'feaders' likely have only sporadic chances to copulate. Note that likelihood of copulation for 'independents' and 'satelites' is driven by the amount of time an individual spends on the lek [@Vervoort2019] and hence these two morphs may not differ in the sperm characteristics. 
+If, nonetheless, the three morphs differ in sperm traits, we expect 'feaders' sperm to be optimized for speed and to differ the most from the sperm of 'independents', while we expect 'satelites' sperm to be intermediate between the two (Figure 1). Specifically, we predict that 'feaders' have sperm with the longest midpiece and tail and have sperm that is fastest of the three morphs (Figure 2). Consequently, we predict the smallest coefficient of variation in the sperm morphometry and velocity in 'feaders'. Such optimization shall increase 'feaders' chances of inseminating a female despite 'feaders' rarity - less than 1% of males [@Jukema2006; @Jaatinen2010] - and despite 'feaders' only sporadic chances to copulate [*CIT NEEDED*]. Note that likelihood of copulation for 'independents' and 'satelites' is driven by the amount of time an individual spends on the lek, regardless of the morph [@Vervoort2019], and hence these two morphs may not differ in the sperm characteristics. 
 
-**Figure 1** | Predicted relationship between morph type and sperm trait (midpeace, tail, velocity)
+**Figure 1** | Predicted relationship between morph type and sperm trait.
+
+```{r Predictions2,  warning = FALSE, message = FALSE, fig.align="center", fig.width=4, fig.height=4}
+  set.seed(1)
+  d = data.table(morph = c( rep('independent', 60),
+                                   rep('satelite', 30),
+                                   rep('feader', 15)
+                                   ),
+                midpiece =  c(rnorm(60, mean = 2, sd = 0.5), 
+                                 rnorm(30, mean = 3, sd = 0.5),
+                                 rnorm(15, mean = 4, sd = 0.5) 
+                                 ),
+                
+                tail =  c(rnorm(60, mean = 2, sd = 0.5), 
+                                 rnorm(30, mean = 3, sd = 0.5),
+                                 rnorm(15, mean = 4, sd = 0.5) 
+                                 ),
+                velocity =  c(rnorm(60, mean = 2, sd = 0.5), 
+                                 rnorm(30, mean = 3, sd = 0.5),
+                                 rnorm(15, mean = 4, sd = 0.5) 
+                                 )
+                )
+  d[,morph123 :=ifelse(morph == 'independent', 1, ifelse(morph == 'satelite', 2,3))]             
+
+  colors_ <- colors[d$morph123]
+  par(las = 1, cex.axis = 0.6, cex.lab = 0.8, cex.main = 0.8)
+  s3d=scatterplot3d(d$midpiece, d$tail, d$velocity, pch = 16, type="h", 
+              color=colors_, grid=TRUE, box=FALSE,
+              xlab = "",
+              ylab = "",
+              zlab = "",
+              x.ticklabs=c("short","","","","","long"),
+              y.ticklabs=c("short","","","","long",""),
+              z.ticklabs=c("slow","","","","","fast"),
+              mar = c(3, 2, 0, 1.5)
+              )     
+  text(x = 7.5, y = 1, "Tail", srt = 0, cex = 0.8)
+  text(x = 2.5, y = -0.5, "Mipiece", srt = 0,xpd = TRUE, cex = 0.8)
+  text(x = -0.5, y = 2.5, "Velocity", srt = 90,xpd = TRUE, cex = 0.8)
+  legend("bottom", legend = levels(factor(d$morph,levels = c('independent','satelite','feader'))),
+      col =  colors, pch = 16,xpd = TRUE, horiz = TRUE,inset = -0.125, bty = "n", cex = 0.7)
+ 
+```
+**Figure 2** | Predicted relationship between morph type and sperm traits.
 
 ### Methods ###
 
 #### TO DECIDE
 - For analyses, we will used average values of the 10 sperm.
-- We will stain the samples with **KIM THIS and THAT** to aid the measurements of head, midpeace and tail.
+- We will stain the samples with **KIM THIS and THAT** to aid the measurements of head, midpiece and tail.
 - We will investigate whether the sperm measurements are representative of each male and morph by calculating the repeatability of sperm measurements per male and morph, which will be obtained through 1,000 parametric bootstrap iterations [@Stoffel2017].
 - What measure to use for deciding whether 10 measured sperm per male is enough for CV
 - Use discriminant function analyses on the two most different sperm traits to predict the sperm morph
