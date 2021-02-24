@@ -3,8 +3,13 @@ title: "Sperm sampling and sample preparation protocol"
 author: "Martin Bulla, Hanna Vitnerova, Kim Telscher"  
 date: "`r Sys.time()`"
 output:
-   html_document: default
+   html_document: 
+        toc: true
+        toc_float: true
+        toc_depth: 5
+        code_folding: hide
 bibliography: ruff_sperm.xml
+link-citations: yes
 ---
 
 ```{r setup, include=FALSE}
