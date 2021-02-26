@@ -1,6 +1,6 @@
 ---
 title: "A PRIORI DECIDED PROCEDURE for 'ruff sperm' project"
-author: "Martin Bulla, Wolfgang Forstmeier, Katrin Martin, Kim Teltscher, ?Jasmine Loveland?, Clemens Küpper, Michael Lierz, Tomas Albrecht, David B Lank & Bart Kempenaers"
+author: "Martin Bulla, Wolfgang Forstmeier, Katrin Martin, Kim Teltscher, ?Jasmine L Loveland?, Clemens Küpper, Michael Lierz, Tomas Albrecht, David B Lank & Bart Kempenaers"
 date: "`r Sys.time()`"
 output: 
     html_document:
@@ -11,6 +11,35 @@ output:
 bibliography: ruff_sperm.xml
 link-citations: yes
 ---
+<style type="text/css">
+
+td {  /* Table  */
+  font-size: 12px;
+}
+h1.title {
+  font-size: 32px;
+}
+h1 { /* Header 1 */
+  font-size: 24px;
+}
+h2 { /* Header 2 */
+    font-size: 20px;
+    
+}
+h3 { /* Header 3 */
+  font-size: 16px;
+
+}
+h4 { /* Header 4 */
+  font-size: 16px;
+}
+code.r{ /* Code block */
+    font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-size: 10px;
+}
+</style>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -36,25 +65,25 @@ Code to load tools and prepare data:
 
 ***
 
-### Background ###
-Ruff is a lekking shorebird with three strikingly different male mating morphs (aggressive ‘independents’, semi-cooperative ‘satellites’ and female-mimic ‘faeders’) [@vanRhijn1991; @Widemo1998; @Jukema2006]. The major differences in body and testis size, ornamentation, and mating behaviors of 'satellites' and 'feaders' develop via an autosomal inversion [@Kupper2015; @Lamichhaney2015]. Whether the inversion links also to the morph differences in sperm morphology and velocity has not been investigated. 
+# Background 
+Ruff *Calidris pugnax* is a lekking shorebird with three strikingly different male mating morphs: aggressive ‘independents’, semi-cooperative ‘satellites’ and female-mimic ‘faeders’ [@vanRhijn1991; @Widemo1998; @Jukema2006]. 'Independents' (80 to 95% of the population) are dominant holders of display sites. Satellites (5 to 20%) do not defend display sites, but their presence on the lek assists with female attraction and allows them to 'steal' copulations. 'Faeders' (<1%) mimic females in their plumage and smaller size and also 'steal' copulations. The major differences in body and testis size, ornamentation, and mating behaviors of 'satellites' and 'faeders' develop via an autosomal inversion [@Kupper2015; @Lamichhaney2015]. Whether the inversion also links to the morph differences in sperm morphology and velocity has not been investigated. 
 
-### Research question ###
-1. Do the three ruff morphs differ is sperm morphology and velocity and in variation in these traits?  
+# Research question 
+1. Do the three ruff morphs differ in sperm morphology and velocity and in how these sperm traits vary?  
 2. If so, can the two/three most distinct sperm traits predict male morph? - see figure 1 [here](https://www.nature.com/articles/s41559-017-0236-1?platform=hootsuite)
 3. If velocity is morph specific, can sperm traits predict velocity? - see figure 2 [here](https://www.nature.com/articles/s41559-017-0236-1?platform=hootsuite)
 
-### Predictions ###
+# Predictions 
 
-The morphs differ little in spermatogenesis related gene expression in testis (cit Jasmin's paper as soon as it is out). Thus, we expect no differences between the morph in sperm morphology and velocity. 
+We expect no differences between the morphs in sperm morphology and velocity because the morphs differ little in spermatogenesis related gene expression in testis [@Loveland2021].
 
 ```{r Predictions,  warning = FALSE, message = FALSE, fig.align="center", fig.width=3, fig.height=3, out.extra='style="float:right; padding:10px"'}
   set.seed(1)
   d = data.table(morph = factor(c( rep('independent', 60),
                                    rep('satelite', 30),
-                                   rep('feader', 15)
+                                   rep('faeder', 15)
                                    ), 
-                                levels = c('independent','satelite','feader')
+                                levels = c('independent','satelite','faeder')
                                 ),
                 sperm_trait =  c(rnorm(60, mean = 1, sd = 0.5), 
                                  rnorm(30, mean = 2, sd = 0.5),
@@ -68,7 +97,7 @@ The morphs differ little in spermatogenesis related gene expression in testis (c
  
 ```
 
-If, nonetheless, the three morphs differ in sperm traits, we expect 'feaders' sperm to be optimized for speed and to differ the most from the sperm of 'independents', while we expect 'satelites' sperm to be intermediate between the two (Figure 1). Specifically, we predict that 'feaders' have sperm with the longest midpiece and tail and have sperm that is fastest of the three morphs (Figure 2). Consequently, we predict the smallest coefficient of variation in the sperm morphometry and velocity in 'feaders'. Such optimization shall increase 'feaders' chances of inseminating a female despite 'feaders' rarity - less than 1% of males [@Jukema2006; @Jaatinen2010] - and despite 'feaders' only sporadic chances to copulate [**CIT NEEDED**]. Note that likelihood of copulation for 'independents' and 'satelites' is driven by the amount of time an individual spends on the lek, regardless of the morph [@Vervoort2019], and hence these two morphs may not differ in the sperm characteristics. 
+If, nonetheless, the three morphs differ in sperm traits, we expect 'faeders' sperm to be optimized for speed and to differ the most from the sperm of 'independents', while we expect 'satelites' sperm to be intermediate between the two (Figure 1). Specifically, we predict that 'faeders' have  the longest midpiece and tail and have sperm that is fastest of the three morphs (Figure 2). Consequently, we predict the smallest coefficient of variation in the sperm morphometry and velocity in 'faeders'. Such optimization shall increase 'faeders' chances of inseminating a female despite 'faeders' rarity - less than 1% of males [@Jukema2006; @Jaatinen2010] - and despite 'faeders' only sporadic chances to copulate [**CIT NEEDED or DELETE**]. Note that likelihood of copulation for 'independents' and 'satelites' is driven by the amount of time an individual spends on the lek, regardless of the morph [@Vervoort2019], and hence these two morphs may not differ in the sperm characteristics. 
 
 **Figure 1** | Predicted relationship between morph type and sperm trait.
 
@@ -76,7 +105,7 @@ If, nonetheless, the three morphs differ in sperm traits, we expect 'feaders' sp
   set.seed(1)
   d = data.table(morph = c( rep('independent', 60),
                                    rep('satelite', 30),
-                                   rep('feader', 15)
+                                   rep('faeder', 15)
                                    ),
                 midpiece =  c(rnorm(60, mean = 2, sd = 0.5), 
                                  rnorm(30, mean = 3, sd = 0.5),
@@ -109,57 +138,58 @@ If, nonetheless, the three morphs differ in sperm traits, we expect 'feaders' sp
   text(x = 7.5, y = 1, "Tail", srt = 0, cex = 0.8)
   text(x = 2.5, y = -0.5, "Mipiece", srt = 0,xpd = TRUE, cex = 0.8)
   text(x = -0.5, y = 2.5, "Velocity", srt = 90,xpd = TRUE, cex = 0.8)
-  legend("bottom", legend = levels(factor(d$morph,levels = c('independent','satelite','feader'))),
+  legend("bottom", legend = levels(factor(d$morph,levels = c('independent','satelite','faeder'))),
       col =  colors, pch = 16,xpd = TRUE, horiz = TRUE,inset = -0.125, bty = "n", cex = 0.7)
  
 ```
 **Figure 2** | Predicted relationship between morph type and sperm traits.
 
-### Methods ###
+# Methods #
+## Individuals 
+In 2018, MB collected sperm of `r nrow(x)` males (`r nrow(x[morph == 'r'])` 'independents', `r nrow(x[morph == 's'])` 'satelites', `r nrow(x[morph == 'f'])` 'faeders')  from the **Simon Fraser** University **colony**. The colony was founded with 110 ruffs hatched from wild eggs collected in Finland in 1985, 1989 and 1990 plus two 'faeder' males from the Netherlands in 2006 [@Lank1995; @Lank2013]. As a part of a different project vas deferens tubules were collected from 15 sacrificed males (5 per morph) and stored in ~5% formalin. 
 
+In 2021, we plan to collect sperm of all males from the **Max Planck colony** (`r nrow(s[morph == 'I'])` 'independents', `r nrow(s[morph == 'S'])` 'satelites', `r nrow(s[morph == 'F'])` 'faeders'; of which `r nrow(sv)` males were sampled already in Vancouver: `r nrow(sv[morph == 'r'])`  'independents', `r nrow(sv[morph == 's'])` 'satelites' and `r nrow(sv[morph == 'f'])` 'faeders'). The colony was founded in 2018 from the Simon Fraser colony. 
 
-#### Sperm samples ####
-MB collected sperm of `r nrow(x)` males (`r nrow(x[morph == 'r'])` 'independents', `r nrow(x[morph == 's'])` 'satelites', `r nrow(x[morph == 'f'])` 'feaders') from the Simon Fraser University  colony using abdominal massage and cloaca lavage (e.g. @Knief2017; see the [specific protocol](https://raw.githack.com/MartinBulla/ruff_sperm/main/Protocols/protocol_sperm.html); **ADD VIDEOs**). The  colony was founded with 110 ruffs hatched from wild eggs collected in Finland in 1985, 1989 and 1990 plus two 'faeder' males from the Netherlands in 2006 [@Lank1995; @Lank2013]. 
+## Sperm sampling
+**In 2018**, MB collected sperm by abdominal massage and cloaca lavage (e.g. @Knief2017; see the [specific protocol](https://raw.githack.com/MartinBulla/ruff_sperm/main/Protocols/protocol_sperm.html); **ADD VIDEOs**). Sperm was pipetted from the cloaca, diluted with 10 - 20μl of Phosphate buffered saline solution (PBS; Sigma, P-4417), and then fixed in 100μl of ~5% formalin solution. 
 
-Compared to passerines, shorebirds do not have a cloaca protuberance. Thus, abdominal massage and cloaca lavage often lead to unclean samples contaminated by excrements. Such samples are then unsuitable to measure sperm velocity. Hence, in 2021 breeding season we plan to collect sperm of all males from the Max Planck Institute for Ornithology colony - founded in 2018 from the Simon Fraser University colony (`r nrow(s[morph == 'I'])` 'independents', `r nrow(s[morph == 'S'])` 'satelites', `r nrow(s[morph == 'F'])` 'feaders'; of which `r nrow(sv)` males - `r nrow(sv[morph == 'r'])` 'independents', `r nrow(sv[morph == 's'])` 'satelites' and `r nrow(sv[morph == 'f'])` 'feaders' - were sampled already in Vancouver). Sperm will be collected by abdominal massage, cloaca lavage and by electro‐stimulation [@Lierz2013], for which the length and diameter of the probe, as well as the electric current and the number of electric impulses will be adapted to the size of the ruff and the size of its morphs. The electro-stimulation shall result in clean sperm samples suitable for velocity measurements.
+Compared to passerines, shorebirds do not have a cloaca protuberance. Thus, abdominal massage and cloaca lavage often lead to unclean samples contaminated by excrements. Such samples are then unsuitable for measuring sperm velocity. Moreover, upon inspection, many 2018 samples contained broken off or curled up tails, which hinders sperm measurements. Hence, **in 2021** along with abdominal massage and cloaca lavage, we plan to collect sperm by electro‐stimulation [@Lierz2013]. The length and diameter of the electro-stimulation probe, as well as the electric current and the number of electric impulses will be adapted to the size of the ruff morphs. The electro-stimulation should result in clean sperm samples suitable for velocity measurements. Importantly, we plan to prepare the sperm slides on the spot.
 
-Collected sperm samples were and will be pipetted from the cloaca and diluted with 10 - 20 μl of Phosphate buffered saline solution (PBS; Sigma, P-4417). The Vancouver samples were then fixed in 100 μl of ~5% formalin solution. Upon inspecting these samples we found out that ruff sperm has extremely long tails that easily break off or curl up when the sperm dies; this hinders sperm measurements. Thus, during 2021 sampling we plan to prepare the sperm slides on the spot. The sperm (~0.5–3 μl) will be immediately diluted in a preheated (40°C) Dulbecco’s Modified Eagle’s Medium (Advanced D-MEM, Invitrogen, USA). For the velocity measurement, an aliquot will be pipetted onto a standard 20μm two-chamber count slide (Leja, The Netherlands) placed on a  heating table kept at 40 °C. For the morphology measurements, an aliquot will be pipetted on microscope slide and the rest of the sperm sample will be fixed in 100μl ~5% formalin solution.
+Sperm will be pipetted from the cloaca (~0.5–3μl), immediately diluted in a preheated (40°C) Dulbecco’s Modified Eagle’s Medium (Advanced D-MEM, Invitrogen, USA). For the velocity measurement, an aliquot will be pipetted onto a standard 20μm two-chamber count slide (Leja, The Netherlands) placed on a  heating table kept at 40 °C. For the morphology measurements, an aliquot will be pipetted onto a microscope slide and the rest of the sperm sample will be fixed in 100μl ~5% formalin solution.
 
-In addition, and as a part of a different project, in 2018 we extracted and stored in ~5% formalin vas deference of 15 sacrificed males (5 per each morph) from the Simon Fraser University colony. Sperm was then extracted by flushing part of the vas deference with PBS onto a microscope slide (**check with Kim whether correct**). 
+## Sperm morphometry
+From each sperm sample, we will pipet ~10μl onto a microscope slide, making 5-7 lines (like when ploughing a field), let it air-dry, and in case of formalin fixed samples wash the slide gently under the distilled water to wash away the dried formalin, and inspect the slide with a light microscope ('Zeiss Axio Imager.M2') under 400x magnification. Sperm from vas deference will be first extracted by cutting a piece from the middle of the tubules, teasing out the tissue to release the sperm, and diluting the tissue with the Phosphate buffered saline solution. To aid distinction of sperm parts, dried slides will be stained with Hoechst 33342 and Mitotracker Green FM  (not earlier than 48h) before photographing. For step by step sperm preparation protocol see [here](https://raw.githack.com/MartinBulla/ruff_sperm/main/Protocols/protocol_sperm.html).
 
+```{r Pic1, echo=FALSE, fig.cap="Picture 1 | Ruff sperm stained with Hoechst 33342 and Mitotracker Green FM", echo=FALSE}
+knitr::include_graphics(here::here("Pictures/Pic1_staining_example.jpg"))
+```
+For each sample, we will photograph 10 intact normal-looking spermatozoa, less if 10 is not available, with a 12 megapixel (4250 × 2838) digital camera ('Zeiss Axiocam 512 color' with pixel size of 3.1μm × 3.1μm). For each sperm, we will measure acrosome, nucleus, midpiece and tail length to the nearest 0.1μm  using open sources software [ImageJ](https://imagej.nih.gov/ij/) (for a detailed protocol see [here](https://www.dropbox.com/s/ouqfqih4gzx6rq5/Protocol_imageJ_sperm_measuring_manual.docx?dl=0)). We will calculate total sperm length as the sum of all parts, and flagellum length as the sum of midpiece and tail length. We will  compute coefficients of variation (CV = [SD/mean]) both within males and between males of each morph, and if needed, adjust them to correct for variation in sample size (CVadj = [1 + 1/(4n)]*CV; [@Sokal1981]). To minimize observer error, all measurements will be taken by one person (KT). 
 
-#### Sperm morphometry ####
-From each sample, we will pippet ~10μl on a microscope slide, making 5-7 lines (like when ploughing a field), let it air-dry, in case of formalin fixed samples wash the slide gently under the distilled water to wash away the dried formalin, and inspect the slide with a light microscope ('Zeiss Axio Imager.M2') under 400x magnification. 
+Note that all measured sperm and features will be numbered, stored and visible within the measured picture and referenced in the database (see [protocol](https://www.dropbox.com/s/ouqfqih4gzx6rq5/Protocol_imageJ_sperm_measuring_manual.docx?dl=0) and [database](https://www.dropbox.com/s/9uk7bcxmd4o1prx/ruff_sperm_morphology.xlsx?dl=0)). This facilitates transparency and, if later needed (e.g. for calculation of repeatability in sperm measurements), allows re-measurement of the same sperm by the same or different person. Also, it allows to measure additional sperm if 10 sperm per male prove too few to calculate coefficient of variation. **PERHASP WE SHALL A PRIORY DECIDE HOW WE DRAW THE LINE HERE**.
 
-For each sample, we will photograph 10 intact normal-looking spermatozoa, less if 10 is not available, with a 12 megapixel (4250 × 2838) digital camera ('Zeiss Axiocam 512 color' with pixel size of 3.1μm × 3.1μm). For each sperm, we will measure acrosome, nucleus, midpiece and tail length to the nearest 0.1μm  using open sources software [ImageJ](https://imagej.nih.gov/ij/) (for a detailed protocol see [here](https://www.dropbox.com/s/ouqfqih4gzx6rq5/Protocol_imageJ_sperm_measuring_manual.docx?dl=0). We will calculate total sperm length as the sum of all parts (and as sum of nucleus, midpiece and tail), and flagellum length as the sum of midpiece and tail length. To minimize observer error, all measurements will be taken by one person (KT). 
+## Sperm velocity
+For each sperm sample we will record sperm velocity for approximately 45s in eight different fields of the slide under a 100x magnification with a digital camera (UI-1540-C, Olympus) mounted on a microscope (CX41, Olympus) fitted with a heating table (**?MODEL Tomas?**) kept at a constant temperature of 40°C. The videos will have **?SO and SO Tomas?** resolution. Jana Albrechtova will analyze each recorded field by the CEROS computer-assisted sperm analysis (CASA) system (Hamilton Thorne Inc., Beverly, Massa- chusetts, USA). All tracked objects will be visually inspected by Jana Albrechtova and non-sperm objects and static spermatozoa excluded from the analysis (see also previous work [@Laskemoen2010; @Cramer2016; @Opatová2016] for a similar approach). 
 
-Note that all measured sperm and features will be numbered, stored and visible within the measured picture and referenced in the database (see [protocol](https://www.dropbox.com/s/ouqfqih4gzx6rq5/Protocol_imageJ_sperm_measuring_manual.docx?dl=0) and [database](https://www.dropbox.com/s/9uk7bcxmd4o1prx/ruff_sperm_morphology.xlsx?dl=0)), which facilitates transparency and, if later needed, allows re-measurement of the same sperm by the same or different person for a possible calculation of repeatability. Also, it allows to measure additional sperm if 10 sperm per male proof too few to calculate coefficient of variation. **PERHASP WE SHALL A PRIORY DECIDE HOW WE DRAW THE LINE HERE**.
+The dilution medium does not contain any spermatozoa attractants to guide the spermatozoa towards one direction; thus, we will use  curvilinear velocity rather than straight-line velocity as our measurement of sperm swimming speed [@Laskemoen2010]. We will report how many sperm cells per sperm sample will be recorded (median, 95%CI, range) and whether log-transformed number of measured sperm cells per sample correlates with average velocity per sample and morph. 
 
-We will also compute coefficients of variation (CV = [SD/mean]) both within males and between males of each morph, and if needed, adjust them to correct for variation in sample size (CVadj = [1 + 1/(4n)]*CV; [@Sokal1981]). 
+## Inbreeding 
+Because our sperm samples came and will come from males bred in captivity, we expect higher levels of inbreeding compared with males from wild populations. In birds and mammals (but not in insects) inbred males have higher proportion of abnormal sperm and lower sperm velocity than outbred males [@Gomendio2000; @Heber2013; @Ala-Honkola2013; @Opatová2016]. Thus, our sperm velocity measurements may not reflect sperm velocity of wild ruffs. However, there is no evidence for morphology  of normal‐looking sperm (e.g., length, CV) to differ between inbred and outbred males of fish, fruit flies and birds [@Mehlis2012; @Ala-Honkola2013; @Opatová2016]. We therefore assume that our results reflect the variation in sperm morphology observed in wild ruffs.
 
-#### Sperm velocity ####
-For each sperm sample we will record sperm velocity for approximately 45 s in eight different fields of the slide under a 100x magnification with a digital camera (UI-1540-C, Olympus) mounted on a microscope (CX41, Olympus) fitted with a heating table (**?MODEL Tomas?**) kept at a constant temperature of 40°C) resulting in videos with **?SO and SO Tomas?** resolution. Jana Albrechtova will analyze each recorded field by the CEROS computer-assisted sperm analysis (CASA) system (Hamilton Thorne Inc., Beverly, Massa- chusetts, USA). 
-
-All tracked objects will be visually inspected by Jana Albrechtova and non-sperm objects and static spermatozoa excluded from the analysis (see also previous work [@Laskemoen2010; @Cramer2016; @Opatová2016] for a similar approach). The dilution medium does not contain any spermatozoa attractants to guide the spermatozoa towards one direction; thus, we will use  curvilinear velocity rather than straight-line velocity as our measurement of sperm swimming speed [@Laskemoen2010]. We will report how many sperm cells per sperm sample will be recorded (median, 95%CI, range) and whether log-transformed number of measured sperm cells per sample correlated with average velocity per sample and morph. 
-
-#### Inbreeding ####
-Because our sperm samples came and will come from males bred in captivity, we expect higher levels of inbreeding compared with males from wild populations. In birds and mammals (but not in insects) inbred males have higher proportion of abnormal sperm and lower sperm velocity than outbred males [@Gomendio2000; @Heber2013; @Ala-Honkola2013; @Opatová2016]. Thus, our sperm velocity measurements may not reflect sperm velocity of wild ruffs. However, there is no evidence for morphology  of normal‐looking sperm (e.g., length, CV) to differ between inbred and outbred males of fish, fruit flies and birds [@Mehlis; @Ala-Honkola2013; @Opatová2016]. We therefore assume that our results reflect the variation in sperm morphology observed in wild ruffs.
-
-#### Analysis plan ####
+## Analysis plan 
 Sample sizes will reflect the maximum available data. No data selection will be done conditional on the outcome of statistical tests. We will measure the sperm traits and analyze the data on sperm traits blind to the males’ morph. We will report all results, all data exclusions, all manipulations and all measures in the study at the [GitHub repository](https://github.com/MartinBulla/ruff_sperm). 
 
-#### Statistical analyses ####
-All analyses will be in R [@R-Core-Team2020] using lmer() and glmer() functions of the lme4 package to fit linear and generalized linear mixed-effects models, and the pedigreemm package for fitting the pedigree structure as a random effect. We will estimate the variance explained by the fixed effects of our mixed-effects models as marginal R2-values, using the r.squaredGLMM() function of the MuMIn package (v1.15.6). Model fits will be visually validated (by qq-plots of residuals and plots of residuals against fitted values). 
+## Statistical analyses
+All analyses will be in R [@R-Core-Team2020] using lmer() and glmer() functions of the lme4 package to fit linear and generalized linear mixed-effects models, and one of the package for fitting the pedigree structure as a random effect (e.g. [brms](https://mikheyev.github.io/brms-wam/), MCMCglmm, pedigreeMM). We will estimate the variance explained by the fixed effects of our mixed-effects models as marginal R2-values, using the r.squaredGLMM() function of the MuMIn package (v1.15.6). Model fits will be visually validated (by qq-plots of residuals and plots of residuals against fitted values). 
 
-In general, we will fit two sets of linear mixed-effect models. First set with response representing raw sperm trait measurements and controlling for multiple measurements per male by fitting male identity as a random effect. Second set with response representing average sperm trait per male and controlled for the number of sampled sperm per individual (**What is the best way of doing this? Wolfgang do you recommend weights?**). 
+In general, we will fit two sets of linear mixed-effect models. First set with a response representing raw sperm trait measurements and controlling for multiple measurements per male by fitting male identity as a random effect. Second set with a response representing average sperm trait per male and controlled for the number of sampled sperm per individual (**What is the best way of doing this? Wolfgang do you recommend weights?**). 
 
-To investigate whether sperm traits differ between the morphs, we will fit individual model for each sperm trait with sperm trait as response, the male morph (three-level factor) as explanatory variable and the pedigree structure as a random effect.
+To investigate whether sperm traits differ between the morphs, we will fit individual model for each sperm trait with sperm trait as a response, the male morph (three-level factor) as an explanatory variable and the pedigree structure as a random effect.
 
-To investigate whether sperm morphology explains variation in sperm velocity, we will first fit a linear mixed-effects model with velocity as dependent variable, and head (*acrosome + nucleus*), midpiece and tail length (*?or rather flagelum - midpiece+tail?*), as well as their squared terms (after mean-centering) and all two-way interactions between the three linear terms, as explanatory variables while controlling for pedigree structure (fitted as a random effect). In case, some of the sperm traits substantially correlate (Pearson's r>0.6), we will use only one of the correlated traits. We will then investigate whether the significant traits predict sperm velocity by comparing predicted and observed sperm velocities. 
+To investigate whether sperm morphology explains variation in sperm velocity, we will first fit a linear mixed-effects model with velocity as dependent variable, and head (*acrosome + nucleus*), midpiece and tail length (**?or rather flagelum - midpiece+tail?**), as well as their squared terms (after mean-centering) and all two-way interactions between the three linear terms, as explanatory variables while controlling for pedigree structure (fitted as a random effect). In case, some of the sperm traits substantially correlate (Pearson's r>0.6), we will use only one of the correlated traits. We will then investigate whether the significant traits predict sperm velocity by comparing predicted and observed sperm velocities. 
 
-**THE FOLLOWING IS LIKELY NOT NEEDED** To evaluate multicollinearity between all main effect predictors, we will estimate their variance inflation factor using the corvif() function [@Zuur2009] in R. A general guideline is that a variance inflation factor larger than 5 or 10 is large, indicating that the model has problems estimating the coefficient. However, this in general does not degrade the quality of predictions. If the VIF is larger than 1/(1-R2), where R2 is the Multiple R-squared of the regression, then that predictor is more related to the other predictors than it is to the response. Thus, if VIF is larger than 5 we can use the model for predictions. 
+ <span style="color:grey">**THE FOLLOWING IS LIKELY NOT NEEDED:** To evaluate multicollinearity between all main effect predictors, we will estimate their variance inflation factor using the corvif() function [@Zuur2009] in R. A general guideline is that a variance inflation factor larger than 5 or 10 is large, indicating that the model has problems estimating the coefficient. However, this in general does not degrade the quality of predictions. If the VIF is larger than 1/(1-R2), where R2 is the Multiple R-squared of the regression, then that predictor is more related to the other predictors than it is to the response. Thus, if VIF is larger than 5 we can use the model for predictions.</span>
 
-#### MISSING OR TO DECIDE
+# MISSING OR TO DECIDE
 - For analyses, shall will use single sperm, average values of the 10 sperm or both?
 - What sperm traits to use? total length with without acrosome, acrosome, head (acrosome + nucleus), midpiece, tail, flagelum (midpiece + tail)
 - Shall will investigate whether the sperm measurements are representative of each male and morph by calculating the repeatability of sperm measurements per male and morph, which will be obtained through 1,000 parametric bootstrap iterations [@Stoffel2017].
@@ -171,4 +201,4 @@ To investigate whether sperm morphology explains variation in sperm velocity, we
 - specification of the heating table (**Tomas?**) 
 - videos resolution (**Tomas?**) 
 
-#### References ####
+# References
