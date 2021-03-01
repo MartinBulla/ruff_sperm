@@ -192,16 +192,25 @@ To investigate whether sperm morphology explains variation in sperm velocity, we
 
  <span style="color:grey">**THE FOLLOWING IS LIKELY NOT NEEDED:** To evaluate multicollinearity between all main effect predictors, we will estimate their variance inflation factor using the corvif() function [@Zuur2009] in R. A general guideline is that a variance inflation factor larger than 5 or 10 is large, indicating that the model has problems estimating the coefficient. However, this in general does not degrade the quality of predictions. If the VIF is larger than 1/(1-R2), where R2 is the Multiple R-squared of the regression, then that predictor is more related to the other predictors than it is to the response. Thus, if VIF is larger than 5 we can use the model for predictions.</span>
 
-# MISSING OR TO DECIDE
-- For analyses, shall will use single sperm, average values of the 10 sperm or both?
+# TO DECIDE
+- Does it matter whether we let the microscope slides dry at room temperature or whether we heat fix them?
+- Shall we attempt randomizing sperm measurement (between morphs and individuals)
+- Shall we use single sperm, average values of the 10 sperm or both?
 - What sperm traits to use? total length with without acrosome, acrosome, head (acrosome + nucleus), midpiece, tail, flagelum (midpiece + tail)
-- Shall will investigate whether the sperm measurements are representative of each male and morph by calculating the repeatability of sperm measurements per male and morph, which will be obtained through 1,000 parametric bootstrap iterations [@Stoffel2017].
 - What measure to use for deciding whether 10 measured sperm per male is enough for CV
-- Use discriminant function analyses on the two most different sperm traits to predict the sperm morph
-- Use multivariatre model with all sperm traits as response?
-- which packages to use for modeling brms (https://mikheyev.github.io/brms-wam/), MCMCglmm, pedigreeMM
-- sound way to to control for number of measured sperm per individual - weights? (**Wolfgang?**) 
+- Shall we investigate whether the sperm measurements are representative of each male and morph by calculating the repeatability of sperm measurements per male and morph, which will be obtained through 1,000 parametric bootstrap iterations [@Stoffel2017].
+- Shall we use discriminant function analyses on the two most different sperm traits to predict the sperm morph?
+- Shall we use multivariatre model with all sperm traits as response?
+- Which packages to use for modeling: brms (https://mikheyev.github.io/brms-wam/), MCMCglmm, pedigreeMM
+- What is the sound way to control for number of measured sperm per individual - weights? (**Wolfgang?**) 
+- 
+
+
+# TO ADD/SPECIFY
 - specification of the heating table (**Tomas?**) 
 - videos resolution (**Tomas?**) 
+- videos to accompany the protocols (vas deferens prepartion, slide preparation, sperm collection and video recording)
+
+
 
 # References
