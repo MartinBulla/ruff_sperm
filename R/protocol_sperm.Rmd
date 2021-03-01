@@ -23,6 +23,9 @@ knitr::opts_chunk$set(echo = TRUE)
 - microscope slides
 - dissecting tools (forceps, scalpel, dissecting microscope)
 - microscope and camera set up for sample inspection and photographing (see [Microscope, camera, software specifications])
+- to distinguish sperm parts, fluorescent stains may be useful
+    - Mitotracker Green FM (Invitrogen Corporation, Carlsbad, California) identifies mitochondria, i.e. midpiece
+    - Hoechst 33342 (Sigma Chemical Company, St. Louis, Missouri) identifies the sperm nucleus.
 
 ### Sperm collection ###
 #### Abdominal massage #### 
@@ -61,7 +64,7 @@ See @Lierz2013
         iii. prepare a slide as indicated in [Preparing slides] and store the rest in 5% formalin 
 
 #### Testes #### 
-0. ❗not the best method as immature sperm might be present because the sperm matures in epididymis -  a cordlike structure along the top of each testicle
+0. ❗not the best method as immature sperm might be present because the sperm matures in epididymis -  a cordlike structure along the top of each testicle (see [here](https://www.vetfolio.com/learn/article/anatomy-of-the-avian-reproductive-system))
 1. take both testes, and weigh each separately. 
 2. take photo of both testes with a scale (ruler) next to the testes 
 3. store one testis in 5% formalin, 
@@ -106,6 +109,8 @@ Optimizes visualization of individual sperm parts.
 3. rinse gently with distilled water
 4. allow to dry at room temperature
 5. ❗store slides in the dark and photograph within 48h, else the Mitotracker stain may fade
+
+
 
 
 ### Sample inspection and photo-shooting ### 
