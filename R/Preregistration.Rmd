@@ -203,7 +203,8 @@ To investigate whether sperm morphology explains variation in sperm velocity, we
 - Shall we investigate whether the sperm measurements are representative of each male and morph by calculating the repeatability of sperm measurements per male and morph, which will be obtained through 1,000 parametric bootstrap iterations [@Stoffel2017].
 - Shall we use discriminant function analyses on the two most different sperm traits to predict the sperm morph?
 - Shall we use multivariate model with all sperm traits as response?
-- Which packages to use for modeling: brms (https://mikheyev.github.io/brms-wam/), MCMCglmm, pedigreeMM
+- Do we need to control for the pedigree, if residuals of the models are randomly distributed? MB thinks, not.
+- Which packages to use for modeling: [brms](https://mikheyev.github.io/brms-wam/), MCMCglmm, pedigreeMM
 - What is the sound way to control for number of measured sperm per individual - weights? (**Wolfgang?**) 
 - When recording sperm velocity, shall we also make a record in a cellulose solution, which "mimics" conditions in the female reproductive tract?
 
