@@ -2,7 +2,7 @@
 
 ### **Overview**
 
-Contains scripts, data, outputs and protocols used in designing and collecting sperm morphology and velocity of three ruff morphs. 
+Contains scripts, data, outputs and protocols used to design data collection and to collect sperm morphology and velocity of three ruff morphs. 
 ### **Folders and files**
 
 [Data](Data/): all used data
