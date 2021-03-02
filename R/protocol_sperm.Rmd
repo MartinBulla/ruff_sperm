@@ -103,17 +103,13 @@ See @Lierz2013
 Optimizes visualization of individual sperm parts.
 
 1. prepare stains:
-    i. add 74.41 µl dimethylsulfoxide (DMSO) to 50 µg of desiccated (-20 °C) Mitotracker Green FM (Invitrogen M7514), resuspend (Green solution)
-    ii. dilute 1 µl of Hoechst 33342 (10mg/ml, Molecular Probes) in 100 µl of water (Hoechst solution)
-    iii. to 1 ml of water, add 1 µl of  Green solution and 10 µl of Hoechst solution, mix well
+    i. add 74.41 µl dimethylsulfoxide (DMSO) to 50 µg of desiccated (-20 °C) Mitotracker Green FM (Invitrogen M7514), resuspend ('Green solution')
+    ii. dilute 1 µl of Hoechst 33342 (10mg/ml, Molecular Probes) in 100 µl of distilled water (Hoechst solution)
+    iii. to 1 ml of distilled water, add 1 µl of 'Green solution' and 10 µl of 'Hoechst solution', mix well
 2. flood each slide with 1 ml of the stain mix and incubate at room temperature in the dark for 30 minutes
 3. rinse gently with distilled water
 4. allow to dry at room temperature
 5. ❗store slides in the dark and photograph within 48h, else the Mitotracker stain may fade
-
-Hoechst 33342 (from Molecular Probes) comes as a stock solution 10mg/ml in water, I dilute it 1 µl in 100 µl (=working solution), from the working solution I use 10 µl in 1 ml water (plus 1 µl mitotracker for the stain mix).  For the text I would write:
-Hoechst 33342 (Molecular Probes) 10mg/ml, dilute 1 µl in 100 µl (working solution)
-
 
 ### Sample inspection and photo-shooting ### 
 1.  place the slide under the microscope
