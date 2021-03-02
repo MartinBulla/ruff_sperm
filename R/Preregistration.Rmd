@@ -68,7 +68,7 @@ Code to load tools and prepare data:
 # Background 
 Ruff *Calidris pugnax* is a lekking shorebird with three strikingly different male mating morphs: aggressive ‘independents’, semi-cooperative ‘satellites’ and female-mimic ‘faeders’ [@vanRhijn1991; @Widemo1998; @Jukema2006]. 'Independents' (80 to 95% of the population) are dominant holders of display sites. Satellites (5 to 20%) do not defend display sites, but their presence on the lek assists with female attraction and allows them to 'steal' copulations. 'Faeders' (<1%) mimic females in their plumage and smaller size and also 'steal' copulations. The major differences in body and testis size, ornamentation, and mating behaviors of 'satellites' and 'faeders' develop via an autosomal inversion [@Kupper2015; @Lamichhaney2015]. Whether the inversion also links to the morph differences in sperm morphology and velocity has not been investigated. 
 
-# Research question 
+# Research questions 
 1. Do the three ruff morphs differ in the sperm morphology and velocity, as well as in the variability of the sperm traits?  
 2. If so, can the two/three most distinct sperm traits predict male morph? - see figure 1 [here](https://www.nature.com/articles/s41559-017-0236-1?platform=hootsuite)
 3. If velocity is morph specific, can sperm traits predict velocity? - see figure 2 [here](https://www.nature.com/articles/s41559-017-0236-1?platform=hootsuite)
@@ -195,22 +195,23 @@ To investigate whether sperm morphology explains variation in sperm velocity, we
  <span style="color:grey">**THE FOLLOWING IS LIKELY NOT NEEDED:** To evaluate multicollinearity between all main effect predictors, we will estimate their variance inflation factor using the corvif() function [@Zuur2009] in R. A general guideline is that a variance inflation factor larger than 5 or 10 is large, indicating that the model has problems estimating the coefficient. However, this in general does not degrade the quality of predictions. If the VIF is larger than 1/(1-R2), where R2 is the Multiple R-squared of the regression, then that predictor is more related to the other predictors than it is to the response. Thus, if VIF is larger than 5 we can use the model for predictions.</span>
 
 # TO DECIDE
+- Is it possible to add some  of Clemens birds, e.g. faeders?
 - Does it matter whether we let the microscope slides dry at room temperature or whether we heat fix them?
 - Shall we attempt randomizing sperm measurement (between morphs and individuals)?
-- Shall we use single sperm, average values of the 10 sperm or both?
-- What sperm traits to use? total length with without acrosome, acrosome, head (acrosome + nucleus), midpiece, tail, flagelum (midpiece + tail)
-- What measure to use for deciding whether 10 measured sperm per male is enough for CV
+- Shall we use single sperm measurements, average  values of the 10 sperm per male or both?
+- What sperm traits to use? Total length with/without acrosome, acrosome, head (acrosome + nucleus), midpiece, tail, flagelum (midpiece + tail).
+- What measure to use for deciding whether 10 measured sperm per male is enough for CV?
 - Shall we investigate whether the sperm measurements are representative of each male and morph by calculating the repeatability of sperm measurements per male and morph, which will be obtained through 1,000 parametric bootstrap iterations [@Stoffel2017].
 - Shall we use discriminant function analyses on the two most different sperm traits to predict the sperm morph?
-- Shall we use multivariate model with all sperm traits as response?
-- Do we need to control for the pedigree, if residuals of the models are randomly distributed? MB thinks, not.
+- Shall we use multivariate model with all sperm traits as a response?
+- Do we need to control for the pedigree, if residuals of the models are randomly distributed, i.e. there is no pedigree structure in residuals?
 - Which packages to use for modeling: [brms](https://mikheyev.github.io/brms-wam/), MCMCglmm, pedigreeMM
-- What is the sound way to control for number of measured sperm per individual - weights? (**Wolfgang?**) 
-- When recording sperm velocity, shall we also make a record in a cellulose solution, which "mimics" conditions in the female reproductive tract?
+- What is the sound way to control for number of measured sperm per individual (in case this is variable) - weights? (**Wolfgang?**) 
+- When recording sperm velocity, shall we also make an additional record in a cellulose solution, which "mimics" conditions within the female reproductive tract?
 
 # TO ADD/SPECIFY
 - section on **Housing** of the birds
-- specification of the heating table and video resolution (**Tomas?**) 
+- specification of the heating table and video resolution (**Tomas**) 
 - videos to accompany the protocols (vas deferens preparation, slide preparation, sperm collection and video recording)
 
 # References
