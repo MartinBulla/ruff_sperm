@@ -194,6 +194,12 @@ To investigate whether sperm morphology explains variation in sperm velocity, we
 
  <span style="color:grey">**THE FOLLOWING IS LIKELY NOT NEEDED:** To evaluate multicollinearity between all main effect predictors, we will estimate their variance inflation factor using the corvif() function [@Zuur2009] in R. A general guideline is that a variance inflation factor larger than 5 or 10 is large, indicating that the model has problems estimating the coefficient. However, this in general does not degrade the quality of predictions. If the VIF is larger than 1/(1-R2), where R2 is the Multiple R-squared of the regression, then that predictor is more related to the other predictors than it is to the response. Thus, if VIF is larger than 5 we can use the model for predictions.</span>
 
+# Proposed time line
+- ongoing - measuring sperm morphology from vas deferens samples
+- May - data collection
+- June - July - photographing and measuring sperm samples, quantifying sperm velocity
+- August - September - analyses and 1st draft
+
 # TO DECIDE
 - Is it possible to add some  of Clemens birds, e.g. faeders?
 - Does it matter whether we let the microscope slides dry at room temperature or whether we heat fix them?
