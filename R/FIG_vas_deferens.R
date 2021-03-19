@@ -289,16 +289,24 @@
     ha[, FlagellumRel_µm := a[Part == 'Flagellum_rel',.(Length_avg)]]
 
 # explore
-  g1 = ggplot(b, aes(x = as.factor(Bird_ID), y = Length_µm)) + facet_wrap(~Part, nrow = 7, scales = 'free') +
-    geom_boxplot() + 
+  b[, order_ := mean(Length_µm), by = Bird_ID]
+
+  b_ = b[Part =='Total']
+  b_[,Bird_ID := reorder(Bird_ID, Length_µm, mean)]
+  b[, Bird_ID := factor(Bird_ID, levels = levels(b_$Bird_ID))]
+ 
+  g = ggplot(b, aes(x = reorder(as.factor(Bird_ID),Length_µm,mean), y = Length_µm)) + facet_wrap(~Part, nrow = 7, scales = 'free') + #x = reorder(as.factor(Bird_ID),Length_µm,mean)
+    geom_boxplot(aes(col = Morph)) + 
     geom_dotplot(binaxis = 'y', stackdir = 'center',
                  position = position_dodge(), col = 'red', fill ='red')+
-    #scale_fill_viridis(discrete=TRUE)+
+    scale_colour_manual(values = colors) + 
+    #scale_color_viridis(discrete=TRUE)+
     xlab('Male ID') +
     theme_bw() +
-    theme(axis.text.x = element_blank(), legend.position = "none")
+    theme(axis.text.x = element_blank())
+    #$, legend.position = "none")
 
-  ggsave('Output/VD_within_male_boxplots.png', width = 10, height = 20, units = 'cm')
+  ggsave('Output/VD_within_male_boxplots_ordered.png', g, width = 20, height = 15, units = 'cm')
   
   
   chart.Correlation(bw[, c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total')], histogram=TRUE, pch=19)
