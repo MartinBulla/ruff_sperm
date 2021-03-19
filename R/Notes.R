@@ -3,4 +3,3 @@
 ·         The sample 1323 had 2 exceptionally long sperm, I measured them just for fun (one was nearly twice the average length!!!), they are not included in the 10 measurements, but added below on the individual sheet for 1323 in case you want to have a look.
 ·         And just out of interest I measured one sample without staining.  Sample 329 (sheet 329 unst).  It is not included in the all sheet.  I couldn’t really discern the acrosomes, so they are included in the head measurements, also the different parts were more difficult to detect clearly so it’s mainly to just look at the overall length.
 ·         I saved each sample in a separate sheet (I find it easier to keep an overview that way) but have put them all together in the first sheet “all”.
- 
