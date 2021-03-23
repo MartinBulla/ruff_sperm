@@ -64,43 +64,34 @@ Code to load tools and prepare data:
 ```
 
 ***
+# Abstract
+Ruff *Calidris pugnax* is a Palearctic lekking shorebird with three strikingly different mating morphs: aggressive ‘independents’, semi-cooperative ‘satellites’ and female-mimic ‘faeders’[@Hogan-Warburg1966; @vanRhijn1991; @Widemo1998; @Jukema2006]. The major differences in body and relative testis size, ornamentation, and mating behaviours of 'satellites' and 'faeders' develop via an autosomal inversion [@Lank1995; @Kupper2015; @Lamichhaney2015]. Whether the 'satellites' and 'faeders' also differ in sperm morphology and velocity has not been investigated. Here we have used a captive breeding ruff population to measure sperm morphology and velocity of the three male morphs. We found
 
+ 
 # Background 
-Ruff *Calidris pugnax* is a lekking shorebird with three strikingly different mating morphs: aggressive ‘independents’, semi-cooperative ‘satellites’ and female-mimic ‘faeders’ [@vanRhijn1991; @Widemo1998; @Jukema2006]. 'Independents' (80 to 95% of the population) are dominant holders of display sites. Satellites (5 to 20%) do not defend display sites, but their presence on the lek assists with female attraction and allows them to 'steal' copulations. 'Faeders' (<1%) mimic females in their plumage and smaller size and also 'steal' copulations. The major differences in body and testis size, ornamentation, and mating behaviours of 'satellites' and 'faeders' develop via an autosomal inversion [@Lank1995; @Kupper2015; @Lamichhaney2015]. Whether the morphs also differ in sperm morphology and velocity has not been investigated. 
+Aggressive 'independents' constitute 80-95% of male ruffs, show spectacular diversity of predominantly dark ornamental plumage, and are dominant holders of display sites on leks [@Hogan-Warburg1966; @vanRhijn1991; @Widemo1998]. Submissive and slightly smaller 'satellites' constitute 5-20% of males, show predominantly white ornamental plumage and do not defend display sites [@Hogan-Warburg1966; @Höglund1989; @vanRhijn1991; @Widemo1998]. 'Independents' behave differently with 'satellites' than they do with other 'independents'. Presence of satellites on the lek assists independents with female attraction and allows satellites to 'steal' copulations [@Widemo1998]. Rare 'faeders' (<1%) mimic females in their plumage and smaller size and attempt rapid copulations (i.e. 'steal' copulations) when females solicit matings from ornamented displaying males [@Jukema2006]. However, how 'faeders' behave in the the wild is largely unknown. On the leg, the dominant 'independents' get multiple copulations and multiple females [@Lank2002; @Vervoort2019]. The likelihood of copulation for other ‘independents’ and ‘satellites’ is driven by the amount of time an individual spends on the lek [@Vervoort2019], whereas 'faeders' have the least copulation opportunity. 
+
+An autosomal inversion is associated with the major differences in body and relative testis size, ornamentation, and mating behaviours of 'satellites' and 'faeders' [@Lank1995; @Kupper2015; @Lamichhaney2015]. In other words, the inversion is linked to how the three morphs invest in the pre-copulatory male-male competition. However, whether the morphs also differ in post-copulatory male-male competition, such as ejaculate volume and sperm density and/or sperm morphology and velocity, is unknown.
+
+We investigated differences in sperm morphology and velocity among the three male ruff morphs. We sampled the sperm from a captive breeding population, maintained since 1985. Adult males were phenotyped for mating behavior ('independent', 'satellite' or 'faeder') and the presence of ornamental plumage (ornamented versus faeder). Some adult females were also phenotyped, with small size indicating carriers of Faeder [@Lank2013] and aggressive behavior following testosterone implantation permitting classification as independents or satellites[@Lank1999]. I IMAGINE THAT RECENTLY WE USE GENETICAL MORPH DETERMINATION, RIGHT?
 
 
 # Research questions 
 1. Do the three ruff morphs differ in the sperm morphology and velocity, as well as in the within- and between-individual variability of the sperm traits?  - see figure 1 [here](https://www.nature.com/articles/s41559-017-0236-1?platform=hootsuite)
 2. Does sperm morphology predict sperm swimming speed? - see figure 2 [here](https://www.nature.com/articles/s41559-017-0236-1?platform=hootsuite)
 
-# Predictions 
+# Predictions
 
-1. Do the three ruff morphs differ in the sperm morphology and velocity, as well as in the within- and between-individual variability of the sperm traits? 
+## 1. Do the three ruff morphs differ in the sperm morphology and velocity?  
 
-We do not expect between-morph differences in total sperm length because in birds sperm length strongly coevolved with the length of female sperm storage tubules [@Briskie1993] and ruffs show no hint of assortative mating by morph. Since males of all three morphs attempt to mate with the same pool of females (**unpublished data**), they should have sperm of similar length. Moreover, all three morphs are under selection to optimize sperm, and a steeper selection gradient in 'faeders' due to its low chance of copulating (**cit**) does not mean that a beneficial mutation enhancing sperm speed will occur there rather than elsewhere. This predictions of “no difference” are mirrored in a recent review (Kustra and Alonzo 2020). Across taxa there are no consistent differences in sperm traits between dominant and sneaker males. Moreover, despite the general expectation that sneaker males should produce sperm that are more competitive (e.g. higher quality or performance), the existing theory does not predict explicitly how sneaker males should differ in sperm traits.
+Mating system of the ruffs appears to be well studied [@Hogan-Warburg1966; @Höglund1989; @vanRhijn1991; @Lank1995; @Kupper2015; @Lamichhaney2015; @Vervoort2019], but rare 'faeders' (female mimics) are tough to observe in the wild, and hence we know little about their behaviour in the wild. For predictions about sperm morphology and velocity based on morph-specific behaviour, we need to know whether the frequency of copulation on the lek is linked to the siring success. Whereas we know that dominant independents get most of the copulations on the lek [@Vervoort2019], we do not know whether females that copulate with faeders also always copulate with other males. In other words, we need to know  whether faeder sperm may experience different level of competition than sperm of other two morphs. Consequently, instead of clear predictions, we provide XX scenarios that we envision for sperm traits among the three morphs.
 
-```{r Predictions,  warning = FALSE, message = FALSE, fig.align="center", fig.width=3, fig.height=3, out.extra='style="float:right; padding:10px"'}
-  set.seed(1)
-  d = data.table(morph = factor(c( rep('independent', 60),
-                                   rep('satelite', 30),
-                                   rep('faeder', 15)
-                                   ), 
-                                levels = c('independent','satelite','faeder')
-                                ),
-                sperm_trait =  c(rnorm(60, mean = 1, sd = 0.5), 
-                                 rnorm(30, mean = 2, sd = 0.5),
-                                 rnorm(15, mean = 3, sd = 0.5) 
-                                 ) 
-                )
-  #dev.new(width = 3.5, height = 3.5)
-  ggplot(d, aes(x = morph, y = sperm_trait, col = morph)) +  
-    geom_jitter() + theme_MB +  theme(legend.position="none") + xlab('Morph') + ylab('Sperm length or relative midpiece length') +
-    scale_colour_manual(values = colors)
- 
-```
-On the other hand, the three morphs may differ in sperm traits, if genes regulating their development reside on the autosomal inversion that is behind the phenotypes of 'satelites' and 'faeders'. Indeed, the inversion contains a gene GAS8 that has been associated with sperm motility, at least in mice [@Yeh2002]. The gene GAS8 lies in a region with the strongest differences between Independents and the other two morphs. Hence, we expect Independents to have a slower sperm then Satelites and Faeders.
+First, we do not expect between-morph differences in total sperm length because in birds sperm length strongly coevolved with the length of female sperm storage tubules [@Briskie1993] and ruffs show no hint of assortative mating by morph. Since males of all three morphs attempt to mate with the same pool of females (**unpublished data**), they should have sperm of similar length. Moreover, all three morphs are under selection to optimize sperm, and a steeper selection gradient in 'faeders' due to its low chance of copulating (**cit**) does not mean that a beneficial mutation enhancing sperm speed will occur there rather than elsewhere. This predictions of “no difference” are mirrored in a recent review (Kustra and Alonzo 2020). Across taxa there are no consistent differences in sperm traits between dominant and sneaker males. Moreover, despite the general expectation that sneaker males should produce sperm that are more competitive (e.g. higher quality or performance), the existing theory does not predict explicitly how sneaker males should differ in sperm traits.
 
-The morphs may also differ in sperm traits if investing in pre-copulatory male-male competition trade-offs with investing in post-copulatory male-male competition. We see gradient in pre-copulatory investment with 'independents' investing the most on the lek and 'faeders' the least (**cit**), i.e. 'faeders' having the lowest frequency and chance of copulations. This gradient in pre-copulatory investment is perhaps mirrored in the post copulatory investment because independents have the smallest and faeders the largest relative (but not absolute) testes size [@Jukema2006; @Kupper2015; and Figure X based on Loveland et al in prep]. Given these differences in frequency and chance of copulation and in testes size, 'faeders' are expected to deliver the largest ejaculates. We then also expect 'faeders' to deliver faster sperm and sperm optimized for speed. Specifically, we predict that 'faeders' have the longest sperm, midpiece and tail or relative midpiece and relative flagellum length (relative to the whole sperm length) and have sperm that is fastest of the three morphs (Figure 1 & 2). As faders invest little in pre-copulatory male-male competintion, we also expect 'faeders' sperm to differ the most from the sperm of 'independents', while we expect 'satelites', who partly invest in pre-copulatory male-male competition, but to a lesser extant than 'independents' [@Vervoort2019], to have intermediate sperm between the two (Figure 1). 
+
+Second, the three morphs may differ in sperm traits, if genes regulating their development reside on the autosomal inversion that is behind the phenotypes of 'satelites' and 'faeders'. Indeed, the inversion contains a gene GAS8 that has been associated with sperm velocity, at least in mice [@Yeh2002]. The gene GAS8 lies in a region with the strongest differences between 'independents' and the other two morphs. Hence, we expect 'independents' to have a slower sperm than 'satellites' and 'faeders'.
+
+Third,the morphs may also differ in sperm traits if investing in pre-copulatory male-male competition trade-offs with investing in post-copulatory male-male competition. We see gradient in pre-copulatory investment with 'independents' investing the most on the lek and 'faeders' the least, i.e. 'faeders' having the lowest frequency and chance of copulations [@Hogan-Warburg1966; @Höglund1989; @vanRhijn1991; @Jukema2006]. This gradient in pre-copulatory investment is perhaps mirrored in the post-copulatory investment because independents have the smallest and faeders the largest relative (but not absolute) testes size [@Jukema2006; @Kupper2015; and Figure 1 based on Loveland et al in prep]. Given these differences in frequency and chance of copulation, 'faeders' are expected to deliver the largest ejaculates with faster sperm and sperm optimized for speed. Specifically, we predict that 'faeders' have the longest sperm, midpiece and tail or midpiece and  flagellum length relative to the whole sperm length and have sperm that is fastest of the three morphs (Figure 2 & 3). As 'faeders' invest little in pre-copulatory male-male competintion, we also expect 'faeders' sperm to differ the most from the sperm of 'independents', while we expect 'satellites', who partly invest in pre-copulatory male-male competition, but to a lesser extant than 'independents' [@Vervoort2019], to have intermediate sperm between the two (Figure 2 & 3). 
 
 ```{r Testes,  warning = FALSE, message = FALSE, fig.align="center", fig.width=3, fig.height=4}
   d = data.table(read_excel(here::here('Data/GSI_for_Liam.xlsx'), sheet = 1))#, range = "A1:G161"))
@@ -130,20 +121,34 @@ The morphs may also differ in sperm traits if investing in pre-copulatory male-m
   grid.draw(rbind(ggplotGrob(g1), ggplotGrob(g2), size = "last"))
  
 ```
+**Figure 1** | Morph-specific testes size.
 
-NOT SURE WE CAN MAKE A WITHIN SPECIES CASE OUT OF THIS: The three morphs may also differ in sperm traits because sperm length and swimming speed as well as investment in sperm numbers (testes size) is generally related to the intensity of sperm competition [CIT]. Indeed, 'independents' have relatively smaller testes then 'faeders' and 'satelites' [@Kupper2015]. In contrast, dominant 'independents' on the lek obtain the highest number of copulations, the likelihood of copulation for other ‘independents’ and ‘satellites’ is driven by the amount of time an individual spends on the lek [@Vervoort2019].  
+```{r Predictions,  warning = FALSE, message = FALSE, fig.align="center", fig.width=3, fig.height=3}
+  set.seed(1)
+  d = data.table(morph = factor(c( rep('independent', 60),
+                                   rep('satelite', 30),
+                                   rep('faeder', 15)
+                                   ), 
+                                levels = c('independent','satelite','faeder')
+                                ),
+                sperm_trait =  c(rnorm(60, mean = 1, sd = 0.5), 
+                                 rnorm(30, mean = 2, sd = 0.5),
+                                 rnorm(15, mean = 3, sd = 0.5) 
+                                 ) 
+                )
+  #dev.new(width = 3.5, height = 3.5)
+  ggplot(d, aes(x = morph, y = sperm_trait, col = morph)) +  
+    geom_jitter() + theme_MB +  theme(legend.position="none") + xlab('Morph') + ylab('Sperm length or relative midpiece length') +
+    scale_colour_manual(values = colors)
+ 
+```
+**Figure 2** | Predicted relationship between morph type and sperm traits.
 
-Consequently, we predict the smallest coefficient of variation in the sperm morphometry **?and velocity?** in 'faeders' as within- and between-individual variability in sperm traits is lower in species with higher sperm competition [@Kleven2008; @Lifjeld2010]. This expectation is based on the assumption that the sperm production is better optimized and less error prone in 'faeders' than in the other two morphs. Such optimizations shall increase 'faeders' chances of inseminating a female despite 'faeders' only sporadic chances to copulate [**CIT NEEDED or DELETE**]. 
+Fourth, the morphs may also differ in sperm traits if the morphs differ in the intensity of sperm competition. Between species, sperm length, coefficient of variation in sperm length, and swimming speed as well as investment in sperm numbers (testes size) is generally related to the intensity of sperm competition [@Kleven2008; @Lifjeld2010] ADD CIT. Whether intensity of sperm competition may differ among the three morphs of a single species is unclear. We could imagine a scenario where females that copulate with 'faeders' always copulate with other males (including males of other morphs) whereas females that copulate with 'independent' tend to copulate only with that male (or morph). Whereas all individuals (regardless of morph) will benefit from having competitive sperm, 'faeders' sperm might be under stronger selection. Also, given the rarity of 'faeders' and of their copulations, the sperm of 'independents' and 'satellites' may rarely compete with sperm of 'faeders'. Thus, if 'faeder' sperm would evolve a competitive advantage, the other two morphs may not "follow" upon such advantage. If so, we predict that 'faeders' will have the fastest sperm and sperm morphology optimized for speed (the longest sperm with longest midpiece, tail and hence flagellum). Consequently, we also expect the smallest coefficient of variation in the sperm morphometry as within- and between-individual variability in sperm traits is lower in species with higher sperm competition [@Kleven2008; @Lifjeld2010]. This expectation is based on the assumption that the sperm production is better optimized and less error prone in 'faeders' than in the other two morphs. Such optimizations shall increase 'faeders' chances of inseminating a female despite 'faeders' only sporadic chances to copulate. 
 
-We have good reason to infer that the average number of sperm delivered per copulation will differ among morphs.  Based on both gonad size [@Jukema2006; @Kupper2015] and multiple copulation opportunity frequencies in the wild (**cit**), 'faeders' should deliver the largest sperm packages per copulation (largest gonads, least copulation opportunity) and independents the smallest (smallest gonads, multiple copulations and multiple females).  Satellites sit more towards faeders than independents with respect to gonad volume and copulation opportunity frequency. 
-Consequently: perhaps sperm do systematically face different morph-related competitive environments within the ejaculate of a single male when popped into females.  And yes, there are times when females mate successively with multiple males, which we would also create larger sperm volume environments for competition for all morphs.
-Sperm are initially racing towards female storage tubules primarily competing with others from the same male, and we don't know how limiting these tubules may be.  Subsequent to their release from tubules, they will more often be in competition with sperm from different males, but the 'volume' or number of competitors may be similar per fertilization, at least during most of the season.  At the ovum level, their success depends on both their arrival timing and their ability to penetrate membranes.  Are there cost benefit tradeoffs between these characteristics that would trace back to morph specific swimming speed performance differences?.   It is not obvious to me why that should be so at this stage. .
+## 2. Does sperm morphology predict sperm swimming speed?
 
-
-2. Does sperm morphology predict sperm swimming speed?
-Sperm morphology, specifically long sperm, sperm with short heads, and long midpiece (relative to overall sperm length), has been positively associated with sperm swimming speed. We thus predict that longer sperm and/or sperm with longer head, and/or sperm with relatively longer midpiece will swim faster.
-
-**Figure 1** | Predicted relationship between morph type and sperm trait.
+Sperm morphology, specifically long sperm, sperm with short heads, and long midpiece (relative to overall sperm length), has been positively associated with sperm swimming speed [**CIT**]. We thus predict that longer sperm and/or sperm with longer head, and/or sperm with relatively longer midpiece will swim faster.
 
 ```{r Predictions2,  warning = FALSE, message = FALSE, fig.align="center", fig.width=4, fig.height=4}
   set.seed(1)
@@ -186,7 +191,7 @@ Sperm morphology, specifically long sperm, sperm with short heads, and long midp
       col =  colors, pch = 16,xpd = TRUE, horiz = TRUE,inset = -0.125, bty = "n", cex = 0.7)
  
 ```
-**Figure 2** | Predicted relationship between morph type and sperm traits.
+**Figure 3** | Predicted relationship between morph type and sperm traits.
 
 
 # Methods #
@@ -194,6 +199,8 @@ Sperm morphology, specifically long sperm, sperm with short heads, and long midp
 In 2018, we collected and stored in ~5% formalin the vas deferens from 15 sacrificed males (5 per morph) from the **Simon Fraser** University **colony**. The colony was founded with 110 ruffs hatched from wild eggs collected in Finland in 1985, 1989 and 1990 plus two 'faeder' males from the Netherlands in 2006 [@Lank1995; @Lank2013]. 
 
 In 2021, we plan to collect sperm of all males from the **Max Planck colony** (`r nrow(s[morph == 'I'])` 'independents', `r nrow(s[morph == 'S'])` 'satelites', `r nrow(s[morph == 'F'])+4` 'faeders'; of which `r nrow(sv)` males were sampled already in Vancouver: `r nrow(sv[morph == 'r'])`  'independents', `r nrow(sv[morph == 's'])` 'satelites' and `r nrow(sv[morph == 'f'])` 'faeders'). The colony was founded in 2018 from the Simon Fraser colony. 
+
+## Housing - Needed?
 
 ## Sperm sampling
 Compared to passerines, shorebirds do not have a cloaca protuberance. Thus, abdominal massage and cloacal lavage method of sperm collection (e.g. @Knief2017 ; see the [specific protocol](https://raw.githack.com/MartinBulla/ruff_sperm/main/Protocols/protocol_sperm.html)) often lead to unclean samples contaminated by excrements. Such samples are then unsuitable for measuring sperm velocity. Hence, in 2021 along with abdominal massage and cloacal lavage, we plan to collect sperm by electro‐stimulation [@Lierz2013]. The length and diameter of the electro-stimulation probe, as well as the electric current and the number of electric impulses will be adapted to the sampled individuals. The electro-stimulation should result in clean sperm samples suitable for velocity measurements. 
@@ -205,7 +212,7 @@ From each sperm sample, we will pipet ~10μl onto a microscopy slide, let it dry
 
 We will inspect the slides with a light microscope ('Zeiss Axio Imager.M2') under 200x magnification.  To aid distinction of sperm parts, dried slides will be stained with Hoechst 33342 (which identifies the sperm nucleus) and Mitotracker Green FM (which identifies sperm midpiece) not earlier than 48h before photographing. For step by step slide preparation protocol see [here](https://raw.githack.com/MartinBulla/ruff_sperm/main/Protocols/protocol_sperm.html).
 
-```{r Pic1, echo=FALSE, fig.cap="Picture 1 | Ruff sperm blue-stained nucleus by Hoechst 33342 and green-stained midpiece by Mitotracker Green FM", echo=FALSE}
+```{r Pic1, echo=FALSE, fig.cap="**Picture 1** | Ruff sperm blue-stained nucleus by Hoechst 33342 and green-stained midpiece by Mitotracker Green FM", echo=FALSE}
 knitr::include_graphics(here::here("Pictures/Pic1_staining_example.jpg"))
 ```
 For each sample, we will photograph at least 10 intact normal-looking spermatozoa, with a 12 megapixel (4250 × 2838) digital camera ('Zeiss Axiocam 512 color' with pixel size of 3.1μm × 3.1μm). Ten sperm per male were previously used to investigate the relationship between coefficient of variation in sperm trait and sperm competition [@Kleven2008; @Lifjeld2010]. For each sperm, we will measure the length of the acrosome, the nucleus, the midpiece and the tail to the nearest 0.1μm using the open source software [ImageJ](https://imagej.nih.gov/ij/) (for a detailed sperm measuring protocol see [here](https://www.dropbox.com/s/ouqfqih4gzx6rq5/Protocol_imageJ_sperm_measuring_manual.docx?dl=0)). To minimize observer error, all measurements will be taken by one person (KT), who will be blind to the individual morph and will measure the sperm from all morphs and samples in a random order (NOTE THAT THIS IS NOT THE CASE FOR THE VAS DEFERENS).
@@ -217,7 +224,7 @@ Each measured sperm and sperm part will be numbered and referenced in the databa
 In addition, we will scan the slides for abnormal sperm by counting 100 sperms and noting how many are abnormal and in what manner
 
 ## Sperm velocity
-For each sperm sample we will record sperm velocity for approximately 45s in eight different fields of the slide under a 100x magnification using a phase contrast and a digital camera (UI-1540-C, Olympus) mounted on a microscope (CX41, Olympus) fitted with a thermal plate (Tokai Hit, Tokai Hit Co., LtD., Japan) kept at a constant temperature of 40°C. The videos will be recorded at 25 frames per second. A single person will analyze each recorded field using the CEROS computer-assisted sperm analysis system (Hamilton Thorne Inc., Beverly, Massa- chusetts, USA), visually inspect the tracked objects and exclude non-sperm objects and static spermatozoa from the analysis [@Laskemoen2010; @Cramer2016; @Opatová2016]. The dilution medium does not contain any spermatozoa attractants to guide the spermatozoa towards one direction; thus, we will use  curvilinear velocity rather than straight-line velocity as our measurement of sperm swimming speed [@Laskemoen2010]. We will report how many sperm cells per sperm sample will be recorded (median, 95%CI, range) and - if necessary - control for the (log-transformed) number of measured sperm cells per sample. 
+For each sperm sample we will record sperm velocity for approximately 45s in eight different fields of the slide under a 100x magnification using a phase contrast and a digital camera (UI-1540-C, Olympus) mounted on a microscope (CX41, Olympus) fitted with a thermal plate (Tokai Hit, Tokai Hit Co., LtD., Japan) kept at a constant temperature of 40°C. The videos will be recorded XX SECONDS AFTER SAMPLE COLLECTION at 25 frames per second. A single person will analyze each recorded field using the CEROS computer-assisted sperm analysis system (Hamilton Thorne Inc., Beverly, Massa- chusetts, USA), visually inspect the tracked objects and exclude non-sperm objects and static spermatozoa from the analysis [@Laskemoen2010; @Cramer2016; @Opatová2016]. The dilution medium does not contain any spermatozoa attractants to guide the spermatozoa towards one direction; thus, we will use  curvilinear velocity rather than straight-line velocity as our measurement of sperm swimming speed [@Laskemoen2010]. We will report how many sperm cells per sperm sample will be recorded (median, 95%CI, range) and - if necessary - control for the (log-transformed) number of measured sperm cells per sample. 
 
 We will test the method beginning of May and adjust it if necessary. Passerine sperm move straight, by turning like a screw around their axis (with their screw shaped heads). It is uncertain how sperm of ruffs move. If we find the above method problematic, we adjust the method, e.g.  use different (deeper) size of Leja slides or sperm attractants. 
 
@@ -247,21 +254,14 @@ We will investigate whether the sperm traits are representative of each male and
 - August - September - analyses and 1st draft
 
 # TO DECIDE
-- Predictions
-    - no effect - Wolfgang's argument - all 3 morphs are under selection to optimize sperm, and a steeper selection gradient in Faeders does not mean that a beneficial mutation will occur there rather than elsewhere. Dov's argument - We would not expect differences in total length because birds have a strong coevolution of sperm lengths and female sperm storage tubule lengths.  Ruffs show no hint of assortative mating by morph.  Since males of all three morphs attempt to mate with the same pool of females, they should have similar length sperm.
-- Shall we add the good 2018 samples, especially from faeders?
-
 - Does it matter whether we let the microscope slides dry at room temperature or whether we heat fix them?
-- Shall we use average sperm measurements in all analyses, given that for velocity-morphology relationship we will use average values?
 - What sperm traits to use? Total length with/without acrosome, acrosome, head (acrosome + nucleus), midpiece, tail, flagelum (midpiece + tail). BART: total length, head, midpiece and tail. Wolfi: also flagellum
-- Shall we investigate whether the sperm measurements are representative of each male and morph by calculating the repeatability of sperm measurements per male and morph, which will be obtained through 1,000 parametric bootstrap iterations [@Stoffel2017]. BART: Yes.
 - Shall we use discriminant function analyses on the two most different sperm traits to predict the sperm morph? BART: Perhaps use all sperm traits, calculate PCA and plot PC1 vs PC2 with morph in different colours? Not sure this is necessary, but might be a nice way to illustrate the differences (if any)? WOLFGANG: As a note, DFA will always give stronger separation than PCA. PCA is likely to be unimpressive, and DFA is a bit HARKing, as it also separates groups (to some extent) when there is no true difference (e.g. randomly generated data).
 - Do we need to control for the pedigree, if residuals of the models are randomly distributed, i.e. there is no pedigree structure in residuals? WOLFGANG:This is a matter of heritability. I would say that the pedigree is important to control for analyses of sperm morphology, but not velocity or CV.
 - Which packages to use for modeling: [brms](https://mikheyev.github.io/brms-wam/), MCMCglmm, pedigreeMM
 - When recording sperm velocity, shall we also make an additional record in a cellulose solution - a viscous environment, which "mimics" conditions within the female reproductive tract [@Schmoll2020]? BART: No, if it compromises number of sampled individuals. a viscous environment; TOM: If we proceed fast with basic measurements. If cellulose treatment slows us significantly, I would skip it at least for the first year
 
 # TO ADD
-- section on **Housing** of the birds
 - videos to accompany the protocols (vas deferens preparation, slide preparation, sperm collection and video recording)
 
 # DECIDED
