@@ -189,6 +189,14 @@
   v = data.table(read_excel('Data/ruff_vas-deferens.xlsx', sheet = 1))#, range = "A1:G161"))
   vv = v[,.(ID,Morph)]
 
+  r = data.table(read_excel('Data/ruff_sperm_2021_test Maggie.xlsx', sheet = 1))#, range = "A1:G161"))
+  r[,Length_µm :=as.character(Length_µm) ]
+  stri_sub(r$Length_µm,nchar(r$Length_µm)-2, nchar(r$Length_µm)-3) = "."
+  r[,Length_µm :=as.numeric(Length_µm) ]
+  r[Part == 'Mid piece', Part := 'Midpiece']
+  r[Part == 'Flagellum', Part := 'Tail']
+  r[Part == 'Head', Part := 'Nucleus']
+
   d = data.table(read_excel('Data/VD measurements feb_2021.xlsx', sheet = 1))#, range = "A1:G161"))
   d[,Length_µm :=as.character(Length_µm) ]
   stri_sub(d$Length_µm,nchar(d$Length_µm)-2, nchar(d$Length_µm)-3) = "."
@@ -438,7 +446,6 @@
     ylab('Length [µm]') +
     theme_bw() +
     theme(axis.title.x = element_blank(), axis.text.x = element_blank(), legend.position = "none")    
-
 # MORPH differences TRUE
   # distributions 
       g1 =  # dummy to extract variables for median calculation
@@ -1000,4 +1007,5 @@
         plot.title = element_text(size=9)
         ) #panel.spacing.y = unit(0, "mm")) #, 
   ggsave('Output/VD_stainedVSunstained.png')
+
 # End
