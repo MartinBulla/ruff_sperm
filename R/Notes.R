@@ -1,3 +1,11 @@
+15 sobota vecer, 16 samplovat, nebo
+16 nedele prijezd, 17 sample, 18 odjezd
+7-8 June
+
+TOM Repeatability
+- 2 sperm from 75 individuals
+- repeatability 93-98% 
+
 ·         I measured 13 samples from 15.  I couldn’t measure 2 samples, 1670 and 1306.  There were few sperm in the samples and they were very thin, mostly broken and didn’t take up the stain very well.  In particular the heads wouldn’t stain which indicates no DNA.  I don’t know why.  I tried a few times with these samples and always got the same result.
 ·         Sample 1650 was very small and unlike the other samples – it didn’t look like a VD tubule.  I did manage to get a few sperm though, but I had to scan two entire slides to find about 20 good sperm (from a good sample I get that many from a small patch).  The sperm looked good though and no different from the other samples.
 ·         The sample 1323 had 2 exceptionally long sperm, I measured them just for fun (one was nearly twice the average length!!!), they are not included in the 10 measurements, but added below on the individual sheet for 1323 in case you want to have a look.
