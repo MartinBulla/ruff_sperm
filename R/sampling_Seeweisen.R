@@ -15,7 +15,7 @@
   m = data.table(read_excel('Data/ruff_males_Seewiesen.xlsx', sheet = 1))#, range = "A1:G161"))
   m[, hatch_year:=as.numeric(substr(Hatch_date,1,4)) ]
   m[, age := 2021-hatch_year]
-  d = data.table(read_excel('Data/sperm_sampling_ruffs.xlsx', sheet = 1))#, range = "A1:G161"))
+  d = data.table(read_excel('Data/sampling_2021-05-03_05.xlsx', sheet = 1))#, range = "A1:G161"))
   unique(d$sperm)
   unique(d$recording)
   x = d[sperm %in% c('sperm', "super","yes","ok", 'some', 'few','moderate'), DB_ID]
@@ -27,6 +27,7 @@
   mx$morph = m$Morph[match(mx$DB_ID, m$Ind_ID)]
   mx
   nrow(mx)
+  write.csv(file = 'Data/to_sample.csv', mx, row.names = FALSE)
 
   n = m[!Ind_ID%in%x]
   nrow(n) 
