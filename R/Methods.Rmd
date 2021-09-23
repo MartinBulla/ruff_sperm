@@ -1,0 +1,124 @@
+---
+title: "METHODS for 'ruff sperm' project"
+author: "Martin Bulla, Wolfgang Forstmeier, Katrin Martin, Kim Teltscher, ?Jasmine L Loveland?, Clemens Küpper, Michael Lierz, Tomas Albrecht, David B Lank & Bart Kempenaers"
+date: "`r Sys.time()`"
+output: 
+    html_document:
+        toc: true
+        toc_float: true
+        toc_depth: 5
+        code_folding: hide
+bibliography: ruff_sperm.xml
+link-citations: yes
+---
+<style type="text/css">
+
+td {  /* Table  */
+  font-size: 12px;
+}
+h1.title {
+  font-size: 32px;
+}
+h1 { /* Header 1 */
+  font-size: 24px;
+}
+h2 { /* Header 2 */
+    font-size: 20px;
+    
+}
+h3 { /* Header 3 */
+  font-size: 16px;
+
+}
+h4 { /* Header 4 */
+  font-size: 16px;
+}
+code.r{ /* Code block */
+    font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-size: 10px;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+***
+
+Code to load tools and prepare data:  
+```{r tools, results="hide", warning = FALSE, message = FALSE}
+  require(here)
+  source(here::here('R/tools.R'))
+  colors <- c("#999999", "#E69F00", "#56B4E9") #viridis(3)
+
+  v = data.table(read_excel(here::here('Data/ruff_sperm_Vancouver_2018.xlsx'), sheet = 1))
+  v = v[!is.na(sample_ID)]
+  x = v[!duplicated(bird_ID)]
+  
+  s = data.table(read_excel(here::here('Data/ruff_males_Seewiesen.xlsx'), sheet = 1))
+  setnames(s, 'Morph', 'morph') 
+  sv = x[bird_ID%in%s$Ind_ID]
+
+```
+
+***
+
+## Individuals 
+In 2018, we collected and stored in ~5% formalin the vas deferens from 15 sacrificed males (5 per morph) from the **Simon Fraser** University **colony**. The colony was founded with 110 ruffs hatched from wild eggs collected in Finland in 1985, 1989 and 1990 plus two 'faeder' males from the Netherlands in 2006 [@Lank1995; @Lank2013]. 
+
+In 2021, we attempted twice (on May 3-6 and June 7-8) to collect sperm of all males from the **Max Planck colony** (`r nrow(s[morph == 'I'])` 'independents', `r nrow(s[morph == 'S'])` 'satelites', `r nrow(s[morph == 'F'])+4` 'faeders'; of which `r nrow(sv)` males were sampled already in Vancouver: `r nrow(sv[morph == 'r'])`  'independents', `r nrow(sv[morph == 's'])` 'satelites' and `r nrow(sv[morph == 'f'])` 'faeders'). The colony was founded in 2018 from the Simon Fraser colony. 
+
+## Housing - Needed?
+
+## Sperm sampling
+Compared to passerines, shorebirds do not have a cloaca protuberance. Thus, abdominal massage and cloacal lavage method of sperm collection (e.g. @Knief2017 ; see the [specific protocol](https://raw.githack.com/MartinBulla/ruff_sperm/main/Protocols/protocol_sperm.html)) often lead to unclean samples contaminated by excrements. Such samples are then unsuitable for measuring sperm velocity. Hence, in 2021 along with abdominal massage and cloacal lavage, we attempted to collect the sperm by electro‐stimulation [@Lierz2013]. The length and diameter of the electro-stimulation probe, as well as the electric current and the number of electric impulses was adapted to the sampled individuals. However, the electro-stimulation did not produce cleaner sperm samples suitable for velocity measurements. 
+
+The morphs were sampled in a haphazard order to avoid temporal trends in morph sampling. In other words, all males of one morph were not sampled at the same time. Sperm was pipetted from the cloaca (~0.5–3μl) and immediately diluted in a preheated (40°C) Dulbecco’s Modified Eagle’s Medium (Advanced D-MEM, Invitrogen, USA). For the velocity measurements, an aliquot was pipetted onto a standard 20μm two-chamber count slide (Leja, The Netherlands) placed on a thermal plate (Tokai Hit, Tokai Hit Co., LtD., Japan) kept at 40 °C. For the morphology measurements, an aliquot was pipetted onto a microscopy slide and the rest of the sperm sample fixed in 100μl ~5% formalin solution.
+
+## Sperm morphometry
+From each sperm sample, we will pipet ~10μl onto a microscopy slide, let it dry at room temperature, and - in case of formalin-fixed samples - wash the slide gently under  distilled water to wash away the dried formalin and phosphate-buffered saline solution. Sperm from the vas deferens will be first extracted by cutting a piece from the middle of the tubules, plucking apart the tissue with curved extraction forceps to release the sperm, and washing away the sperm with the phosphate phosphate-buffered saline solution. 
+
+We will inspect the slides with a light microscope ('Zeiss Axio Imager.M2') under 200x magnification.  To aid distinction of sperm parts, dried slides will be stained with Hoechst 33342 (which identifies the sperm nucleus) and Mitotracker Green FM (which identifies sperm midpiece) not earlier than 48h before photographing. For step by step slide preparation protocol see [here](https://raw.githack.com/MartinBulla/ruff_sperm/main/Protocols/protocol_sperm.html).
+
+```{r Pic1, echo=FALSE, fig.cap="**Picture 1** | Ruff sperm blue-stained nucleus by Hoechst 33342 and green-stained midpiece by Mitotracker Green FM", echo=FALSE}
+knitr::include_graphics(here::here("Pictures/Pic1_staining_example.jpg"))
+```
+For each sample, we will photograph at least 10 intact normal-looking spermatozoa, with a 12 megapixel (4250 × 2838) digital camera ('Zeiss Axiocam 512 color' with pixel size of 3.1μm × 3.1μm). Ten sperm per male were previously used to investigate the relationship between coefficient of variation in sperm trait and sperm competition [@Kleven2008; @Lifjeld2010]. For each sperm, we will measure the length of the acrosome, the nucleus, the midpiece and the tail to the nearest 0.1μm using the open source software [Sperm Sizer 1.6.6](https://github.com/wyrli/sperm-sizer)[@McDiarmid2021] (for a detailed sperm measuring protocol see [here](https://www.dropbox.com/s/zhup4h03pm9mv7l/Protocol_measuring-with_SpermSizer_mod-with-GIMP.docx?dl=0)). To minimize observer error, all measurements will be taken by one person (KT), who will be blind to the individual morph and will measure the sperm from all morphs and samples in a random order (NOTE THAT THIS WAS NOT THE CASE FOR THE ~130 VAS DEFERENS SPERM CELLS MEASURED IN IMAGEJ - shall we remeasure those in Sperm Sizer given that in IMAGEJ the repeatability was low and tail was measured differently?). Each measured sperm and sperm part is exported as a picture and referenced in the database.
+
+We will calculate total sperm length as the sum of all parts, head length as the sum of acrosome and nucleus length, and flagellum length as the sum of midpiece and tail length. We will compute coefficients of variation for each trait (CV = [SD/mean]) both within males and between males of each morph. If we are unable to measure 10 sperm for all males, we will correct the coefficients of variation for variation in sample size (CVadj = [1 + 1/(4n)]*CV; @Sokal1981). 
+
+
+WAS ORIGINALLY INCLUDED:In addition, we will scan the slides for abnormal sperm by counting 100 sperms and noting how many are abnormal and in what manner. ARE WE STILL DOING THIS?
+
+## Sperm velocity
+For each sperm sample we will immediately record sperm velocity for approximately 45s in eight different fields of the slide under a 100x magnification using a phase contrast and a digital camera (UI-1540-C, Olympus) mounted on a microscope (CX41, Olympus) fitted with a thermal plate (Tokai Hit, Tokai Hit Co., LtD., Japan) kept at a constant temperature of 40°C. The videos will be recorded at 25 frames per second. A single person will analyze each recorded field using the CEROS computer-assisted sperm analysis system (Hamilton Thorne Inc., Beverly, Massa- chusetts, USA), visually inspect the tracked objects and exclude non-sperm objects and static spermatozoa from the analysis [@Laskemoen2010; @Cramer2016; @Opatová2016]. The dilution medium does not contain any spermatozoa attractants to guide the spermatozoa towards one direction; thus, we will use  curvilinear velocity rather than straight-line velocity as our measurement of sperm swimming speed [@Laskemoen2010]. We will report how many sperm cells per sperm sample will be recorded (median, 95%CI, range) and - if necessary - control for the (log-transformed) number of measured sperm cells per sample. 
+
+Although passerine sperm move straight, by turning like a screw around their axis (with their screw shaped heads), it was uncertain how sperm of ruffs move. We thus also tested whether ruff sperm moves differently in different (deeper) size of Leja slides (ADD THE PRODUCT NUMBER). Moreover, we also record velocity of five zebra finch males, which we used as a control for comparison with the ruff sperm velocity recordings.   
+
+## Inbreeding
+Because our sperm samples came from males bred in captivity, we expected higher levels of inbreeding compared with males from wild populations. In birds and mammals (but not in insects) inbred males have a higher proportion of abnormal sperm and lower sperm velocity than outbred males [@Gomendio2000; @Heber2013; @Ala-Honkola2013; @Opatová2016]. Thus, our sperm velocity measurements may not reflect sperm velocity of wild ruffs. However, there is no evidence that the morphology of normal‐looking sperm (e.g., length, coefficient of variation) differs between inbred and outbred males [@Mehlis2012; @Ala-Honkola2013; @Opatová2016]. Based on these studies, we assume that our measurements reflect the variation in sperm morphology observed in the wild ruffs. Nevertheless, we know the relatedness of individuals within our population (pedigree) and had estimate inbreeding from microsatellite markers (CAN WE STILL DO THIS?). Hence, we investigated whether the variation in inbreeding and genetic diversity was linked to the sperm traits and if so attempted to control for it in our models. Similarly, if we find between-morph differences in sperm traits, we will investigate whether such differences might have occurred by chance due to population bottlenecks.
+
+
+## Statistical analyses
+All analyses were performed in R [@R-Core-Team2020] using lmer() and glmer() functions of the lme4 package to fit linear and generalized linear mixed-effects models, and - if necessary - one of the package for fitting the pedigree structure as a random effect (e.g. [brms](https://mikheyev.github.io/brms-wam/), MCMCglmm, pedigreeMM). We estimated the variance explained by the fixed effects of our mixed-effects models as marginal R2-values, using the r.squaredGLMM() function of the MuMIn package (v1.15.6). Model fits were visually validated (by qq-plots of residuals and plots of residuals against fitted values). To avoid unconscious data dragging, we first analyzed the data on sperm traits blind to the males morphs. Specifically, we first randomly assigned male morphs to the measurements, explored such data and finalized the analyze using such data. Only then we run the analyses with true assignment of the morphs. We report all results, all data exclusions, all manipulations and all measurements from this study at the [GitHub repository](https://github.com/MartinBulla/ruff_sperm). Sample sizes reflect the maximum available data. No data selection has been done conditional on the outcome of statistical tests. 
+
+In general, we fitted two sets of linear models. A first set of models had as a response variable the raw sperm trait measurements and was controlled for multiple measurements per male by fitting male identity as a random effect. A second set of models had average sperm trait per male as a response and - if necessary - was controlled for the number of sampled sperm per individual (N) by specifying a weights term as sqrt(N-3)(*cit needed*). Note that we aimed to keep the N constant. For each morph, we will exclude individuals with <10 sperm, as long as these represent <5% of individuals sampled within each morph. MB THE FIRST SET OF MODLES IS RATHER COMPLEX (if pedigree is used), THAT IS WHY I PROPOSE ALSO THE SIMPLER AVERAGE VARIANT. THE AVERAGE VARIANT WILL ALSO CORRESPOND WITH MODELS FOR VELOCITY and CV. HOWEVER, IF THIS MAKES THINGS TO COMPLICATED, WE CAN RUN JUST THE FIRST SET.
+
+To investigate whether sperm traits differ between the morphs, we fitted a model for each sperm trait separately, with the male morph (three-level factor) as an explanatory variable, controlling for the aviary, in which an individual is housed (aviary ID), and - if necessary - controlling for the pedigree structure.
+
+To investigate whether sperm morphology explains variation in sperm velocity, we will first fit a linear model with average velocity per male as the dependent variable, and with male-average total sperm length, head (*acrosome + nucleus*), midpiece and tail length (**?or rather flagelum - midpiece+tail?**), as well as their squared terms (after mean-centering) and all two-way interactions between the three linear terms, as explanatory variables. If necessary, we will control for a pedigree structure. In case, some of the sperm traits substantially correlate (Pearson's r>0.6), we will use only one of the correlated traits. We will then investigate whether predicted sperm velocity corresponds with observed sperm velocities. 
+
+We will investigate whether the sperm traits are representative of each male and morph by calculating the repeatability of sperm measurements per male and morph, which will be obtained through 1,000 parametric bootstrap iterations [@Stoffel2017].
+
+
+# TO DECIDE
+- Shall we use discriminant function analyses on the two most different sperm traits to predict the sperm morph? BART: Perhaps use all sperm traits, calculate PCA and plot PC1 vs PC2 with morph in different colours? Not sure this is necessary, but might be a nice way to illustrate the differences (if any)? WOLFGANG: As a note, DFA will always give stronger separation than PCA. PCA is likely to be unimpressive, and DFA is a bit HARKing, as it also separates groups (to some extent) when there is no true difference (e.g. randomly generated data).
+- Do we need to control for the pedigree, if residuals of the models are randomly distributed, i.e. there is no pedigree structure in residuals? WOLFGANG:This is a matter of heritability. I would say that the pedigree is important to control for analyses of sperm morphology, but not velocity or CV.
+
+# TO ADD
+- videos to accompany the protocols (vas deferens preparation, slide preparation, sperm collection and video recording)
+
+
+# References
