@@ -105,11 +105,56 @@
     geom_point() + 
     stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1)
 
-  
+  # velocity ~ N
+    g1 = 
+    ggplot(d,aes(x = motileCount, y = VCL, col = Morph)) + 
+      geom_point(pch = 21) + 
+      stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1, se = FALSE)+
+      ylab('Velocity μm/s') + 
+      ylim(c(0,70)) + 
+      ggtitle('Curvilinear velocity') +
+      facet_wrap(~Morph, ncol = 1)  +
+      theme_bw() +
+      theme(legend.position = "none",
+         plot.title = element_text(size=9, hjust = 0.5))
+    
+    g2 = 
+    ggplot(d,aes(x = motileCount, y = VAP, col = Morph)) + 
+      geom_point(pch = 21) + 
+      stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1, se = FALSE)+
+      ylim(c(0,70)) +
+      ggtitle('Average-path velocity') + 
+      facet_wrap(~Morph, ncol = 1)  +
+      theme_bw() +
+      theme(legend.position = "none",
+          plot.title = element_text(size=9, hjust = 0.5),
+          axis.title.y = element_blank(), 
+          axis.text.y = element_blank())
+    
+    g3 =  
+    ggplot(d,aes(x = motileCount, y = VSL, col = Morph)) + 
+      geom_point(pch = 21) + 
+      stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1, se = FALSE) +
+      ylim(c(0,70)) + 
+      ggtitle('Straight-line velocity') +
+      facet_wrap(~Morph, ncol = 1)  +
+      theme_bw() +
+      theme(legend.position = "none",
+          plot.title = element_text(size=9, hjust = 0.5),
+          axis.title.y = element_blank(), 
+          axis.text.y = element_blank())
+
+    grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "first"))
+    gg1 <- ggplotGrob(g1)
+    gg2 <- ggplotGrob(g2) 
+    gg3 <- ggplotGrob(g3) 
+    ggsave('Output/Motility-SpermN.png',cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
+# velocity ~ log(N)       
   g1 = 
   ggplot(d,aes(x = motileCount, y = VCL, col = Morph)) + 
     geom_point(pch = 21) + 
-    stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1, se = FALSE)+
+    stat_smooth(method = "lm",size = 1, se = FALSE)+
+    scale_x_continuous(trans='log10')+
     ylab('Velocity μm/s') + 
     ylim(c(0,70)) + 
     ggtitle('Curvilinear velocity') +
@@ -121,7 +166,8 @@
   g2 = 
   ggplot(d,aes(x = motileCount, y = VAP, col = Morph)) + 
     geom_point(pch = 21) + 
-    stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1, se = FALSE)+
+    stat_smooth(method = "lm",size = 1, se = FALSE)+
+    scale_x_continuous(trans='log10')+
     ylim(c(0,70)) +
     ggtitle('Average-path velocity') + 
     facet_wrap(~Morph, ncol = 1)  +
@@ -134,7 +180,8 @@
   g3 =  
   ggplot(d,aes(x = motileCount, y = VSL, col = Morph)) + 
     geom_point(pch = 21) + 
-    stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1, se = FALSE) +
+    stat_smooth(method = "lm",size = 1, se = FALSE)+
+    scale_x_continuous(trans='log10')+
     ylim(c(0,70)) + 
     ggtitle('Straight-line velocity') +
     facet_wrap(~Morph, ncol = 1)  +
@@ -148,9 +195,8 @@
   gg1 <- ggplotGrob(g1)
   gg2 <- ggplotGrob(g2) 
   gg3 <- ggplotGrob(g3) 
-  ggsave('Output/Motility-SpermN.png',cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
+  ggsave('Output/Motility-logSpermN.png',cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
      
-
 # TEST Morph-blind
     densityplot(d$VCL)
     d[VCL<40]
