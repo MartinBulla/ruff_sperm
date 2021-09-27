@@ -65,19 +65,19 @@ Code to load tools and prepare data:
 
 ***
 
-## Individuals 
+# Individuals 
 In 2018, we collected and stored in ~5% formalin the vas deferens from 15 sacrificed males (5 per morph) from the **Simon Fraser** University **colony**. The colony was founded with 110 ruffs hatched from wild eggs collected in Finland in 1985, 1989 and 1990 plus two 'faeder' males from the Netherlands in 2006 [@Lank1995; @Lank2013]. 
 
 In 2021, we attempted twice (on May 3-6 and June 7-8) to collect sperm of all males from the **Max Planck colony** (`r nrow(s[morph == 'I'])` 'independents', `r nrow(s[morph == 'S'])` 'satelites', `r nrow(s[morph == 'F'])+4` 'faeders'; of which `r nrow(sv)` males were sampled already in Vancouver: `r nrow(sv[morph == 'r'])`  'independents', `r nrow(sv[morph == 's'])` 'satelites' and `r nrow(sv[morph == 'f'])` 'faeders'). The colony was founded in 2018 from the Simon Fraser colony. 
 
-## Housing - Needed?
+# Housing - Needed?
 
-## Sperm sampling
+# Sperm sampling
 Compared to passerines, shorebirds do not have a cloaca protuberance. Thus, abdominal massage and cloacal lavage method of sperm collection (e.g. @Knief2017 ; see the [specific protocol](https://raw.githack.com/MartinBulla/ruff_sperm/main/Protocols/protocol_sperm.html)) often lead to unclean samples contaminated by excrements. Such samples are then unsuitable for measuring sperm velocity. Hence, in 2021 along with abdominal massage and cloacal lavage, we attempted to collect the sperm by electro‐stimulation [@Lierz2013]. The length and diameter of the electro-stimulation probe, as well as the electric current and the number of electric impulses was adapted to the sampled individuals. However, the electro-stimulation did not produce cleaner sperm samples suitable for velocity measurements. 
 
 The morphs were sampled in a haphazard order to avoid temporal trends in morph sampling. In other words, all males of one morph were not sampled at the same time. Sperm was pipetted from the cloaca (~0.5–3μl) and immediately diluted in a preheated (40°C) Dulbecco’s Modified Eagle’s Medium (Advanced D-MEM, Invitrogen, USA). For the velocity measurements, an aliquot was pipetted onto a standard 20μm two-chamber count slide (Leja, The Netherlands) placed on a thermal plate (Tokai Hit, Tokai Hit Co., LtD., Japan) kept at 40 °C. For the morphology measurements, an aliquot was pipetted onto a microscopy slide and the rest of the sperm sample fixed in 100μl ~5% formalin solution.
 
-## Sperm morphometry
+# Sperm morphometry
 From each sperm sample, we will pipet ~10μl onto a microscopy slide, let it dry at room temperature, and - in case of formalin-fixed samples - wash the slide gently under  distilled water to wash away the dried formalin and phosphate-buffered saline solution. Sperm from the vas deferens will be first extracted by cutting a piece from the middle of the tubules, plucking apart the tissue with curved extraction forceps to release the sperm, and washing away the sperm with the phosphate phosphate-buffered saline solution. 
 
 We will inspect the slides with a light microscope ('Zeiss Axio Imager.M2') under 200x magnification.  To aid distinction of sperm parts, dried slides will be stained with Hoechst 33342 (which identifies the sperm nucleus) and Mitotracker Green FM (which identifies sperm midpiece) not earlier than 48h before photographing. For step by step slide preparation protocol see [here](https://raw.githack.com/MartinBulla/ruff_sperm/main/Protocols/protocol_sperm.html).
@@ -92,18 +92,18 @@ We will calculate total sperm length as the sum of all parts, head length as the
 
 **WAS ORIGINALLY INCLUDED**:In addition, we will scan the slides for abnormal sperm by counting 100 sperms and noting how many are abnormal and in what manner. **DECIDE WHETHER TO DO THIS, GIVEN KIM's TESTING?**
 
-## Sperm velocity
+# Sperm velocity
 For each sperm sample we will immediately record sperm velocity for approximately 45s in eight different fields of the slide under a 100x magnification using a phase contrast and a digital camera (UI-1540-C, Olympus) mounted on a microscope (CX41, Olympus) fitted with a thermal plate (Tokai Hit, Tokai Hit Co., LtD., Japan) kept at a constant temperature of 40°C. The videos will be recorded at 25 frames per second. A single person will analyze each recorded field using the CEROS computer-assisted sperm analysis system (Hamilton Thorne Inc., Beverly, Massa- chusetts, USA), visually inspect the tracked objects and exclude non-sperm objects and static spermatozoa from the analysis [@Laskemoen2010; @Cramer2016; @Opatová2016]. The dilution medium does not contain any spermatozoa attractants to guide the spermatozoa towards one direction; thus, we will use  curvilinear velocity rather than straight-line velocity as our measurement of sperm swimming speed [@Laskemoen2010]. We will report how many sperm cells per sperm sample will be recorded (median, 95%CI, range) and - if necessary - control for the (log-transformed) number of measured sperm cells per sample. 
 
 Although passerine sperm move straight, by turning like a screw around their axis (with their screw shaped heads), it was uncertain how sperm of ruffs move. We thus also tested whether ruff sperm moves differently in different (deeper) size of Leja slides (ADD THE PRODUCT NUMBER). Moreover, we also record velocity of five zebra finch males, which we used as a control for comparison with the ruff sperm velocity recordings.   
 
-## Inbreeding
+# Inbreeding
 Because our sperm samples came from males bred in captivity, we expected higher levels of inbreeding compared with males from wild populations. In birds and mammals (but not in insects) inbred males have a higher proportion of abnormal sperm and lower sperm velocity than outbred males [@Gomendio2000; @Heber2013; @Ala-Honkola2013; @Opatová2016]. Thus, our sperm velocity measurements may not reflect sperm velocity of wild ruffs. However, there is no evidence that the morphology of normal‐looking sperm (e.g., length, coefficient of variation) differs between inbred and outbred males [@Mehlis2012; @Ala-Honkola2013; @Opatová2016]. Based on these studies, we assume that our measurements reflect the variation in sperm morphology observed in the wild ruffs. Nevertheless, we know the relatedness of individuals within our population (pedigree) and had estimate inbreeding from microsatellite markers (*DECIDE WHETHER DOABLE*). Hence, we investigated whether the variation in inbreeding and genetic diversity was linked to the sperm traits and if so attempted to control for it in our models. Similarly, if we find between-morph differences in sperm traits, we will investigate whether such differences might have occurred by chance due to population bottlenecks.
 
 ***
 
 
-## UPDATE LATER - Statistical analyses
+# UPDATE LATER - Statistical analyses
 All analyses were performed in R [@R-Core-Team2020] using lmer() and glmer() functions of the lme4 package to fit linear and generalized linear mixed-effects models, and - if necessary - one of the package for fitting the pedigree structure as a random effect (e.g. [brms](https://mikheyev.github.io/brms-wam/), MCMCglmm, pedigreeMM). We estimated the variance explained by the fixed effects of our mixed-effects models as marginal R2-values, using the r.squaredGLMM() function of the MuMIn package (v1.15.6). Model fits were visually validated (by qq-plots of residuals and plots of residuals against fitted values). To avoid unconscious data dragging, we first analyzed the data on sperm traits blind to the males morphs. Specifically, we first randomly assigned male morphs to the measurements, explored such data and finalized the analyze using such data. Only then we run the analyses with true assignment of the morphs. We report all results, all data exclusions, all manipulations and all measurements from this study at the [GitHub repository](https://github.com/MartinBulla/ruff_sperm). Sample sizes reflect the maximum available data. No data selection has been done conditional on the outcome of statistical tests. 
 
 In general, we fitted two sets of linear models. A first set of models had as a response variable the raw sperm trait measurements and was controlled for multiple measurements per male by fitting male identity as a random effect. A second set of models had average sperm trait per male as a response and - if necessary - was controlled for the number of sampled sperm per individual (N) by specifying a weights term as sqrt(N-3)(*cit needed*). Note that we aimed to keep the N constant. For each morph, we will exclude individuals with <10 sperm, as long as these represent <5% of individuals sampled within each morph. MB THE FIRST SET OF MODLES IS RATHER COMPLEX (if pedigree is used), THAT IS WHY I PROPOSE ALSO THE SIMPLER AVERAGE VARIANT. THE AVERAGE VARIANT WILL ALSO CORRESPOND WITH MODELS FOR VELOCITY and CV. HOWEVER, IF THIS MAKES THINGS TO COMPLICATED, WE CAN RUN JUST THE FIRST SET.
