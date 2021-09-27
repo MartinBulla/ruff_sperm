@@ -893,13 +893,13 @@ grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), size = 'last'))
 ```
 
 # TEST2
-```{r test2,  warning = FALSE, message = FALSE, fig.align="center", fig.width=4, fig.height=4}
+```{r test2,  warning = FALSE, message = FALSE, fig.align="center", fig.width=4, fig.height=4.25}
 
 g1 =
 ggplot(xy_, aes(x = part, y = pred, col = comparison, shape = method_CI)) +
-          geom_errorbar(aes(ymin = lwr, ymax = upr, col = comparison), width = 0.1, position = position_dodge(width = 0.8) ) +
+          geom_errorbar(aes(ymin = lwr, ymax = upr, col = comparison), width = 0.1, position = position_dodge(width = 0.9) ) +
           #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.8)) +
+          geom_point(position = position_dodge(width = 0.9)) +
           #scale_fill_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE)) +
           #scale_color_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE))  +
           scale_color_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE))  +
@@ -928,9 +928,9 @@ g1b = g1 + theme(legend.position="none")
 
 g2 =
 ggplot(xy2_, aes(x = part, y = pred, col = comparison, shape = method_CI)) +
-          geom_errorbar(aes(ymin = lwr, ymax = upr, col = comparison), width = 0.1, position = position_dodge(width = 0.8) ) +
+          geom_errorbar(aes(ymin = lwr, ymax = upr, col = comparison), width = 0.1, position = position_dodge(width = 0.9) ) +
           #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.8)) +
+          geom_point(position = position_dodge(width = 0.9)) +
           #scale_fill_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE)) +
           #scale_color_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE))  +
           scale_color_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE))  +
