@@ -309,7 +309,7 @@
         theme_bw()
         ggsave('Output//test-40_cor-KT-MB_composite.png',g2, width = 10, height =10, units = 'cm')
     # plot correlations KT-MC
-        g1 = ggplot(bw, aes(x = Pixels.KT, y = Pixels.MC)) +
+        g5 = ggplot(bw, aes(x = Pixels.KT, y = Pixels.MC)) +
         facet_wrap(~part, scales = "free") +  
         stat_smooth(method = 'lm')+geom_point()+
         stat_cor(method="pearson",size = 2) +
@@ -317,9 +317,9 @@
         #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
         #ggtitle('All')+
         theme_bw()
-        ggsave('Output//test-40_cor-KT-MC.png',g1, width = 10, height =10, units = 'cm')
+        ggsave('Output//test-40_cor-KT-MC.png',g5, width = 10, height =10, units = 'cm')
         
-        g2 = ggplot(bcw, aes(x = Pixels.KT, y = Pixels.MC)) +
+        g6 = ggplot(bcw, aes(x = Pixels.KT, y = Pixels.MC)) +
         facet_wrap(~part, scales = "free", nrow = 2) +  
         stat_smooth(method = 'lm')+geom_point()+
         stat_cor(method="pearson",size = 2) +
@@ -327,9 +327,9 @@
         #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
         #ggtitle('All')+
         theme_bw()
-        ggsave('Output//test-40_cor-KT-MC_composite.png',g2, width = 10, height =10, units = 'cm')
-    # plot correlations KT-MC
-        g1 = ggplot(bw, aes(x = Pixels.MB, y = Pixels.MC)) +
+        ggsave('Output//test-40_cor-KT-MC_composite.png',g6, width = 10, height =10, units = 'cm')
+    # plot correlations MB-MC
+        g3 = ggplot(bw, aes(x = Pixels.MB, y = Pixels.MC)) +
         facet_wrap(~part, scales = "free") +  
         stat_smooth(method = 'lm')+geom_point()+
         stat_cor(method="pearson",size = 2) +
@@ -337,9 +337,9 @@
         #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
         #ggtitle('All')+
         theme_bw()
-        ggsave('Output//test-40_cor-MB-MC.png',g1, width = 10, height =10, units = 'cm')
+        ggsave('Output//test-40_cor-MB-MC.png',g3, width = 10, height =10, units = 'cm')
         
-        g2 = ggplot(bcw, aes(x = Pixels.MB, y = Pixels.MC)) +
+        g4 = ggplot(bcw, aes(x = Pixels.MB, y = Pixels.MC)) +
         facet_wrap(~part, scales = "free", nrow = 2) +  
         stat_smooth(method = 'lm')+geom_point()+
         stat_cor(method="pearson",size = 2) +
@@ -347,8 +347,11 @@
         #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
         #ggtitle('All')+
         theme_bw()
-        ggsave('Output//test-40_cor-MB-MC_composite.png',g2, width = 10, height =10, units = 'cm')
-    
+        ggsave('Output//test-40_cor-MB-MC_composite.png',g4, width = 10, height =10, units = 'cm')
+    # plot correlations all together (run previous first)
+      grid.draw(rbind(cbind(ggplotGrob(g1), ggplotGrob(g2)), cbind(ggplotGrob(g3), ggplotGrob(g4)),cbind(ggplotGrob(g5), ggplotGrob(g6))))
+
+      ggsave('Output/test-40_cor-ALL.png',rbind(cbind(ggplotGrob(g1), ggplotGrob(g2)), cbind(ggplotGrob(g3), ggplotGrob(g4)),cbind(ggplotGrob(g5), ggplotGrob(g6))), width = 6.5*2.5, height =8*2.5, units = 'cm')  
     # check differences
         bwa = bw[part == 'Acrosome']
         bwa[, diff_KT_MB := Pixels.KT - Pixels.MB]
@@ -760,6 +763,59 @@
             
               ggsave('Output/test-40_Repeatability-KT-MC_COMPOSITE.png',g1, width = 10, height =7, units = 'cm')
     
+    # plot combined
+      xyMBMC[,comparison := 'Martin - Maggie']
+xyKTMC[,comparison := 'Kim - Maggie']
+xyKTMB[,comparison := 'Kim - Martin']
+xy[,comparison := 'all three']
+xy_ = rbind(xy, xyKTMC, xyKTMB, xyMBMC)
+xy_[pred==10,pred:=100]  
+
+xy2MBMC[,comparison := 'Martin - Maggie']
+xy2KTMC[,comparison := 'Kim - Maggie']
+xy2KTMB[,comparison := 'Kim - Martin']
+xy2_ = rbind(xy2MBMC,xy2KTMC,xy2KTMB)
+
+
+ggplot(xy_, aes(x = part, y = pred, col = comparison, shape = method_CI)) +
+          geom_errorbar(aes(ymin = lwr, ymax = upr, col = comparison), width = 0.1, position = position_dodge(width = 0.7) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.7)) +
+          #scale_fill_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE)) +
+          #scale_color_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE))  +
+          scale_color_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE))  +
+          scale_fill_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE)) + 
+          scale_shape(guide = guide_legend(reverse = TRUE)) + 
+          geom_hline(yintercept = 99, col = 'red')+
+          labs(x = NULL, y = "Repeatability [%]")+
+          ylim(c(min(xy_$lwr),max(xy_$upr)))+
+          scale_y_continuous(breaks = c(65, 70, 85, 100))+
+          geom_text(y =99, x =0.5, label = '99', col = 'red', size = 2.7)+
+          coord_flip()+
+          theme_bw() +
+          theme(plot.title = element_text(size=9),
+              axis.line = element_blank(),
+              #axis.line = element_line(colour="grey70", size=0.25),
+              axis.title = element_text(size=7, colour="grey30"),
+              axis.title.y = element_text(vjust=3.5),
+              axis.title.x = element_text(vjust=1),
+              axis.text = element_text(size=6),#, vjust = 0.5, hjust=1),# margin=units(0.5,"mm")),
+              axis.ticks.length=unit(0.5,"mm"),
+              axis.ticks = element_line(colour = "grey70", size = 0.1),
+              #axis.ticks.margin, 
+              #panel.border=element_line(colour="grey70", size=0.25),
+              #panel.grid = element_blank(),
+              legend.text=element_text(size=6),
+              legend.title=element_text(size=6),
+              legend.key = element_rect(colour = NA, fill = NA),
+              legend.key.height= unit(0.5,"line"),
+              legend.key.width = unit(0.25, "cm"),
+              legend.margin = margin(0,0,0,0, unit="cm"),
+              legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
+              legend.background = element_blank()
+              )
+
+
 # old protocol - within Martin 
   # DATA
     dir = list.dirs('Pictures/test_40')
