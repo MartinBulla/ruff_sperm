@@ -185,7 +185,7 @@
           return(x)
         } 
  
-# new protocol - Kim Martin
+# new protocol - Kim Martin Maggie
   # DATA
     f = data.table(
       f = c(list.files(path = 'Data/', pattern = 'test40', recursive = TRUE, full.names = TRUE)),
@@ -248,7 +248,29 @@
       return(xx)
       }
       
-    d = rbind(d1,d2)  
+    ff = f[substr(f2,8,9) == 'MC']
+    d3 = foreach(j = 1:nrow(ff), .combine = rbind) %do% {
+      #k = ff[1,]
+      k = ff[j,]
+      x = fread(file = k[,f])
+      x[, who := substr(k[,f2], 8, 9)]
+      #x[, datetime_ := substr(j, 27, 45)]
+      x[, id := substr(x$'File Name', 1, 2)]
+      x[, pk := 1:nrow(x)]
+      #x[, manip := substr(x$'File Name', 4, nchar(x$'File Name')-7-(nchar(pk)))]
+      
+      #table(x$id)
+      xx = foreach(i = unique(x$id), .combine = rbind) %do% {
+        #i = '02'
+        xi = x[id == i]
+        xi[Pixels == max(Pixels), part := 'Tail']
+        xi[Pixels != max(Pixels), part := c('Acrosome','Nucleus','Midpiece')]
+        return(xi)
+        }    
+      return(xx)
+      }
+        
+    d = rbind(d1,d2,d3)  
     d[, id_part := paste(id, part)]
     b = d[id_part %in% d[duplicated(id_part), id_part]] # only sperm ids and parts measured twice
 
@@ -266,7 +288,7 @@
 
          bcw = reshape(bc[,.(who,id,part,Pixels)], idvar = c('id','part'), timevar = 'who', direction = "wide")    
   # ANAL
-    # plot correlations
+    # plot correlations KT-MB
         g1 = ggplot(bw, aes(x = Pixels.KT, y = Pixels.MB)) +
         facet_wrap(~part, scales = "free") +  
         stat_smooth(method = 'lm')+geom_point()+
@@ -285,12 +307,58 @@
         #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
         #ggtitle('All')+
         theme_bw()
-        ggsave('Output//test-40_cor-MB-KT_composite.png',g2, width = 10, height =10, units = 'cm')
+        ggsave('Output//test-40_cor-KT-MB_composite.png',g2, width = 10, height =10, units = 'cm')
+    # plot correlations KT-MC
+        g1 = ggplot(bw, aes(x = Pixels.KT, y = Pixels.MC)) +
+        facet_wrap(~part, scales = "free") +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()
+        ggsave('Output//test-40_cor-KT-MC.png',g1, width = 10, height =10, units = 'cm')
+        
+        g2 = ggplot(bcw, aes(x = Pixels.KT, y = Pixels.MC)) +
+        facet_wrap(~part, scales = "free", nrow = 2) +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()
+        ggsave('Output//test-40_cor-KT-MC_composite.png',g2, width = 10, height =10, units = 'cm')
+    # plot correlations KT-MC
+        g1 = ggplot(bw, aes(x = Pixels.MB, y = Pixels.MC)) +
+        facet_wrap(~part, scales = "free") +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()
+        ggsave('Output//test-40_cor-MB-MC.png',g1, width = 10, height =10, units = 'cm')
+        
+        g2 = ggplot(bcw, aes(x = Pixels.MB, y = Pixels.MC)) +
+        facet_wrap(~part, scales = "free", nrow = 2) +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()
+        ggsave('Output//test-40_cor-MB-MC_composite.png',g2, width = 10, height =10, units = 'cm')
+    
     # check differences
         bwa = bw[part == 'Acrosome']
-        bwa[, diff := Pixels.KT - Pixels.MB]
-        bwa[order(diff)]
-    # plot repeatability
+        bwa[, diff_KT_MB := Pixels.KT - Pixels.MB]
+        bwa[, diff_KT_MC := Pixels.KT - Pixels.MC]
+        bwa[, diff_MB_MC := Pixels.MB - Pixels.MC]
+        bwa[order(diff_KT_MB)]
+        bwa[order(diff_KT_MC)]
+        bwa[order(diff_MB_MC)]
+
+    # plot repeatability all
           # estimate BASIC 
               lfsim = list()
               lfrpt = list()
@@ -340,7 +408,7 @@
                   theme_bw() +
                   theme(plot.title = element_text(size=9))
             
-              ggsave('Output/test-40_Repeatability-MB-KM_BASIC.png',g1, width = 10, height =7, units = 'cm')
+              ggsave('Output/test-40_Repeatability-MB-KM-MC_BASIC.png',g1, width = 10, height =7, units = 'cm')
           # estimate COMPOSITE
               lfsim = list()
               lfrpt = list()
@@ -389,7 +457,308 @@
                   theme_bw() +
                   theme(plot.title = element_text(size=9))
             
+              ggsave('Output/test-40_Repeatability-MB-KM-MC_COMPOSITE.png',g1, width = 10, height =7, units = 'cm')
+    
+    # plot repeatability MB, KT
+          # estimate BASIC 
+              lfsim = list()
+              lfrpt = list()
+              for(i in c('Acrosome','Nucleus','Midpiece','Tail')){
+                part_ = i
+                # part_ = "Acrosome"
+                dd = b[part == part_ & who %in% c('KT','MB')]
+                m = lmer(Pixels ~ 1+(1|id), dd)
+                Rf = R_out(part_)
+                lfsim[[i]] = Rf[, method_CI:='arm package']
+
+                R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+                RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+                RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+                lfrpt[[i]] =  RR[, method_CI := 'rpt package']
+                print(i)
+              } 
+              x = do.call(rbind,lfsim)
+              names(x)[1] = "part"
+              y = do.call(rbind,lfrpt)
+
+              x[, pred:= as.numeric(substr(repeatability,1,2))]
+              x[, lwr:= as.numeric(substr(CI,1,2))]
+              x[, upr:= as.numeric(substr(CI,4,5))]
+
+              y[, pred:= as.numeric(substr(Repeatability,1,2))]
+              y[nchar(CI) == 5, CI := paste0(0,CI) ]
+              y[, lwr:= as.numeric(substr(CI,1,2))]
+              y[, upr:= as.numeric(substr(CI,4,5))]
+              names(y)[2] = tolower( names(y)[2])
+              xy = rbind(x,y)
+              xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
+              xy[nchar(CI) == 7 & upr == 10, upr := 100]
+          # plot BASIC
+              g1 = 
+                ggplot(xy, aes(x = part, y = pred, col = method_CI)) +
+                  geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
+                  #ggtitle ("Sim based")+
+                  geom_point(position = position_dodge(width = 0.25)) +
+                  scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
+                  scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
+                  geom_hline(yintercept = 99, col = 'red')+
+                  labs(x = NULL, y = "Repeatability [%]")+
+                  ylim(c(60,100))+
+                  scale_y_continuous(breaks = sort(c(seq(60, 100, length.out=6), 99)))+
+                  coord_flip()+
+                  theme_bw() +
+                  theme(plot.title = element_text(size=9))
+            
+              ggsave('Output/test-40_Repeatability-MB-KM_BASIC.png',g1, width = 10, height =7, units = 'cm')
+          # estimate COMPOSITE
+              lfsim = list()
+              lfrpt = list()
+              for(i in c("Head", "Flagellum","Total")){
+                part_ = i
+                # part_ = "Flagellum"
+                dd = bc[part == part_ * who %in% c('KT','MB')]
+                m = lmer(Pixels ~ 1+(1|id), dd)
+                Rf = R_out(part_)
+                lfsim[[i]] = Rf[, method_CI:='arm package']
+
+                R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+                RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+                RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+                lfrpt[[i]] =  RR[, method_CI := 'rpt package']
+                print(i)
+              }
+              
+              x = do.call(rbind,lfsim)
+              names(x)[1] = "part"
+              y = do.call(rbind,lfrpt)
+
+              x[, pred:= as.numeric(substr(repeatability,1,2))]
+              x[, lwr:= as.numeric(substr(CI,1,2))]
+              x[, upr:= as.numeric(substr(CI,4,5))]
+
+              y[, pred:= as.numeric(substr(Repeatability,1,2))]
+              y[nchar(CI) == 5, CI := paste0(0,CI) ]
+              y[, lwr:= as.numeric(substr(CI,1,2))]
+              y[, upr:= as.numeric(substr(CI,4,5))]
+              names(y)[2] = tolower( names(y)[2])
+              xy2 = rbind(x,y)
+              xy2[, part := factor(part, levels=c("Head","Flagellum","Total"))] 
+              xy2[nchar(CI) == 7 & upr == 10, upr := 100]
+          # plot COMPOSITE
+              g1 = 
+                ggplot(xy2, aes(x = part, y = pred, col = method_CI)) +
+                  geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
+                  #ggtitle ("Sim based")+
+                  geom_point(position = position_dodge(width = 0.25)) +
+                  scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
+                  scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
+                  labs(x = NULL, y = "Repeatability [%]")+
+                  ylim(c(min(xy2$lwr),max(xy2$upr)))+
+                  coord_flip()+
+                  theme_bw() +
+                  theme(plot.title = element_text(size=9))
+            
               ggsave('Output/test-40_Repeatability-MB-KM_COMPOSITE.png',g1, width = 10, height =7, units = 'cm')
+    # plot repeatability MB, MC
+          # estimate BASIC 
+              lfsim = list()
+              lfrpt = list()
+              for(i in c('Acrosome','Nucleus','Midpiece','Tail')){
+                part_ = i
+                # part_ = "Acrosome"
+                dd = b[part == part_ & who %in% c('MC','MB')]
+                m = lmer(Pixels ~ 1+(1|id), dd)
+                Rf = R_out(part_)
+                lfsim[[i]] = Rf[, method_CI:='arm package']
+
+                R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+                RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+                RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+                lfrpt[[i]] =  RR[, method_CI := 'rpt package']
+                print(i)
+              } 
+              x = do.call(rbind,lfsim)
+              names(x)[1] = "part"
+              y = do.call(rbind,lfrpt)
+
+              x[, pred:= as.numeric(substr(repeatability,1,2))]
+              x[, lwr:= as.numeric(substr(CI,1,2))]
+              x[, upr:= as.numeric(substr(CI,4,5))]
+
+              y[, pred:= as.numeric(substr(Repeatability,1,2))]
+              y[nchar(CI) == 5, CI := paste0(0,CI) ]
+              y[, lwr:= as.numeric(substr(CI,1,2))]
+              y[, upr:= as.numeric(substr(CI,4,5))]
+              names(y)[2] = tolower( names(y)[2])
+              xy = rbind(x,y)
+              xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
+              xy[nchar(CI) == 7 & upr == 10, upr := 100]
+          # plot BASIC
+              g1 = 
+                ggplot(xy, aes(x = part, y = pred, col = method_CI)) +
+                  geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
+                  #ggtitle ("Sim based")+
+                  geom_point(position = position_dodge(width = 0.25)) +
+                  scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
+                  scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
+                  geom_hline(yintercept = 99, col = 'red')+
+                  labs(x = NULL, y = "Repeatability [%]")+
+                  ylim(c(60,100))+
+                  scale_y_continuous(breaks = sort(c(seq(60, 100, length.out=6), 99)))+
+                  coord_flip()+
+                  theme_bw() +
+                  theme(plot.title = element_text(size=9))
+            
+              ggsave('Output/test-40_Repeatability-MB-MC_BASIC.png',g1, width = 10, height =7, units = 'cm')
+          # estimate COMPOSITE
+              lfsim = list()
+              lfrpt = list()
+              for(i in c("Head", "Flagellum","Total")){
+                part_ = i
+                # part_ = "Flagellum"
+                dd = bc[part == part_ & who %in% c('MC','MB')]
+                m = lmer(Pixels ~ 1+(1|id), dd)
+                Rf = R_out(part_)
+                lfsim[[i]] = Rf[, method_CI:='arm package']
+
+                R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+                RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+                RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+                lfrpt[[i]] =  RR[, method_CI := 'rpt package']
+                print(i)
+              }
+              
+              x = do.call(rbind,lfsim)
+              names(x)[1] = "part"
+              y = do.call(rbind,lfrpt)
+
+              x[, pred:= as.numeric(substr(repeatability,1,2))]
+              x[, lwr:= as.numeric(substr(CI,1,2))]
+              x[, upr:= as.numeric(substr(CI,4,5))]
+
+              y[, pred:= as.numeric(substr(Repeatability,1,2))]
+              y[nchar(CI) == 5, CI := paste0(0,CI) ]
+              y[, lwr:= as.numeric(substr(CI,1,2))]
+              y[, upr:= as.numeric(substr(CI,4,5))]
+              names(y)[2] = tolower( names(y)[2])
+              xy2 = rbind(x,y)
+              xy2[, part := factor(part, levels=c("Head","Flagellum","Total"))] 
+              xy2[nchar(CI) == 7 & upr == 10, upr := 100]
+          # plot COMPOSITE
+              g1 = 
+                ggplot(xy2, aes(x = part, y = pred, col = method_CI)) +
+                  geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
+                  #ggtitle ("Sim based")+
+                  geom_point(position = position_dodge(width = 0.25)) +
+                  scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
+                  scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
+                  labs(x = NULL, y = "Repeatability [%]")+
+                  ylim(c(min(xy2$lwr),max(xy2$upr)))+
+                  coord_flip()+
+                  theme_bw() +
+                  theme(plot.title = element_text(size=9))
+            
+              ggsave('Output/test-40_Repeatability-MB-MC_COMPOSITE.png',g1, width = 10, height =7, units = 'cm')
+    # plot repeatability KT, MC
+          # estimate BASIC 
+              lfsim = list()
+              lfrpt = list()
+              for(i in c('Acrosome','Nucleus','Midpiece','Tail')){
+                part_ = i
+                # part_ = "Acrosome"
+                dd = b[part == part_ & who %in% c('MC','KT')]
+                m = lmer(Pixels ~ 1+(1|id), dd)
+                Rf = R_out(part_)
+                lfsim[[i]] = Rf[, method_CI:='arm package']
+
+                R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+                RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+                RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+                lfrpt[[i]] =  RR[, method_CI := 'rpt package']
+                print(i)
+              } 
+              x = do.call(rbind,lfsim)
+              names(x)[1] = "part"
+              y = do.call(rbind,lfrpt)
+
+              x[, pred:= as.numeric(substr(repeatability,1,2))]
+              x[, lwr:= as.numeric(substr(CI,1,2))]
+              x[, upr:= as.numeric(substr(CI,4,5))]
+
+              y[, pred:= as.numeric(substr(Repeatability,1,2))]
+              y[nchar(CI) == 5, CI := paste0(0,CI) ]
+              y[, lwr:= as.numeric(substr(CI,1,2))]
+              y[, upr:= as.numeric(substr(CI,4,5))]
+              names(y)[2] = tolower( names(y)[2])
+              xy = rbind(x,y)
+              xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
+              xy[nchar(CI) == 7 & upr == 10, upr := 100]
+          # plot BASIC
+              g1 = 
+                ggplot(xy, aes(x = part, y = pred, col = method_CI)) +
+                  geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
+                  #ggtitle ("Sim based")+
+                  geom_point(position = position_dodge(width = 0.25)) +
+                  scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
+                  scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
+                  geom_hline(yintercept = 99, col = 'red')+
+                  labs(x = NULL, y = "Repeatability [%]")+
+                  ylim(c(60,100))+
+                  scale_y_continuous(breaks = sort(c(seq(60, 100, length.out=6), 99)))+
+                  coord_flip()+
+                  theme_bw() +
+                  theme(plot.title = element_text(size=9))
+            
+              ggsave('Output/test-40_Repeatability-KT-MC_BASIC.png',g1, width = 10, height =7, units = 'cm')
+          # estimate COMPOSITE
+              lfsim = list()
+              lfrpt = list()
+              for(i in c("Head", "Flagellum","Total")){
+                part_ = i
+                # part_ = "Flagellum"
+                dd = bc[part == part_ & who %in% c('MC','KT')]
+                m = lmer(Pixels ~ 1+(1|id), dd)
+                Rf = R_out(part_)
+                lfsim[[i]] = Rf[, method_CI:='arm package']
+
+                R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+                RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+                RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+                lfrpt[[i]] =  RR[, method_CI := 'rpt package']
+                print(i)
+              }
+              
+              x = do.call(rbind,lfsim)
+              names(x)[1] = "part"
+              y = do.call(rbind,lfrpt)
+
+              x[, pred:= as.numeric(substr(repeatability,1,2))]
+              x[, lwr:= as.numeric(substr(CI,1,2))]
+              x[, upr:= as.numeric(substr(CI,4,5))]
+
+              y[, pred:= as.numeric(substr(Repeatability,1,2))]
+              y[nchar(CI) == 5, CI := paste0(0,CI) ]
+              y[, lwr:= as.numeric(substr(CI,1,2))]
+              y[, upr:= as.numeric(substr(CI,4,5))]
+              names(y)[2] = tolower( names(y)[2])
+              xy2 = rbind(x,y)
+              xy2[, part := factor(part, levels=c("Head","Flagellum","Total"))] 
+              xy2[nchar(CI) == 7 & upr == 10, upr := 100]
+          # plot COMPOSITE
+              g1 = 
+                ggplot(xy2, aes(x = part, y = pred, col = method_CI)) +
+                  geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
+                  #ggtitle ("Sim based")+
+                  geom_point(position = position_dodge(width = 0.25)) +
+                  scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
+                  scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
+                  labs(x = NULL, y = "Repeatability [%]")+
+                  ylim(c(min(xy2$lwr),max(xy2$upr)))+
+                  coord_flip()+
+                  theme_bw() +
+                  theme(plot.title = element_text(size=9))
+            
+              ggsave('Output/test-40_Repeatability-KT-MC_COMPOSITE.png',g1, width = 10, height =7, units = 'cm')
     
 # old protocol - within Martin 
   # DATA
