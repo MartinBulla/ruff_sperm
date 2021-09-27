@@ -1,5 +1,7 @@
 require(rmarkdown)
 
+rmarkdown::render('R/EXP_test-40.Rmd', output_dir = 'Output')
+
 rmarkdown::render('R/Methods.Rmd', output_dir = 'Output')
 
 rmarkdown::render('R/Preregistration_v3.Rmd', output_dir = 'Protocols')
