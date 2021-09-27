@@ -1,0 +1,960 @@
+---
+title: "Repeatability of ruff sperm morphology-measurements using Sperm Sizer"
+author: "Martin Bulla"
+date: "`r Sys.time()`"
+output: 
+    html_document:
+        toc: true
+        toc_float: true
+        toc_depth: 5
+        code_folding: hide
+bibliography: ruff_sperm.xml
+link-citations: yes
+---
+<style type="text/css">
+
+td {  /* Table  */
+  font-size: 12px;
+}
+h1.title {
+  font-size: 32px;
+}
+h1 { /* Header 1 */
+  font-size: 24px;
+}
+h2 { /* Header 2 */
+    font-size: 20px;
+    
+}
+h3 { /* Header 3 */
+  font-size: 16px;
+
+}
+h4 { /* Header 4 */
+  font-size: 16px;
+}
+code.r{ /* Code block */
+    font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-size: 10px;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+***
+
+Code to load tools and prepare data:  
+```{r toolsData, results="hide", warning = FALSE, message = FALSE, cache = TRUE}
+  # TOOLS
+    require(here)
+    source(here::here('R/tools.R'))
+    require(stringi)
+    require(arm)
+    require(effects)
+    require(RColorBrewer)
+    require("PerformanceAnalytics")
+    require('foreach')
+    library(ggpubr)
+    
+    require(rptR) 
+    require(magrittr)
+
+    round_ = 3 # number of decimal places to round model coefficients
+    nsim = 5000 # number of simulations to extract estimates and 95%CrI
+    ax_lines = "grey60" # defines color of the axis lines
+    colors <- c("#999999", "#E69F00", "#56B4E9") #viridis(3)
+    # functions
+        # for Repeatability output based on sim
+          R_out = function(name = "define", model = m, nsim = 5000){
+           bsim <- sim(model, n.sim=nsim)  
+           l=data.frame(summary(model)$varcor)
+           l = l[is.na(l$var2),]
+           l$var1 = ifelse(is.na(l$var1),"",l$var1)
+           l$pred = paste(l$grp,l$var1)
+
+           q50={}
+           q025={}
+           q975={}
+           pred={}
+           
+           # variance of random effects
+           for (ran in names(bsim@ranef)) {
+             #ran =names(bsim@ranef)[1]
+             ran_type = l$var1[l$grp == ran]
+             for(i in ran_type){
+                # i = ran_type[2]
+              q50=c(q50,quantile(apply(bsim@ranef[[ran]][,,i], 1, var), prob=c(0.5)))
+              q025=c(q025,quantile(apply(bsim@ranef[[ran]][,,i], 1, var), prob=c(0.025)))
+              q975=c(q975,quantile(apply(bsim@ranef[[ran]][,,i], 1, var), prob=c(0.975)))
+              pred= c(pred,paste(ran, i))
+              }
+             }
+           # residual variance
+           q50=c(q50,quantile(bsim@sigma^2, prob=c(0.5)))
+           q025=c(q025,quantile(bsim@sigma^2, prob=c(0.025)))
+           q975=c(q975,quantile(bsim@sigma^2, prob=c(0.975)))
+           pred= c(pred,'Residual')
+
+           ci = c(round(100*q025/sum(q025))[1], round(100*q975/sum(q975))[1])
+           ci = ci[order(ci)]
+           
+           ri=data.table(model = name, repeatability=paste0(round(100*q50/sum(q50)),'%')[1], CI = paste0(paste(ci[1], ci[2], sep ="-"), '%'))
+           
+           
+           return(ri)
+           }
+        # mode output
+         m_out = function(model = m, type = "mixed", 
+            name = "define", dep = "define", fam = 'Gaussian',
+            round_ = 3, nsim = 5000, aic = TRUE, save_sim = FALSE, N = NA, back_tran = FALSE, perc_ = 1){
+              # perc_ 1 = proportion or 100%
+            bsim = sim(model, n.sim=nsim)  
+            
+            if(save_sim!=FALSE){save(bsim, file = paste0(save_sim, name,'.RData'))}
+           
+            if(type != "mixed"){
+             v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+             ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
+
+             if(back_tran == TRUE & fam == "binomial"){
+              v = perc_*plogis(v)
+              ci = perc_*plogis(ci)
+             }
+            if(back_tran == TRUE & fam == "binomial_logExp"){
+                  v = perc_*(1-plogis(v))
+                  ci = perc_*(1-plogis(ci))
+                  ci = rbind(ci[2,],ci[1,])
+                 }
+
+             if(back_tran == TRUE & fam == "Poisson"){
+              v = exp(v)
+              ci = exp(ci)
+             }
+
+             oi=data.frame(type='fixed',effect=rownames(coef(summary(model))),estimate=v, lwr=ci[1,], upr=ci[2,])
+              rownames(oi) = NULL
+              oi$estimate_r=round(oi$estimate,round_)
+              oi$lwr_r=round(oi$lwr,round_)
+              oi$upr_r=round(oi$upr,round_)
+              if(perc_ == 100){
+               oi$estimate_r = paste0(oi$estimate_r,"%")
+               oi$lwr_r = paste0(oi$lwr_r,"%")
+               oi$upr_r = paste0(oi$upr_r,"%")
+              }
+             x=data.table(oi[c('type',"effect", "estimate_r","lwr_r",'upr_r')]) 
+           
+            }else{
+             v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+             ci = apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975)) 
+
+             if(back_tran == TRUE & fam == "binomial"){
+              v = perc_*plogis(v)
+              ci = perc_*plogis(ci)
+             }
+            if(back_tran == TRUE & fam == "binomial_logExp"){
+                  v = perc_*(1-plogis(v))
+                  ci = perc_*(1-plogis(ci))
+                  ci = rbind(ci[2,],ci[1,])
+                 }
+
+             if(back_tran == TRUE & fam == "Poisson"){
+              v = exp(v)
+              ci = exp(ci)
+             }
+
+             oi=data.frame(type='fixed',effect=rownames(coef(summary(model))),estimate=v, lwr=ci[1,], upr=ci[2,])
+                rownames(oi) = NULL
+                oi$estimate_r=round(oi$estimate,round_)
+                oi$lwr_r=round(oi$lwr,round_)
+                oi$upr_r=round(oi$upr,round_)
+                if(perc_ == 100){
+                 oi$estimate_r = paste0(oi$estimate_r,"%")
+                 oi$lwr_r = paste0(oi$lwr_r,"%")
+                 oi$upr_r = paste0(oi$upr_r,"%")
+                }
+             oii=oi[c('type',"effect", "estimate_r","lwr_r",'upr_r')] 
+            
+             l=data.frame(summary(model)$varcor)
+             l = l[is.na(l$var2),]
+             l$var1 = ifelse(is.na(l$var1),"",l$var1)
+             l$pred = paste(l$grp,l$var1)
+
+             q050={}
+             q025={}
+             q975={}
+             pred={}
+             
+             # variance of random effects
+             for (ran in names(bsim@ranef)) {
+               ran_type = l$var1[l$grp == ran]
+               for(i in ran_type){
+                q050=c(q050,quantile(apply(bsim@ranef[[ran]][,,ran_type], 1, var), prob=c(0.5)))
+                q025=c(q025,quantile(apply(bsim@ranef[[ran]][,,ran_type], 1, var), prob=c(0.025)))
+                q975=c(q975,quantile(apply(bsim@ranef[[ran]][,,ran_type], 1, var), prob=c(0.975)))
+                pred= c(pred,paste(ran, i))
+                }
+               }
+             # residual variance
+             q050=c(q050,quantile(bsim@sigma^2, prob=c(0.5)))
+             q025=c(q025,quantile(bsim@sigma^2, prob=c(0.025)))
+             q975=c(q975,quantile(bsim@sigma^2, prob=c(0.975)))
+             pred= c(pred,'Residual')
+
+             ri=data.frame(model = name,type='random %',effect=pred, estimate_r=round(100*q050/sum(q050)), lwr_r=round(100*q025/sum(q025)), upr_r=round(100*q975/sum(q975)))
+               rx = ri[ri$effect == 'Residual',]
+               if(rx$lwr_r>rx$upr_r){ri$lwr_r[ri$effect == 'Residual'] = rx$upr_r; ri$upr_r[ri$effect == 'Residual'] = rx$lwr_r}
+               ri$estimate_r = paste0(ri$estimate_r,'%')
+               ri$lwr_r = paste0(ri$lwr_r,'%')
+               ri$upr_r = paste0(ri$upr_r,'%')
+            
+            x = data.table(rbind(oii,ri))
+            }
+            
+            x[1, model := name]                                                                
+            x[1, response := dep]                                                                
+            x[1, error_structure := fam]                                                                
+            x[1, N := N]                                                                
+
+            x=x[ , c('model', 'response', 'error_structure', 'N', 'type',"effect", "estimate_r","lwr_r",'upr_r')] 
+
+            if (aic == TRUE){   
+                x[1, AIC := AIC(update(model,REML = FALSE))] 
+                }
+            if (aic == "AICc"){
+                aicc = AICc(model)
+                x[1, AICc := aicc] 
+            }
+            if(type == "mixed"){
+              x[1, R2_mar := invisible({capture.output({r2_nakagawa(model)$R2_marginal})})]
+              x[1, R2_con := invisible({capture.output({r2_nakagawa(model)$R2_conditional})})]
+             }
+            x[is.na(x)] = ""
+            return(x)
+          } 
+  # DATA
+    f = data.table(
+      f = c(list.files(path = here::here('Data/'), pattern = 'test40', recursive = TRUE, full.names = TRUE)),
+      f2 = c(list.files(path = here::here('Data/'), pattern = 'test40', recursive = TRUE, full.names = FALSE))
+      )   
+
+    ff = f[substr(f2,8,9) == 'KT']
+    d1 = foreach(j = 1:nrow(ff), .combine = rbind) %do% {
+      #k = ff[1,]
+      k = ff[j,]
+      x = fread(file = k[,f])
+      x[, who := substr(k[,f2], 8, 9)]
+      #x[, datetime_ := substr(j, 27, 45)]
+      x[, id := substr(x$'File Name', 1, 2)]
+      x[, pk := 1:nrow(x)]
+      #x[, manip := substr(x$'File Name', 4, nchar(x$'File Name')-7-(nchar(pk)))]
+      
+      #table(x$id)
+      xx = foreach(i = unique(x$id), .combine = rbind) %do% {
+        #i = '02'
+        xi = x[id == i]
+        if(i == '29'){xi = xi[!Pixels<20]}
+        if(nrow(xi) == 4){
+          xi[Pixels == max(Pixels), part := 'Tail']
+          xi[Pixels != max(Pixels), part := c('Acrosome','Nucleus','Midpiece')]
+        }
+
+        if(nrow(xi) == 3){
+          xi[Pixels == max(Pixels), part := 'Tail']
+          xi[Pixels != max(Pixels), part := c('Nucleus','Midpiece')]
+        }
+        
+        if(nrow(xi) == 1){
+          xi[, part := 'Acrosome']
+        }
+        return(xi)
+        }    
+      return(xx)
+      }
+    
+    ff = f[substr(f2,8,9) == 'MB']
+    d2 = foreach(j = 1:nrow(ff), .combine = rbind) %do% {
+      #k = ff[1,]
+      k = ff[j,]
+      x = fread(file = k[,f])
+      x[, who := substr(k[,f2], 8, 9)]
+      #x[, datetime_ := substr(j, 27, 45)]
+      x[, id := substr(x$'File Name', 1, 2)]
+      x[, pk := 1:nrow(x)]
+      #x[, manip := substr(x$'File Name', 4, nchar(x$'File Name')-7-(nchar(pk)))]
+      
+      #table(x$id)
+      xx = foreach(i = unique(x$id), .combine = rbind) %do% {
+        #i = '02'
+        xi = x[id == i]
+        xi[Pixels == max(Pixels), part := 'Tail']
+        xi[Pixels != max(Pixels), part := c('Acrosome','Nucleus','Midpiece')]
+        return(xi)
+        }    
+      return(xx)
+      }
+      
+    ff = f[substr(f2,8,9) == 'MC']
+    d3 = foreach(j = 1:nrow(ff), .combine = rbind) %do% {
+      #k = ff[1,]
+      k = ff[j,]
+      x = fread(file = k[,f])
+      x[, who := substr(k[,f2], 8, 9)]
+      #x[, datetime_ := substr(j, 27, 45)]
+      x[, id := substr(x$'File Name', 1, 2)]
+      x[, pk := 1:nrow(x)]
+      #x[, manip := substr(x$'File Name', 4, nchar(x$'File Name')-7-(nchar(pk)))]
+      
+      #table(x$id)
+      xx = foreach(i = unique(x$id), .combine = rbind) %do% {
+        #i = '02'
+        xi = x[id == i]
+        xi[Pixels == max(Pixels), part := 'Tail']
+        xi[Pixels != max(Pixels), part := c('Acrosome','Nucleus','Midpiece')]
+        return(xi)
+        }    
+      return(xx)
+      }
+        
+    d = rbind(d1,d2,d3)  
+    d[, id_part := paste(id, part)]
+    b = d[id_part %in% d[duplicated(id_part), id_part]] # only sperm ids and parts measured twice
+
+     # composite parts
+         b[, id_who := paste(id, who)]
+         bt = data.table(ddply(b,.(who, id, id_who), summarise, part = 'Total', Pixels = sum(Pixels)))
+         bt = bt[Pixels>1000]
+         bh = data.table(ddply(b[part %in% c('Acrosome','Nucleus')],.(who, id, id_who), summarise, part = 'Head', Pixels = sum(Pixels)))
+         bf = data.table(ddply(b[part %in% c('Midpiece','Tail')],.(who, id, id_who), summarise, part = 'Flagellum', Pixels = sum(Pixels)))
+         bf = bf[Pixels>1000]
+         bc = rbind(bh,bf,bt)
+
+     # wide format
+         bw = reshape(b[,.(who,id,part,Pixels)], idvar = c('id','part'), timevar = 'who', direction = "wide")
+
+         bcw = reshape(bc[,.(who,id,part,Pixels)], idvar = c('id','part'), timevar = 'who', direction = "wide")    
+  # Repeatability prep
+    # all  
+      # estimate BASIC 
+              lfsim = list()
+              lfrpt = list()
+              for(i in c('Acrosome','Nucleus','Midpiece','Tail')){
+                part_ = i
+                # part_ = "Acrosome"
+                dd = b[part == part_]
+                m = lmer(Pixels ~ 1+(1|id), dd)
+                Rf = R_out(part_)
+                lfsim[[i]] = Rf[, method_CI:='arm package']
+
+                R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+                RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+                RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+                lfrpt[[i]] =  RR[, method_CI := 'rpt package']
+                #print(i)
+              } 
+              x = do.call(rbind,lfsim)
+              names(x)[1] = "part"
+              y = do.call(rbind,lfrpt)
+
+              x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
+              x[, lwr:= as.numeric(substr(CI,1,2))]
+              x[, upr:= as.numeric(substr(CI,4,5))]
+
+              y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
+              y[nchar(CI) == 5, CI := paste0(0,CI) ]
+              y[, lwr:= as.numeric(substr(CI,1,2))]
+              y[, upr:= as.numeric(substr(CI,4,5))]
+              names(y)[2] = tolower( names(y)[2])
+              xy = rbind(x,y)
+              xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
+              xy[nchar(CI) == 7 & upr == 10, upr := 100]
+      # estimate COMPOSITE
+              lfsim = list()
+              lfrpt = list()
+              for(i in c("Head", "Flagellum","Total")){
+                part_ = i
+                # part_ = "Flagellum"
+                dd = bc[part == part_]
+                m = lmer(Pixels ~ 1+(1|id), dd)
+                Rf = R_out(part_)
+                lfsim[[i]] = Rf[, method_CI:='arm package']
+
+                R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+                RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+                RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+                lfrpt[[i]] =  RR[, method_CI := 'rpt package']
+                #print(i)
+              }
+              
+              x = do.call(rbind,lfsim)
+              names(x)[1] = "part"
+              y = do.call(rbind,lfrpt)
+
+              x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
+              x[, lwr:= as.numeric(substr(CI,1,2))]
+              x[, upr:= as.numeric(substr(CI,4,5))]
+
+              y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
+              y[nchar(CI) == 5, CI := paste0(0,CI) ]
+              y[, lwr:= as.numeric(substr(CI,1,2))]
+              y[, upr:= as.numeric(substr(CI,4,5))]
+              names(y)[2] = tolower( names(y)[2])
+              xy2 = rbind(x,y)
+              xy2[, part := factor(part, levels=c("Head","Flagellum","Total"))] 
+              xy2[nchar(CI) == 7 & upr == 10, upr := 100]
+    # plot repeatability KT, MB
+      # estimate BASIC 
+          lfsim = list()
+          lfrpt = list()
+          for(i in c('Acrosome','Nucleus','Midpiece','Tail')){
+            part_ = i
+            # part_ = "Acrosome"
+            dd = b[part == part_ & who %in% c('KT','MB')]
+            m = lmer(Pixels ~ 1+(1|id), dd)
+            Rf = R_out(part_)
+            lfsim[[i]] = Rf[, method_CI:='arm package']
+
+            R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+            RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+            RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+            lfrpt[[i]] =  RR[, method_CI := 'rpt package']
+            print(i)
+          } 
+          x = do.call(rbind,lfsim)
+          names(x)[1] = "part"
+          y = do.call(rbind,lfrpt)
+
+          x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
+          x[, lwr:= as.numeric(substr(CI,1,2))]
+          x[, upr:= as.numeric(substr(CI,4,5))]
+
+          y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
+          y[nchar(CI) == 5, CI := paste0(0,CI) ]
+          y[, lwr:= as.numeric(substr(CI,1,2))]
+          y[, upr:= as.numeric(substr(CI,4,5))]
+          names(y)[2] = tolower( names(y)[2])
+          xyKTMB = rbind(x,y)
+          xyKTMB[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
+          xyKTMB[nchar(CI) == 7 & upr == 10, upr := 100]
+      # estimate COMPOSITE
+          lfsim = list()
+          lfrpt = list()
+          for(i in c("Head", "Flagellum","Total")){
+            part_ = i
+            # part_ = "Flagellum"
+            dd = bc[part == part_ & who %in% c('KT','MB')]
+            m = lmer(Pixels ~ 1+(1|id), dd)
+            Rf = R_out(part_)
+            lfsim[[i]] = Rf[, method_CI:='arm package']
+
+            R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+            RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+            RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+            lfrpt[[i]] =  RR[, method_CI := 'rpt package']
+            print(i)
+          }
+          
+          x = do.call(rbind,lfsim)
+          names(x)[1] = "part"
+          y = do.call(rbind,lfrpt)
+
+          x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
+          x[, lwr:= as.numeric(substr(CI,1,2))]
+          x[, upr:= as.numeric(substr(CI,4,5))]
+
+          y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
+          y[nchar(CI) == 5, CI := paste0(0,CI) ]
+          y[, lwr:= as.numeric(substr(CI,1,2))]
+          y[, upr:= as.numeric(substr(CI,4,5))]
+          names(y)[2] = tolower( names(y)[2])
+          xy2KTMB = rbind(x,y)
+          xy2KTMB[, part := factor(part, levels=c("Head","Flagellum","Total"))] 
+          xy2KTMB[nchar(CI) == 7 & upr == 10, upr := 100]
+    # plot repeatability MB, MC
+      # estimate BASIC 
+          lfsim = list()
+          lfrpt = list()
+          for(i in c('Acrosome','Nucleus','Midpiece','Tail')){
+            part_ = i
+            # part_ = "Acrosome"
+            dd = b[part == part_ & who %in% c('MC','MB')]
+            m = lmer(Pixels ~ 1+(1|id), dd)
+            Rf = R_out(part_)
+            lfsim[[i]] = Rf[, method_CI:='arm package']
+
+            R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+            RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+            RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+            lfrpt[[i]] =  RR[, method_CI := 'rpt package']
+            print(i)
+          } 
+          x = do.call(rbind,lfsim)
+          names(x)[1] = "part"
+          y = do.call(rbind,lfrpt)
+
+          x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
+          x[, lwr:= as.numeric(substr(CI,1,2))]
+          x[, upr:= as.numeric(substr(CI,4,5))]
+
+          y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
+          y[nchar(CI) == 5, CI := paste0(0,CI) ]
+          y[, lwr:= as.numeric(substr(CI,1,2))]
+          y[, upr:= as.numeric(substr(CI,4,5))]
+          names(y)[2] = tolower( names(y)[2])
+          xyMBMC = rbind(x,y)
+          xyMBMC[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
+          xyMBMC[nchar(CI) == 7 & upr == 10, upr := 100]
+      # estimate COMPOSITE
+          lfsim = list()
+          lfrpt = list()
+          for(i in c("Head", "Flagellum","Total")){
+            part_ = i
+            # part_ = "Flagellum"
+            dd = bc[part == part_ & who %in% c('MC','MB')]
+            m = lmer(Pixels ~ 1+(1|id), dd)
+            Rf = R_out(part_)
+            lfsim[[i]] = Rf[, method_CI:='arm package']
+
+            R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+            RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+            RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+            lfrpt[[i]] =  RR[, method_CI := 'rpt package']
+            print(i)
+          }
+          
+          x = do.call(rbind,lfsim)
+          names(x)[1] = "part"
+          y = do.call(rbind,lfrpt)
+
+          x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
+          x[, lwr:= as.numeric(substr(CI,1,2))]
+          x[, upr:= as.numeric(substr(CI,4,5))]
+
+          y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
+          y[nchar(CI) == 5, CI := paste0(0,CI) ]
+          y[, lwr:= as.numeric(substr(CI,1,2))]
+          y[, upr:= as.numeric(substr(CI,4,5))]
+          names(y)[2] = tolower( names(y)[2])
+          xy2MBMC = rbind(x,y)
+          xy2MBMC[, part := factor(part, levels=c("Head","Flagellum","Total"))] 
+          xy2MBMC[nchar(CI) == 7 & upr == 10, upr := 100]
+    # plot repeatability KT, MC
+      # estimate BASIC 
+          lfsim = list()
+          lfrpt = list()
+          for(i in c('Acrosome','Nucleus','Midpiece','Tail')){
+            part_ = i
+            # part_ = "Acrosome"
+            dd = b[part == part_ & who %in% c('MC','KT')]
+            m = lmer(Pixels ~ 1+(1|id), dd)
+            Rf = R_out(part_)
+            lfsim[[i]] = Rf[, method_CI:='arm package']
+
+            R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+            RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+            RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+            lfrpt[[i]] =  RR[, method_CI := 'rpt package']
+            print(i)
+          } 
+          x = do.call(rbind,lfsim)
+          names(x)[1] = "part"
+          y = do.call(rbind,lfrpt)
+
+          x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
+          x[, lwr:= as.numeric(substr(CI,1,2))]
+          x[, upr:= as.numeric(substr(CI,4,5))]
+
+          y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
+          y[nchar(CI) == 5, CI := paste0(0,CI) ]
+          y[, lwr:= as.numeric(substr(CI,1,2))]
+          y[, upr:= as.numeric(substr(CI,4,5))]
+          names(y)[2] = tolower( names(y)[2])
+          xyKTMC = rbind(x,y)
+          xyKTMC[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
+          xyKTMC[nchar(CI) == 7 & upr == 10, upr := 100]
+      # estimate COMPOSITE
+          lfsim = list()
+          lfrpt = list()
+          for(i in c("Head", "Flagellum","Total")){
+            part_ = i
+            # part_ = "Flagellum"
+            dd = bc[part == part_ & who %in% c('MC','KT')]
+            m = lmer(Pixels ~ 1+(1|id), dd)
+            Rf = R_out(part_)
+            lfsim[[i]] = Rf[, method_CI:='arm package']
+
+            R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+            RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+            RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+            lfrpt[[i]] =  RR[, method_CI := 'rpt package']
+            print(i)
+          }
+          
+          x = do.call(rbind,lfsim)
+          names(x)[1] = "part"
+          y = do.call(rbind,lfrpt)
+
+          x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
+          x[, lwr:= as.numeric(substr(CI,1,2))]
+          x[, upr:= as.numeric(substr(CI,4,5))]
+
+          y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
+          y[nchar(CI) == 5, CI := paste0(0,CI) ]
+          y[, lwr:= as.numeric(substr(CI,1,2))]
+          y[, upr:= as.numeric(substr(CI,4,5))]
+          names(y)[2] = tolower( names(y)[2])
+          xy2KTMC = rbind(x,y)
+          xy2KTMC[, part := factor(part, levels=c("Head","Flagellum","Total"))] 
+          xy2KTMC[nchar(CI) == 7 & upr == 10, upr := 100]              
+
+```
+
+***
+
+# Correlations between Kim, Martin & Maggie
+```{r Cor,  warning = FALSE, message = FALSE, fig.align="center", fig.width=6.5, fig.height=8}
+  g1= ggplot(bw, aes(x = Pixels.KT, y = Pixels.MB)) +
+        facet_wrap(~part, scales = "free") +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()
+  g2 = ggplot(bcw, aes(x = Pixels.KT, y = Pixels.MB)) +
+        facet_wrap(~part, scales = "free", nrow = 2) +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()
+
+  g3= ggplot(bw, aes(x = Pixels.MC, y = Pixels.MB)) +
+        facet_wrap(~part, scales = "free") +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()
+  g4 = ggplot(bcw, aes(x = Pixels.MC, y = Pixels.MB)) +
+        facet_wrap(~part, scales = "free", nrow = 2) +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()       
+
+  g5= ggplot(bw, aes(x = Pixels.KT, y = Pixels.MC)) +
+        facet_wrap(~part, scales = "free") +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()
+  g6 = ggplot(bcw, aes(x = Pixels.KT, y = Pixels.MC)) +
+        facet_wrap(~part, scales = "free", nrow = 2) +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()   
+
+  grid.draw(rbind(cbind(ggplotGrob(g1), ggplotGrob(g2)), cbind(ggplotGrob(g3), ggplotGrob(g4)),cbind(ggplotGrob(g5), ggplotGrob(g6))))
+ 
+```
+
+# Repeatability of the three measurements (Kim's, Martin's & Maggie's)
+```{r Rall,  warning = FALSE, message = FALSE, fig.align="center", fig.width=8, fig.height=2}
+
+    g1 = 
+        ggplot(xy, aes(x = part, y = pred, col = method_CI)) +
+          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.25)) +
+          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
+          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
+          geom_hline(yintercept = 99, col = 'red')+
+          labs(x = NULL, y = "Repeatability [%]")+
+          ylim(c(min(xy$lwr),max(xy$upr)))+
+          scale_y_continuous(breaks = seq(min(xy$lwr), 99, length.out=6))+
+          coord_flip()+
+          theme_bw() +
+          theme(plot.title = element_text(size=9),
+            legend.position = "none")
+    
+    g2 = 
+        ggplot(xy2, aes(x = part, y = pred, col = method_CI)) +
+          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.25)) +
+          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
+          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
+          labs(x = NULL, y = "Repeatability [%]")+
+          ylim(c(min(xy2$lwr),max(xy2$upr)))+
+          coord_flip()+
+          theme_bw() +
+          theme(plot.title = element_text(size=9))
+    
+    grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), size = 'last'))
+```
+
+```{r RallT,  echo = FALSE, message = FALSE}
+rbind(xy,xy2)[,1:4]
+```
+
+# Repeatability of Kim & Martin
+```{r R_KTMB,  warning = FALSE, message = FALSE, fig.align="center", fig.width=8, fig.height=2}
+
+    g1 = 
+        ggplot(xyKTMB, aes(x = part, y = pred, col = method_CI)) +
+          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.25)) +
+          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
+          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
+          geom_hline(yintercept = 99, col = 'red')+
+          labs(x = NULL, y = "Repeatability [%]")+
+          ylim(c(min(xyKTMB$lwr),max(xyKTMB$upr)))+
+          scale_y_continuous(breaks = (seq(min(xyKTMB$lwr), 99, length.out=6)))+
+          coord_flip()+
+          theme_bw() +
+          theme(plot.title = element_text(size=9),
+            legend.position = "none")
+    
+    g2 = 
+        ggplot(xy2KTMB, aes(x = part, y = pred, col = method_CI)) +
+          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.25)) +
+          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
+          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
+          labs(x = NULL, y = "Repeatability [%]")+
+          ylim(c(min(xy2KTMB$lwr),max(xy2KTMB$upr)))+
+          coord_flip()+
+          theme_bw() +
+          theme(plot.title = element_text(size=9))
+    
+    grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), size = 'last'))
+```
+
+```{r R_KTMB_T,  echo = FALSE, message = FALSE}
+rbind(xyKTMB,xy2KTMB)[,1:4]
+```
+
+# Repeatability of Kim & Maggie
+```{r R_KTMC,  warning = FALSE, message = FALSE, fig.align="center", fig.width=8, fig.height=2}
+
+    g1 = 
+        ggplot(xyKTMC, aes(x = part, y = pred, col = method_CI)) +
+          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.25)) +
+          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
+          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
+          geom_hline(yintercept = 99, col = 'red')+
+          labs(x = NULL, y = "Repeatability [%]")+
+          ylim(c(min(xyKTMC$lwr),max(xyKTMC$upr)))+
+          scale_y_continuous(breaks = seq(min(xyKTMC$lwr), 99, length.out=6))+
+          coord_flip()+
+          theme_bw() +
+          theme(plot.title = element_text(size=9),
+            legend.position = "none")
+    
+    g2 = 
+        ggplot(xy2KTMC, aes(x = part, y = pred, col = method_CI)) +
+          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.25)) +
+          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
+          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
+          labs(x = NULL, y = "Repeatability [%]")+
+          ylim(c(min(xy2KTMC$lwr),max(xy2KTMC$upr)))+
+          coord_flip()+
+          theme_bw() +
+          theme(plot.title = element_text(size=9))
+    
+    grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), size = 'last'))
+```
+
+```{r R_KTMC_T,  echo = FALSE, message = FALSE}
+rbind(xyKTMC,xy2KTMC)[,1:4]
+```
+
+# Repeatability of Martin & Maggie'
+```{r R_MBMC,  warning = FALSE, message = FALSE, fig.align="center", fig.width=8, fig.height=2}
+
+    g1 = 
+        ggplot(xyMBMC, aes(x = part, y = pred, col = method_CI)) +
+          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.25)) +
+          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
+          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
+          geom_hline(yintercept = 99, col = 'red')+
+          labs(x = NULL, y = "Repeatability [%]")+
+          ylim(c(min(xyMBMC$lwr),max(xyMBMC$upr)))+
+          scale_y_continuous(breaks = seq(min(xyMBMC$lwr), 99, length.out=6))+
+          coord_flip()+
+          theme_bw() +
+          theme(plot.title = element_text(size=9),
+            legend.position = "none")
+    
+    g2 = 
+        ggplot(xy2MBMC, aes(x = part, y = pred, col = method_CI)) +
+          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.25)) +
+          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
+          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
+          labs(x = NULL, y = "Repeatability [%]")+
+          ylim(c(min(xy2MBMC$lwr),max(xy2MBMC$upr)))+
+          coord_flip()+
+          theme_bw() +
+          theme(plot.title = element_text(size=9))
+    
+    grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), size = 'last'))
+```
+
+```{r R_MBMC_T,  echo = FALSE, message = FALSE}
+rbind(xyMBMC,xy2MBMC)[,1:4]
+```
+
+# TEST
+```{r test,  warning = FALSE, message = FALSE, fig.align="center", fig.width=8, fig.height=2}
+xyMBMC[,comparison := 'Martin - Maggie']
+xyKTMC[,comparison := 'Kim - Maggie']
+xyKTMB[,comparison := 'Kim - Martin']
+xy[,comparison := 'all three']
+xy_ = rbind(xy, xyKTMC, xyKTMB, xyMBMC)
+xy_[pred==10,pred:=100]  
+
+
+xy2MBMC[,comparison := 'Martin - Maggie']
+xy2KTMC[,comparison := 'Kim - Maggie']
+xy2KTMB[,comparison := 'Kim - Martin']
+xy2[,comparison := 'all three']
+xy2_ = rbind(xy2,xy2KTMC,xy2KTMB,xy2MBMC)
+
+
+g1 =
+ggplot(xy_, aes(x = part, y = pred, col = comparison, shape = method_CI)) +
+          geom_errorbar(aes(ymin = lwr, ymax = upr, col = comparison), width = 0.1, position = position_dodge(width = 0.7) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.7)) +
+          #scale_fill_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE)) +
+          #scale_color_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE))  +
+          scale_color_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE))  +
+          scale_fill_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE)) + 
+          scale_shape(guide = guide_legend(reverse = TRUE)) + 
+          geom_hline(yintercept = 99, col = 'red')+
+          labs(x = NULL, y = "Repeatability [%]")+
+          ylim(c(min(xy_$lwr),max(xy_$upr)))+
+          scale_y_continuous(breaks = c(65, 70, 80, 85, 90, 95, 100))+
+          geom_text(y =99, x =0.5, label = '99', col = 'red', size = 3)+
+          coord_flip()+
+          theme_bw() +
+          theme(legend.position = "none")
+g2 =
+ggplot(xy2_, aes(x = part, y = pred, col = comparison, shape = method_CI)) +
+          geom_errorbar(aes(ymin = lwr, ymax = upr, col = comparison), width = 0.1, position = position_dodge(width = 0.7) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.7)) +
+          #scale_fill_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE)) +
+          #scale_color_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE))  +
+          scale_color_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE))  +
+          scale_fill_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE)) + 
+          scale_shape(guide = guide_legend(reverse = TRUE)) + 
+          geom_hline(yintercept = 99, col = 'red')+
+          labs(x = NULL, y = "Repeatability [%]")+
+          ylim(c(min(xy2_$lwr),max(xy2_$upr)))+
+          scale_y_continuous(breaks = c(96, 97, 98, 99, 100))+
+          #geom_text(y =99, x =0.5, label = '99', col = 'red', size = 2.7)+
+          coord_flip()+
+          theme_bw() +
+          theme(
+              legend.text=element_text(size=6),
+              legend.title=element_text(size=7),
+              legend.key = element_rect(colour = NA, fill = NA),
+              legend.key.height= unit(0.5,"line"),
+              legend.key.width = unit(0.25, "cm"),
+              legend.margin = margin(0,0,0,0, unit="cm"),
+              legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
+              legend.background = element_blank()
+              )
+grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), size = 'last'))
+```
+
+# TEST2
+```{r test2,  warning = FALSE, message = FALSE, fig.align="center", fig.width=4, fig.height=4}
+
+g1 =
+ggplot(xy_, aes(x = part, y = pred, col = comparison, shape = method_CI)) +
+          geom_errorbar(aes(ymin = lwr, ymax = upr, col = comparison), width = 0.1, position = position_dodge(width = 0.8) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.8)) +
+          #scale_fill_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE)) +
+          #scale_color_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE))  +
+          scale_color_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE))  +
+          scale_fill_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE)) + 
+          scale_shape(guide = guide_legend(reverse = TRUE)) + 
+          geom_hline(yintercept = 99, col = 'red')+
+          labs(x = NULL, y = "Repeatability [%]")+
+          ylim(c(min(xy_$lwr),max(xy_$upr)))+
+          scale_y_continuous(breaks = c(65, 70, 80, 85, 90, 95, 100))+
+          geom_text(y =99, x =0.6, label = '99', col = 'red', size = 3)+
+          coord_flip()+
+          theme_bw() +
+          theme(
+              axis.title.x = element_blank(),
+              legend.text=element_text(size=6),
+              legend.title=element_text(size=7),
+              legend.key = element_rect(colour = NA, fill = NA),
+              legend.key.height= unit(0.5,"line"),
+              legend.key.width = unit(0.25, "cm"),
+              legend.margin = margin(0,0,0,0, unit="cm"),
+              legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
+              legend.background = element_blank()
+              )
+legend = get_legend(g1)
+g1b = g1 + theme(legend.position="none")  
+
+g2 =
+ggplot(xy2_, aes(x = part, y = pred, col = comparison, shape = method_CI)) +
+          geom_errorbar(aes(ymin = lwr, ymax = upr, col = comparison), width = 0.1, position = position_dodge(width = 0.8) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.8)) +
+          #scale_fill_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE)) +
+          #scale_color_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE))  +
+          scale_color_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE))  +
+          scale_fill_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE)) + 
+          scale_shape(guide = guide_legend(reverse = TRUE)) + 
+          geom_hline(yintercept = 99, col = 'red')+
+          labs(x = NULL, y = "Repeatability [%]")+
+          ylim(c(min(xy2_$lwr),max(xy2_$upr)))+
+          scale_y_continuous(breaks = c(96, 97, 98, 99, 100))+
+          #geom_text(y =99, x =0.5, label = '99', col = 'red', size = 2.7)+
+          coord_flip()+
+          theme_bw() +
+          theme(legend.position="none")  
+
+blank = ggplot() + theme_void() 
+ggA = ggarrange(
+    g1b ,  
+    g2,
+    nrow=2, 
+    heights=c(4, 3),
+    align = 'v'
+    )
+ggL = ggarrange(legend, blank, nrow=2)
+ggarrange(ggA, ggL, ncol=2, widths=c(4, 1))
+
+#grid.draw(rbind(ggplotGrob(g1), ggplotGrob(g2), size = 'last'))
+```
