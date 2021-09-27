@@ -614,8 +614,9 @@ Code to load tools and prepare data:
 
 ***
 
-# Correlations between Kim, Martin & Maggie
-```{r Cor,  warning = FALSE, message = FALSE, fig.align="center", fig.width=6.5, fig.height=8}
+# Correlations
+Kim (KT), Martin (MB) & Maggie (MB):
+```{r Cor,  warning = FALSE, message = FALSE, fig.width=6.5, fig.height=8}
   g1= ggplot(bw, aes(x = Pixels.KT, y = Pixels.MB)) +
         facet_wrap(~part, scales = "free") +  
         stat_smooth(method = 'lm')+geom_point()+
@@ -667,294 +668,115 @@ Code to load tools and prepare data:
         #ggtitle('All')+
         theme_bw()   
 
-  grid.draw(rbind(cbind(ggplotGrob(g1), ggplotGrob(g2)), cbind(ggplotGrob(g3), ggplotGrob(g4)),cbind(ggplotGrob(g5), ggplotGrob(g6))))
+  grid.draw(rbind(cbind(ggplotGrob(g1), ggplotGrob(g2)),cbind(ggplotGrob(g5), ggplotGrob(g6)), cbind(ggplotGrob(g3), ggplotGrob(g4))))
+
+  #ggsave(file = here::here('Output/test-40_cor-ALL.png'),rbind(cbind(ggplotGrob(g1), ggplotGrob(g2)),cbind(ggplotGrob(g5), ggplotGrob(g6)), cbind(ggplotGrob(g3), ggplotGrob(g4))), width = 6.5*2.5, height =8*2.5, units = 'cm')
  
 ```
 
-# Repeatability of the three measurements (Kim's, Martin's & Maggie's)
-```{r Rall,  warning = FALSE, message = FALSE, fig.align="center", fig.width=8, fig.height=2}
+***
 
-    g1 = 
-        ggplot(xy, aes(x = part, y = pred, col = method_CI)) +
-          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
-          #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.25)) +
-          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
-          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
-          geom_hline(yintercept = 99, col = 'red')+
-          labs(x = NULL, y = "Repeatability [%]")+
-          ylim(c(min(xy$lwr),max(xy$upr)))+
-          scale_y_continuous(breaks = seq(min(xy$lwr), 99, length.out=6))+
-          coord_flip()+
-          theme_bw() +
-          theme(plot.title = element_text(size=9),
-            legend.position = "none")
-    
-    g2 = 
-        ggplot(xy2, aes(x = part, y = pred, col = method_CI)) +
-          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
-          #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.25)) +
-          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
-          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
-          labs(x = NULL, y = "Repeatability [%]")+
-          ylim(c(min(xy2$lwr),max(xy2$upr)))+
-          coord_flip()+
-          theme_bw() +
-          theme(plot.title = element_text(size=9))
-    
-    grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), size = 'last'))
+# Repeatability
+
+```{r Rep,  warning = FALSE, message = FALSE, fig.width=4, fig.height=4.25}
+  xyMBMC[,comparison := 'Martin - Maggie']
+  xyKTMC[,comparison := 'Kim - Maggie']
+  xyKTMB[,comparison := 'Kim - Martin']
+  xy[,comparison := 'all three']
+  xy_ = rbind(xy, xyKTMC, xyKTMB, xyMBMC)
+  xy_[pred==10,pred:=100]  
+
+
+  xy2MBMC[,comparison := 'Martin - Maggie']
+  xy2KTMC[,comparison := 'Kim - Maggie']
+  xy2KTMB[,comparison := 'Kim - Martin']
+  xy2[,comparison := 'all three']
+  xy2_ = rbind(xy2,xy2KTMC,xy2KTMB,xy2MBMC)
+
+  g1 =
+  ggplot(xy_, aes(x = part, y = pred, col = comparison, shape = method_CI)) +
+            geom_errorbar(aes(ymin = lwr, ymax = upr, col = comparison), width = 0.1, position = position_dodge(width = 0.9) ) +
+            #ggtitle ("Sim based")+
+            geom_point(position = position_dodge(width = 0.9)) +
+            #scale_fill_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE)) +
+            #scale_color_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE))  +
+            scale_color_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE))  +
+            scale_fill_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE)) + 
+            scale_shape(guide = guide_legend(reverse = TRUE)) + 
+            geom_hline(yintercept = 99, col = 'red')+
+            labs(x = NULL, y = "Repeatability [%]")+
+            ylim(c(min(xy_$lwr),max(xy_$upr)))+
+            scale_y_continuous(breaks = c(65, 70, 80, 85, 90, 95, 100))+
+            geom_text(y =99, x =0.6, label = '99', col = 'red', size = 3)+
+            coord_flip()+
+            theme_bw() +
+            theme(
+                axis.title.x = element_blank(),
+                legend.text=element_text(size=6),
+                legend.title=element_text(size=7),
+                legend.key = element_rect(colour = NA, fill = NA),
+                legend.key.height= unit(0.5,"line"),
+                legend.key.width = unit(0.25, "cm"),
+                legend.margin = margin(0,0,0,0, unit="cm"),
+                legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
+                legend.background = element_blank()
+                )
+  legend = get_legend(g1)
+  g1b = g1 + theme(legend.position="none")  
+
+  g2 =
+  ggplot(xy2_, aes(x = part, y = pred, col = comparison, shape = method_CI)) +
+            geom_errorbar(aes(ymin = lwr, ymax = upr, col = comparison), width = 0.1, position = position_dodge(width = 0.9) ) +
+            #ggtitle ("Sim based")+
+            geom_point(position = position_dodge(width = 0.9)) +
+            #scale_fill_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE)) +
+            #scale_color_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE))  +
+            scale_color_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE))  +
+            scale_fill_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE)) + 
+            scale_shape(guide = guide_legend(reverse = TRUE)) + 
+            geom_hline(yintercept = 99, col = 'red')+
+            labs(x = NULL, y = "Repeatability [%]")+
+            ylim(c(min(xy2_$lwr),max(xy2_$upr)))+
+            scale_y_continuous(breaks = c(96, 97, 98, 99, 100))+
+            #geom_text(y =99, x =0.5, label = '99', col = 'red', size = 2.7)+
+            coord_flip()+
+            theme_bw() +
+            theme(legend.position="none")  
+
+  blank = ggplot() + theme_void() 
+  ggA = ggarrange(
+      g1b ,  
+      g2,
+      nrow=2, 
+      heights=c(4, 3),
+      align = 'v'
+      )
+  ggL = ggarrange(legend, blank, nrow=2)
+  ggarrange(ggA, ggL, ncol=2, widths=c(4, 1))
+  #ggsave(file = here::here('Output/test-40_rep-ALL.jpeg'), ggarrange(ggA, ggL, ncol=2, widths=c(4, 1)), dpi = 300, width = 4, height = 4.25)
+
 ```
+Actual repeatability values for:
+
+* Kim, Martin, Maggie (ALL), 
+* Kim & Martin (KT_MB), 
+* Kim & Maggie (KT_MC) and 
+* Martin & Maggie (MB_MC)
 
 ```{r RallT,  echo = FALSE, message = FALSE}
-rbind(xy,xy2)[,1:4]
-```
+aa = rbind(xy,xy2)
+aa[, ALL := paste0(repeatability," [", CI, "]")]
+aaa = cbind(aa[,4], aa[,1], aa[,9])
 
-# Repeatability of Kim & Martin
-```{r R_KTMB,  warning = FALSE, message = FALSE, fig.align="center", fig.width=8, fig.height=2}
+km = rbind(xyKTMB,xy2KTMB)[,1:4]
+aaa[, KT_MB := paste0(km$repeatability," [", km$CI, "]")]
 
-    g1 = 
-        ggplot(xyKTMB, aes(x = part, y = pred, col = method_CI)) +
-          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
-          #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.25)) +
-          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
-          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
-          geom_hline(yintercept = 99, col = 'red')+
-          labs(x = NULL, y = "Repeatability [%]")+
-          ylim(c(min(xyKTMB$lwr),max(xyKTMB$upr)))+
-          scale_y_continuous(breaks = (seq(min(xyKTMB$lwr), 99, length.out=6)))+
-          coord_flip()+
-          theme_bw() +
-          theme(plot.title = element_text(size=9),
-            legend.position = "none")
-    
-    g2 = 
-        ggplot(xy2KTMB, aes(x = part, y = pred, col = method_CI)) +
-          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
-          #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.25)) +
-          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
-          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
-          labs(x = NULL, y = "Repeatability [%]")+
-          ylim(c(min(xy2KTMB$lwr),max(xy2KTMB$upr)))+
-          coord_flip()+
-          theme_bw() +
-          theme(plot.title = element_text(size=9))
-    
-    grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), size = 'last'))
-```
+kc = rbind(xyKTMC,xy2KTMC)[,1:4]
+aaa[, KT_MC := paste0(kc$repeatability," [", kc$CI, "]")]
 
-```{r R_KTMB_T,  echo = FALSE, message = FALSE}
-rbind(xyKTMB,xy2KTMB)[,1:4]
-```
+mm = rbind(xyMBMC,xy2MBMC)[,1:4]
+aaa[, MB_MC := paste0(mm$repeatability," [", mm$CI, "]")]
 
-# Repeatability of Kim & Maggie
-```{r R_KTMC,  warning = FALSE, message = FALSE, fig.align="center", fig.width=8, fig.height=2}
+aaa
 
-    g1 = 
-        ggplot(xyKTMC, aes(x = part, y = pred, col = method_CI)) +
-          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
-          #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.25)) +
-          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
-          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
-          geom_hline(yintercept = 99, col = 'red')+
-          labs(x = NULL, y = "Repeatability [%]")+
-          ylim(c(min(xyKTMC$lwr),max(xyKTMC$upr)))+
-          scale_y_continuous(breaks = seq(min(xyKTMC$lwr), 99, length.out=6))+
-          coord_flip()+
-          theme_bw() +
-          theme(plot.title = element_text(size=9),
-            legend.position = "none")
-    
-    g2 = 
-        ggplot(xy2KTMC, aes(x = part, y = pred, col = method_CI)) +
-          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
-          #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.25)) +
-          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
-          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
-          labs(x = NULL, y = "Repeatability [%]")+
-          ylim(c(min(xy2KTMC$lwr),max(xy2KTMC$upr)))+
-          coord_flip()+
-          theme_bw() +
-          theme(plot.title = element_text(size=9))
-    
-    grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), size = 'last'))
-```
-
-```{r R_KTMC_T,  echo = FALSE, message = FALSE}
-rbind(xyKTMC,xy2KTMC)[,1:4]
-```
-
-# Repeatability of Martin & Maggie'
-```{r R_MBMC,  warning = FALSE, message = FALSE, fig.align="center", fig.width=8, fig.height=2}
-
-    g1 = 
-        ggplot(xyMBMC, aes(x = part, y = pred, col = method_CI)) +
-          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
-          #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.25)) +
-          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
-          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
-          geom_hline(yintercept = 99, col = 'red')+
-          labs(x = NULL, y = "Repeatability [%]")+
-          ylim(c(min(xyMBMC$lwr),max(xyMBMC$upr)))+
-          scale_y_continuous(breaks = seq(min(xyMBMC$lwr), 99, length.out=6))+
-          coord_flip()+
-          theme_bw() +
-          theme(plot.title = element_text(size=9),
-            legend.position = "none")
-    
-    g2 = 
-        ggplot(xy2MBMC, aes(x = part, y = pred, col = method_CI)) +
-          geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
-          #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.25)) +
-          scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
-          scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
-          labs(x = NULL, y = "Repeatability [%]")+
-          ylim(c(min(xy2MBMC$lwr),max(xy2MBMC$upr)))+
-          coord_flip()+
-          theme_bw() +
-          theme(plot.title = element_text(size=9))
-    
-    grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), size = 'last'))
-```
-
-```{r R_MBMC_T,  echo = FALSE, message = FALSE}
-rbind(xyMBMC,xy2MBMC)[,1:4]
-```
-
-# TEST
-```{r test,  warning = FALSE, message = FALSE, fig.align="center", fig.width=8, fig.height=2}
-xyMBMC[,comparison := 'Martin - Maggie']
-xyKTMC[,comparison := 'Kim - Maggie']
-xyKTMB[,comparison := 'Kim - Martin']
-xy[,comparison := 'all three']
-xy_ = rbind(xy, xyKTMC, xyKTMB, xyMBMC)
-xy_[pred==10,pred:=100]  
-
-
-xy2MBMC[,comparison := 'Martin - Maggie']
-xy2KTMC[,comparison := 'Kim - Maggie']
-xy2KTMB[,comparison := 'Kim - Martin']
-xy2[,comparison := 'all three']
-xy2_ = rbind(xy2,xy2KTMC,xy2KTMB,xy2MBMC)
-
-
-g1 =
-ggplot(xy_, aes(x = part, y = pred, col = comparison, shape = method_CI)) +
-          geom_errorbar(aes(ymin = lwr, ymax = upr, col = comparison), width = 0.1, position = position_dodge(width = 0.7) ) +
-          #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.7)) +
-          #scale_fill_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE)) +
-          #scale_color_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE))  +
-          scale_color_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE))  +
-          scale_fill_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE)) + 
-          scale_shape(guide = guide_legend(reverse = TRUE)) + 
-          geom_hline(yintercept = 99, col = 'red')+
-          labs(x = NULL, y = "Repeatability [%]")+
-          ylim(c(min(xy_$lwr),max(xy_$upr)))+
-          scale_y_continuous(breaks = c(65, 70, 80, 85, 90, 95, 100))+
-          geom_text(y =99, x =0.5, label = '99', col = 'red', size = 3)+
-          coord_flip()+
-          theme_bw() +
-          theme(legend.position = "none")
-g2 =
-ggplot(xy2_, aes(x = part, y = pred, col = comparison, shape = method_CI)) +
-          geom_errorbar(aes(ymin = lwr, ymax = upr, col = comparison), width = 0.1, position = position_dodge(width = 0.7) ) +
-          #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.7)) +
-          #scale_fill_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE)) +
-          #scale_color_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE))  +
-          scale_color_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE))  +
-          scale_fill_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE)) + 
-          scale_shape(guide = guide_legend(reverse = TRUE)) + 
-          geom_hline(yintercept = 99, col = 'red')+
-          labs(x = NULL, y = "Repeatability [%]")+
-          ylim(c(min(xy2_$lwr),max(xy2_$upr)))+
-          scale_y_continuous(breaks = c(96, 97, 98, 99, 100))+
-          #geom_text(y =99, x =0.5, label = '99', col = 'red', size = 2.7)+
-          coord_flip()+
-          theme_bw() +
-          theme(
-              legend.text=element_text(size=6),
-              legend.title=element_text(size=7),
-              legend.key = element_rect(colour = NA, fill = NA),
-              legend.key.height= unit(0.5,"line"),
-              legend.key.width = unit(0.25, "cm"),
-              legend.margin = margin(0,0,0,0, unit="cm"),
-              legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
-              legend.background = element_blank()
-              )
-grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), size = 'last'))
-```
-
-# TEST2
-```{r test2,  warning = FALSE, message = FALSE, fig.align="center", fig.width=4, fig.height=4.25}
-
-g1 =
-ggplot(xy_, aes(x = part, y = pred, col = comparison, shape = method_CI)) +
-          geom_errorbar(aes(ymin = lwr, ymax = upr, col = comparison), width = 0.1, position = position_dodge(width = 0.9) ) +
-          #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.9)) +
-          #scale_fill_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE)) +
-          #scale_color_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE))  +
-          scale_color_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE))  +
-          scale_fill_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE)) + 
-          scale_shape(guide = guide_legend(reverse = TRUE)) + 
-          geom_hline(yintercept = 99, col = 'red')+
-          labs(x = NULL, y = "Repeatability [%]")+
-          ylim(c(min(xy_$lwr),max(xy_$upr)))+
-          scale_y_continuous(breaks = c(65, 70, 80, 85, 90, 95, 100))+
-          geom_text(y =99, x =0.6, label = '99', col = 'red', size = 3)+
-          coord_flip()+
-          theme_bw() +
-          theme(
-              axis.title.x = element_blank(),
-              legend.text=element_text(size=6),
-              legend.title=element_text(size=7),
-              legend.key = element_rect(colour = NA, fill = NA),
-              legend.key.height= unit(0.5,"line"),
-              legend.key.width = unit(0.25, "cm"),
-              legend.margin = margin(0,0,0,0, unit="cm"),
-              legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
-              legend.background = element_blank()
-              )
-legend = get_legend(g1)
-g1b = g1 + theme(legend.position="none")  
-
-g2 =
-ggplot(xy2_, aes(x = part, y = pred, col = comparison, shape = method_CI)) +
-          geom_errorbar(aes(ymin = lwr, ymax = upr, col = comparison), width = 0.1, position = position_dodge(width = 0.9) ) +
-          #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.9)) +
-          #scale_fill_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE)) +
-          #scale_color_brewer(palette = "Set1", guide = guide_legend(reverse = TRUE))  +
-          scale_color_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE))  +
-          scale_fill_viridis(discrete=TRUE, guide = guide_legend(reverse = TRUE)) + 
-          scale_shape(guide = guide_legend(reverse = TRUE)) + 
-          geom_hline(yintercept = 99, col = 'red')+
-          labs(x = NULL, y = "Repeatability [%]")+
-          ylim(c(min(xy2_$lwr),max(xy2_$upr)))+
-          scale_y_continuous(breaks = c(96, 97, 98, 99, 100))+
-          #geom_text(y =99, x =0.5, label = '99', col = 'red', size = 2.7)+
-          coord_flip()+
-          theme_bw() +
-          theme(legend.position="none")  
-
-blank = ggplot() + theme_void() 
-ggA = ggarrange(
-    g1b ,  
-    g2,
-    nrow=2, 
-    heights=c(4, 3),
-    align = 'v'
-    )
-ggL = ggarrange(legend, blank, nrow=2)
-ggarrange(ggA, ggL, ncol=2, widths=c(4, 1))
-
-#grid.draw(rbind(ggplotGrob(g1), ggplotGrob(g2), size = 'last'))
 ```
