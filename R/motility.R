@@ -66,12 +66,12 @@
        }
 
 # DATA  
-  d = data.table(read_excel('Data/motility.xlsx', sheet = 1))
-  s = data.table(read_excel('Data/sampling_2021_cleaned.xlsx', sheet = 1))
+  d = data.table(read_excel(here::here('Data/motility.xlsx'), sheet = 1))
+  s = data.table(read_excel(here::here('Data/sampling_2021_cleaned.xlsx'), sheet = 1))
   s = s[!is.na(recording)]
 
   # add morph and age
-    m = data.table(read_excel('Data/ruff_males_Seewiesen.xlsx', sheet = 1))#, range = "A1:G161"))
+    m = data.table(read_excel(here::here('Data/ruff_males_Seewiesen.xlsx'), sheet = 1))#, range = "A1:G161"))
     m[, hatch_year:=as.numeric(substr(Hatch_date,1,4)) ]
     m[, age := 2021-hatch_year]
 
@@ -114,29 +114,297 @@
   summary(d$motileCount) # N sperm/sample
   densityplot(~motileCount, group = date, data = d, auto.key = TRUE)
 
-  cor(d$VCL,log(d$motileCount))
+  # density velocity
+    g1 = 
+    ggplot(d,aes(x = VCL, col = Morph)) + 
+      geom_density() + 
+      xlab('Velocity μm/s') + 
+      xlim(c(0,72)) + 
+      ggtitle('Curvilinear') +
+      theme_bw() +
+      theme(
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        legend.position = c(0.15, 0.65),
+        legend.text=element_text(size=6),
+        legend.title=element_text(size=7),
+        legend.key = element_rect(colour = NA, fill = NA),
+        legend.key.height= unit(0.5,"line"),
+        legend.key.width = unit(0.25, "cm"),
+        legend.margin = margin(0,0,0,0, unit="cm"),
+        legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
+        legend.background = element_blank(),
+        plot.title = element_text(size=9, hjust = 0.5))
+    g2 = 
+    ggplot(d,aes(x = VAP, col = Morph)) + 
+      geom_density() + 
+      xlim(c(0,72)) +
+      ggtitle('Average-path') + 
+      theme_bw() +
+      theme(legend.position = "none",
+          plot.title = element_text(size=9, hjust = 0.5),
+          axis.title.y = element_text(hjust = 0.5),
+          axis.title.x = element_blank(), 
+          axis.text.x = element_blank())
+    
+    g3 =  
+    ggplot(d,aes(x =  VSL, col = Morph)) + 
+      geom_density() + 
+      xlim(c(0,72)) +
+      xlab('Velocity μm/s') + 
+      ggtitle('Straight-line') +
+      theme_bw() +
+      theme(legend.position = "none",
+          plot.title = element_text(size=9, hjust = 0.5),
+          axis.title.y = element_text(color = 'white', hjust = 0.5)
+          )
+
+    grid.draw(rbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "last"))
+    
+    gg1 <- ggplotGrob(g1)
+    gg2 <- ggplotGrob(g2) 
+    gg3 <- ggplotGrob(g3) 
+    ggsave(here::here('Output/Motility-density.png'),rbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "last"), width = 7*1.5, height =8*1.5, units = 'cm')  
+  # density velocity - date
+    g1 = 
+    ggplot(d,aes(x = VCL, col = Morph)) + 
+      geom_density() + 
+      xlab('Velocity μm/s') + 
+      xlim(c(0,72)) + 
+      ggtitle('Curvilinear') +
+      facet_wrap(~date, ncol = 2) +
+      theme_bw() +
+      theme(
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        legend.position = c(0.15, 0.55),
+        legend.text=element_text(size=6),
+        legend.title=element_blank(),
+        legend.key = element_rect(colour = NA, fill = NA),
+        legend.key.height= unit(0.5,"line"),
+        legend.key.width = unit(0.25, "cm"),
+        legend.margin = margin(0,0,0,0, unit="cm"),
+        legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
+        legend.background = element_blank(),
+        plot.title = element_text(size=9, hjust = 0.5))
+    g2 = 
+    ggplot(d,aes(x = VAP, col = Morph)) + 
+      geom_density() + 
+      xlim(c(0,72)) +
+      ggtitle('Average-path') + 
+       facet_wrap(~date, ncol = 2) +
+      theme_bw() +
+      theme(legend.position = "none",
+          plot.title = element_text(size=9, hjust = 0.5),
+          axis.title.y = element_text(hjust = 0.5),
+          axis.title.x = element_blank(), 
+          axis.text.x = element_blank())
+    
+    g3 =  
+    ggplot(d,aes(x =  VSL, col = Morph)) + 
+      geom_density() + 
+      xlim(c(0,72)) +
+      xlab('Velocity μm/s') + 
+      ggtitle('Straight-line') +
+      facet_wrap(~date, ncol = 2) +
+      theme_bw() +
+      theme(legend.position = "none",
+          plot.title = element_text(size=9, hjust = 0.5),
+          axis.title.y = element_text(color = 'white', hjust = 0.5)
+          )
+
+    grid.draw(rbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "last"))
+    
+    gg1 <- ggplotGrob(g1)
+    gg2 <- ggplotGrob(g2) 
+    gg3 <- ggplotGrob(g3) 
+    ggsave(here::here('Output/Motility-density-date.png'),rbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "last"), width = 7*1.5, height =8*1.5, units = 'cm')  
   
-  ggplot(d,aes(x = motileCount, y = VCL)) + 
-    geom_point() + 
-    stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1)
+  # density N
+    ggplot(d,aes(x = motileCount, col = Morph)) + 
+      geom_density() + 
+      xlab('N tracked sperm cells') + 
+      theme_bw() +
+      theme(
+        legend.position = c(0.85, 0.75),
+        legend.text=element_text(size=6),
+        legend.title=element_text(size=7),
+        legend.key = element_rect(colour = NA, fill = NA),
+        legend.key.height= unit(0.5,"line"),
+        legend.key.width = unit(0.25, "cm"),
+        legend.margin = margin(0,0,0,0, unit="cm"),
+        legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
+        legend.background = element_blank(),
+        plot.title = element_text(size=9, hjust = 0.5))
+    
+    ggsave(here::here('Output/Motility-density_N.png'), width = 7*1.5, height =3.5*1.5, units = 'cm')  
+  # density N-date
+    ggplot(d,aes(x = motileCount, col = date)) + 
+      geom_density() + 
+      xlab('N tracked sperm cells') + 
+      scale_colour_discrete(guide = guide_legend(reverse = TRUE)) + 
+      theme_bw() +
+      theme(
+        legend.position = c(0.85, 0.75),
+        legend.text=element_text(size=6),
+        legend.title=element_text(size=7),
+        legend.key = element_rect(colour = NA, fill = NA),
+        legend.key.height= unit(0.5,"line"),
+        legend.key.width = unit(0.25, "cm"),
+        legend.margin = margin(0,0,0,0, unit="cm"),
+        legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
+        legend.background = element_blank(),
+        plot.title = element_text(size=9, hjust = 0.5))
+    
+    ggsave(here::here('Output/Motility-density_N-date.png'), width = 7*1.5, height =3.5*1.5, units = 'cm')  
+  
+  # density age
+    ggplot(d,aes(x = age, col = Morph)) + 
+      geom_density() + 
+      xlab('Age') + 
+      theme_bw() +
+      theme(
+        legend.position = c(0.85, 0.85),
+        legend.text=element_text(size=6),
+        legend.title=element_text(size=7),
+        legend.key = element_rect(colour = NA, fill = NA),
+        legend.key.height= unit(0.5,"line"),
+        legend.key.width = unit(0.25, "cm"),
+        legend.margin = margin(0,0,0,0, unit="cm"),
+        legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
+        legend.background = element_blank(),
+        plot.title = element_text(size=9, hjust = 0.5))
+    
+    ggsave(here::here('Output/Motility-density_age.png'), width = 7*1.5, height =3.5*1.5, units = 'cm')  
+  # density age-date
+    ggplot(d,aes(x = age, col = date)) + 
+      geom_density() + 
+      xlab('Age') + 
+      scale_colour_discrete(guide = guide_legend(reverse = TRUE)) + 
+      theme_bw() +
+      theme(
+        legend.position = c(0.85, 0.85),
+        legend.text=element_text(size=6),
+        legend.title=element_text(size=7),
+        legend.key = element_rect(colour = NA, fill = NA),
+        legend.key.height= unit(0.5,"line"),
+        legend.key.width = unit(0.25, "cm"),
+        legend.margin = margin(0,0,0,0, unit="cm"),
+        legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
+        legend.background = element_blank(),
+        plot.title = element_text(size=9, hjust = 0.5))
+    
+    ggsave(here::here('Output/Motility-density_age-date.png'), width = 7*1.5, height =3.5*1.5, units = 'cm')  
+  # density log(age)
+    ggplot(d,aes(x = age, col = Morph)) + 
+      geom_density() + 
+      xlab('Age') + 
+      theme_bw() +
+      scale_x_continuous(trans = 'log') + 
+      theme(
+        legend.position = c(0.85, 0.85),
+        legend.text=element_text(size=6),
+        legend.title=element_text(size=7),
+        legend.key = element_rect(colour = NA, fill = NA),
+        legend.key.height= unit(0.5,"line"),
+        legend.key.width = unit(0.25, "cm"),
+        legend.margin = margin(0,0,0,0, unit="cm"),
+        legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
+        legend.background = element_blank(),
+        plot.title = element_text(size=9, hjust = 0.5))
+    
+    ggsave(here::here('Output/Motility-density_log-age.png'), width = 7*1.5, height =3.5*1.5, units = 'cm')  
+
+
+  # hist velocity
+    g1 = 
+    ggplot(d,aes(x = VCL, col = Morph)) + 
+      geom_histogram() + 
+      coord_cartesian(xlim = c(0,72), ylim = c(0,20)) +
+      ggtitle('Curvilinear') +
+      facet_wrap(~Morph, ncol = 1)  +
+      theme_bw() +
+      theme(legend.position = "none",
+         axis.title.x = element_text(colour= 'white', hjust = 0.75),
+         plot.title = element_text(size=9, hjust = 0.5))
+    g2 = 
+    ggplot(d,aes(x = VAP, col = Morph)) + 
+      geom_histogram() + 
+       coord_cartesian(xlim = c(0,72), ylim = c(0,20)) +
+      xlab('Velocity μm/s') + 
+      ggtitle('Average-path') + 
+      facet_wrap(~Morph, ncol = 1)  +
+      theme_bw() +
+      theme(legend.position = "none",
+          plot.title = element_text(size=9, hjust = 0.5),
+          axis.text.y = element_blank(),
+          axis.title.y = element_blank()
+          )
+    
+    g3 =  
+    ggplot(d,aes(x =  VSL, col = Morph)) + 
+      geom_histogram() + 
+      coord_cartesian(xlim = c(0,72), ylim = c(0,20)) +
+      ggtitle('Straight-line') +
+      facet_wrap(~Morph, ncol = 1)  +
+      theme_bw() +
+      theme(legend.position = "none",
+          plot.title = element_text(size=9, hjust = 0.5),
+          axis.title.x = element_blank(), 
+          axis.title.y = element_blank(), 
+          axis.text.y = element_blank()
+          )
+
+    grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "first"))
+    
+    gg1 <- ggplotGrob(g1)
+    gg2 <- ggplotGrob(g2) 
+    gg3 <- ggplotGrob(g3) 
+    ggsave(here::here('Output/Motility-hist.png'),cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')       
+  # hist N
+    ggplot(d,aes(x = motileCount, col = Morph)) + 
+      geom_histogram() + 
+      #coord_cartesian(xlim = c(0,72), ylim = c(0,20)) +
+      xlab('N tracked sperm cells') + 
+      facet_wrap(~Morph, ncol = 1)  +
+      theme_bw() +
+      theme(legend.position = "none"
+         )
+    
+    ggsave(here::here('Output/Motility-hist_N.png'), width = 4*1.5, height =7*1.5, units = 'cm')  
+  # hist age
+    ggplot(d,aes(x = age, col = Morph)) + 
+      geom_histogram() + 
+      #coord_cartesian(xlim = c(0,72), ylim = c(0,20)) +
+      xlab('Ages') + 
+      facet_wrap(~Morph, ncol = 1)  +
+      theme_bw() +
+      theme(legend.position = "none"
+         )
+    
+    ggsave(here::here('Output/Motility-hist_age.png'), width = 4*1.5, height =7*1.5, units = 'cm')   
+
 
   # velocity ~ N all
     g1 = 
-    ggplot(d,aes(x = motileCount, y = VCL, col = Morph)) + 
-      geom_point(pch = 21) + 
-      stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1, se = FALSE)+
+    ggplot(d,aes(x = motileCount, y = VCL)) + 
+      geom_point(pch = 21, aes(col = Morph)) + 
+      stat_smooth(method = "lm", aes(col = Morph),formula = y ~ poly(x,2), size = 1, se = FALSE)+
+      stat_cor(method="pearson",size = 2) +
       ylab('Velocity μm/s') + 
       ylim(c(0,72)) + 
       ggtitle('Curvilinear') +
       facet_wrap(~Morph, ncol = 1)  +
       theme_bw() +
       theme(legend.position = "none",
+         axis.title.x = element_text(color="white"), 
          plot.title = element_text(size=9, hjust = 0.5))
     
     g2 = 
-    ggplot(d,aes(x = motileCount, y = VAP, col = Morph)) + 
-      geom_point(pch = 21) + 
-      stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1, se = FALSE)+
+    ggplot(d,aes(x = motileCount, y = VAP)) + 
+      geom_point(pch = 21, aes(col = Morph)) + 
+      stat_smooth(method = "lm", aes(col = Morph),formula = y ~ poly(x,2), size = 1, se = FALSE)+
+      stat_cor(method="pearson",size = 2) +
       ylim(c(0,72)) +
       ggtitle('Average-path') + 
       facet_wrap(~Morph, ncol = 1)  +
@@ -147,28 +415,32 @@
           axis.text.y = element_blank())
     
     g3 =  
-    ggplot(d,aes(x = motileCount, y = VSL, col = Morph)) + 
-      geom_point(pch = 21) + 
-      stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1, se = FALSE) +
+    ggplot(d,aes(x = motileCount, y = VSL)) + 
+      geom_point(pch = 21, aes(col = Morph)) + 
+      stat_smooth(method = "lm", aes(col = Morph),formula = y ~ poly(x,2), size = 1, se = FALSE)+
+      stat_cor(method="pearson",size = 2) +
       ylim(c(0,72)) + 
       ggtitle('Straight-line') +
       facet_wrap(~Morph, ncol = 1)  +
       theme_bw() +
       theme(legend.position = "none",
           plot.title = element_text(size=9, hjust = 0.5),
+          axis.title.x = element_blank(), 
           axis.title.y = element_blank(), 
           axis.text.y = element_blank())
 
     grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "first"))
+    
     gg1 <- ggplotGrob(g1)
     gg2 <- ggplotGrob(g2) 
     gg3 <- ggplotGrob(g3) 
-    ggsave('Output/Motility-SpermN.png',cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
+    ggsave(here::here('Output/Motility-corSpermN.png'),cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
   # velocity ~ N by sampling date
     g1 = 
     ggplot(d,aes(x = motileCount, y = VCL, col = date)) + 
       geom_point(pch = 21) + 
       stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1, se = FALSE)+
+      #stat_cor(method="pearson",size = 2) +
       ylab('Velocity μm/s') + 
       ylim(c(0,72)) + 
       ggtitle('Curvilinear') +
@@ -182,6 +454,7 @@
     ggplot(d,aes(x = motileCount, y = VAP, col = date)) + 
       geom_point(pch = 21) + 
       stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1, se = FALSE)+
+      #stat_cor(method="pearson",size = 2) +
       ylim(c(0,72)) +
       ggtitle('Average-path') + 
       facet_wrap(~Morph, ncol = 1)  +
@@ -195,6 +468,7 @@
     ggplot(d,aes(x = motileCount, y = VSL, col = date)) + 
       geom_point(pch = 21) + 
       stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1, se = FALSE) +
+      #stat_cor(method="pearson",size = 2) +
       ylim(c(0,72)) + 
       ggtitle('Straight-line') +
       facet_wrap(~Morph, ncol = 1)  +
@@ -209,28 +483,30 @@
     gg1 <- ggplotGrob(g1)
     gg2 <- ggplotGrob(g2) 
     gg3 <- ggplotGrob(g3) 
-    ggsave('Output/Motility-SpermN_by_Date.png',cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
+    ggsave(here::here('Output/Motility-corSpermN_by_Date.png'),cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
   # velocity ~ log(N)       
     g1 = 
-    ggplot(d,aes(x = motileCount, y = VCL, col = Morph)) + 
-      geom_point(pch = 21) + 
-      stat_smooth(method = "lm",size = 1, se = FALSE)+
+    ggplot(d,aes(x = motileCount, y = VCL)) + 
+      geom_point(pch = 21, aes(col = Morph)) + 
+      stat_smooth(method = "lm", aes(col = Morph),size = 1, se = FALSE)+
+      stat_cor(method="pearson",size = 2) +
       scale_x_continuous(trans='log10')+
       ylab('Velocity μm/s') + 
       ylim(c(0,70)) + 
-      ggtitle('Curvilinear velocity') +
+      ggtitle('Curvilinear') +
       facet_wrap(~Morph, ncol = 1)  +
       theme_bw() +
       theme(legend.position = "none",
          plot.title = element_text(size=9, hjust = 0.5))
     
     g2 = 
-    ggplot(d,aes(x = motileCount, y = VAP, col = Morph)) + 
-      geom_point(pch = 21) + 
-      stat_smooth(method = "lm",size = 1, se = FALSE)+
+    ggplot(d,aes(x = motileCount, y = VAP)) + 
+      geom_point(pch = 21, aes(col = Morph)) + 
+      stat_smooth(method = "lm", aes(col = Morph),size = 1, se = FALSE)+
+      stat_cor(method="pearson",size = 2) +
       scale_x_continuous(trans='log10')+
       ylim(c(0,70)) +
-      ggtitle('Average-path velocity') + 
+      ggtitle('Average path') + 
       facet_wrap(~Morph, ncol = 1)  +
       theme_bw() +
       theme(legend.position = "none",
@@ -239,12 +515,13 @@
           axis.text.y = element_blank())
     
     g3 =  
-    ggplot(d,aes(x = motileCount, y = VSL, col = Morph)) + 
-      geom_point(pch = 21) + 
-      stat_smooth(method = "lm",size = 1, se = FALSE)+
+    ggplot(d,aes(x = motileCount, y = VSL)) + 
+      geom_point(pch = 21, aes(col = Morph)) + 
+      stat_smooth(method = "lm", aes(col = Morph),size = 1, se = FALSE)+
+      stat_cor(method="pearson",size = 2) +
       scale_x_continuous(trans='log10')+
       ylim(c(0,70)) + 
-      ggtitle('Straight-line velocity') +
+      ggtitle('Straight line') +
       facet_wrap(~Morph, ncol = 1)  +
       theme_bw() +
       theme(legend.position = "none",
@@ -256,15 +533,7 @@
     gg1 <- ggplotGrob(g1)
     gg2 <- ggplotGrob(g2) 
     gg3 <- ggplotGrob(g3) 
-    ggsave('Output/Motility-logSpermN.png',cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
-  # N ~ date
-    ggplot(d,aes(x = date, y = motileCount, col = Morph)) + 
-      geom_dotplot(binaxis = 'y', stackdir = 'center',
-                   position = position_dodge(), aes(col = Morph), fill ='grey40', dotsize = 1)+
-      geom_boxplot(aes(col = Morph), fill = NA, alpha = 0.2,position = position_dodge()) + 
-      stat_summary(fun=mean, geom="point", color="red", fill="red") +
-      scale_colour_viridis(discrete=TRUE)+
-      theme_bw() 
+    ggsave(here::here('Output/Motility-corlogSpermN.png'),cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')    
   # velocity ~ date
     g1 = 
     ggplot(d,aes(x = date, y = VCL, col = Morph)) + 
@@ -279,6 +548,7 @@
       facet_wrap(~Morph, ncol = 1)  +
       theme_bw() +
       theme(legend.position = "none",
+        axis.title.x = element_text(color = "white"), 
          plot.title = element_text(size=9, hjust = 0.5))
     
     g2 = 
@@ -309,31 +579,36 @@
       theme_bw() +
       theme(legend.position = "none",
           plot.title = element_text(size=9, hjust = 0.5),
+          axis.title.x = element_blank(), 
           axis.title.y = element_blank(), 
           axis.text.y = element_blank())
 
     grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "first"))
+    
     gg1 <- ggplotGrob(g1)
     gg2 <- ggplotGrob(g2) 
     gg3 <- ggplotGrob(g3) 
-    ggsave('Output/Motility-Date.png',cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
+    ggsave(here::here('Output/Motility-corDate.png'),cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
   # velocity ~ age
     g1 = 
-    ggplot(d[date == 'June'],aes(x = age, y = VCL, col = Morph)) + 
-      geom_point(pch = 21) + 
-      stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1, se = FALSE)+
+    ggplot(d[date == 'June'],aes(x = age, y = VCL)) + 
+      geom_point(pch = 21, aes(col = Morph)) + 
+      stat_smooth(method = "lm", aes(col = Morph), formula = y ~ poly(x,2), size = 1, se = FALSE)+
+      stat_cor(method="pearson",size = 2) +
       ylab('Velocity μm/s') + 
       ylim(c(0,72)) + 
       ggtitle('Curvilinear') +
       facet_wrap(~Morph, ncol = 1)  +
       theme_bw() +
       theme(legend.position = "none",
+         axis.title.x = element_text(color = "white"), 
          plot.title = element_text(size=9, hjust = 0.5))
     
     g2 = 
-    ggplot(d[date == 'June'],aes(x = age, y = VAP, col = Morph)) + 
-      geom_point(pch = 21) + 
-      stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1, se = FALSE)+
+    ggplot(d[date == 'June'],aes(x = age, y = VAP)) + 
+      geom_point(pch = 21, aes(col = Morph)) + 
+      stat_smooth(method = "lm", aes(col = Morph), formula = y ~ poly(x,2), size = 1, se = FALSE)+
+      stat_cor(method="pearson",size = 2) +
       ylim(c(0,72)) +
       ggtitle('Average-path') + 
       facet_wrap(~Morph, ncol = 1)  +
@@ -344,15 +619,17 @@
           axis.text.y = element_blank())
     
     g3 =  
-    ggplot(d[date == 'June'],aes(x = age, y = VSL, col = Morph)) + 
-      geom_point(pch = 21) + 
-      stat_smooth(method = "lm", formula = y ~ poly(x,2), size = 1, se = FALSE) +
+    ggplot(d[date == 'June'],aes(x = age, y = VSL)) + 
+      geom_point(pch = 21, aes(col = Morph)) + 
+      stat_smooth(method = "lm", aes(col = Morph), formula = y ~ poly(x,2), size = 1, se = FALSE) +
+      stat_cor(method="pearson",size = 2) +
       ylim(c(0,72)) + 
       ggtitle('Straight-line') +
       facet_wrap(~Morph, ncol = 1)  +
       theme_bw() +
       theme(legend.position = "none",
           plot.title = element_text(size=9, hjust = 0.5),
+          axis.title.x = element_blank(), 
           axis.title.y = element_blank(), 
           axis.text.y = element_blank())
 
@@ -360,24 +637,37 @@
     gg1 <- ggplotGrob(g1)
     gg2 <- ggplotGrob(g2) 
     gg3 <- ggplotGrob(g3) 
-    ggsave('Output/Motility-age.png',cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
+    ggsave(here::here('Output/Motility-corage.png'),cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
+  # N ~ date
+    ggplot(d,aes(x = date, y = motileCount, col = Morph)) +  
+      geom_dotplot(binaxis = 'y', stackdir = 'center',
+                   position = position_dodge(), aes(col = Morph), fill ='grey40', dotsize = 1)+
+      geom_boxplot(aes(col = Morph), fill = NA, alpha = 0.2) + 
+      stat_summary(fun=mean, geom="point", color="red", fill="red") +
+      scale_colour_viridis(discrete=TRUE)+
+      theme_bw() 
+
+    ggsave(here::here('Output/Motility-corSpermN_Date.png'), width = 13, height =6, units = 'cm')  
   # N ~ age
     g1 = 
-    ggplot(d[date == 'May' & Morph!='Zebra finch'],aes(x = age, y = motileCount, col = Morph)) + 
-      geom_point(pch = 21) + 
-      stat_smooth(method = "lm")+
+    ggplot(d[date == 'May' & Morph!='Zebra finch'], aes(x = age, y = motileCount)) + 
+      geom_point(pch = 21, aes(col = Morph)) + 
+      stat_smooth(method = "lm", aes(col = Morph), size = 1) +
+      stat_cor(method="pearson",size = 2) +
       ylab('N sperm cell tracked') + 
       coord_cartesian(xlim = c(1,13), ylim = c(0,600)) + 
       ggtitle('May') +
       facet_wrap(~Morph, ncol = 1)  +
       theme_bw() +
       theme(legend.position = "none",
+         axis.title.x = element_text(color = "white"),
          plot.title = element_text(size=9, hjust = 0.5))
     
     g2 = 
-    ggplot(d[date == 'June' & Morph!='Zebra finch'],aes(x = age, y = motileCount, col = Morph)) + 
-      geom_point(pch = 21) + 
-      stat_smooth(method = "lm")+
+    ggplot(d[date == 'June' & Morph!='Zebra finch'],aes(x = age, y = motileCount)) + 
+      geom_point(pch = 21, aes(col = Morph)) + 
+      stat_smooth(method = "lm", aes(col = Morph), size = 1) +
+      stat_cor(method="pearson",size = 2) +
       coord_cartesian(xlim = c(1,13), ylim = c(0,600)) + 
       ggtitle('June') + 
       facet_wrap(~Morph, ncol = 1)  +
@@ -388,82 +678,86 @@
           axis.text.y = element_blank())
     
     g3 =  
-    ggplot(d[Morph!='Zebra finch'],aes(x = age, y = motileCount, col = Morph)) + 
-      geom_point(pch = 21) + 
-      stat_smooth(method = "lm", size = 1) +
+    ggplot(d[Morph!='Zebra finch'],aes(x = age, y = motileCount)) + 
+      geom_point(pch = 21, aes(col = Morph)) + 
+      stat_smooth(method = "lm", aes(col = Morph), size = 1) +
+      stat_cor(method="pearson",size = 2) +
       coord_cartesian(xlim = c(1,13), ylim = c(0,600)) + 
       ggtitle('Both') +
       facet_wrap(~Morph, ncol = 1)  +
       theme_bw() +
       theme(legend.position = "none",
           plot.title = element_text(size=9, hjust = 0.5),
+          axis.title.x = element_blank(),
           axis.title.y = element_blank(),
           axis.text.y = element_blank()
           )
 
     grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "first"))
+    
     gg1 <- ggplotGrob(g1)
     gg2 <- ggplotGrob(g2) 
     gg3 <- ggplotGrob(g3) 
-    ggsave('Output/Motility_N-age.png',cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
+    ggsave(here::here('Output/Motility_corN-age.png'),cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
   
-# Correlations
-        g1 = 
-        ggplot(drw, aes(x = VCL.May, y = VCL.June)) +
-        facet_wrap(~Morph, ncol = 1)  +
-        stat_smooth(method = 'lm', aes(col = Morph))+geom_point(pch = 21, aes(col = Morph))+
-        stat_cor(method="pearson",size = 2) +
-        geom_abline(b = 1, col = 'red', lty = 3) + 
-        xlim(c(min(c(drw$VCL.May,drw$VCL.June)), max(c(drw$VCL.May,drw$VCL.June)))) +  ylim(c(min(c(drw$VCL.May,drw$VCL.June)), max(c(drw$VCL.May,drw$VCL.June)))) + 
-        ggtitle('Curvilinear')+
-        ylab('Velocity in June [μm/s[') + 
-        theme_bw() + 
-        theme(legend.position = "none",
-            axis.text = element_text(size=7), 
-            axis.title.x = element_text(size = 8, color = 'white'),
-            axis.title.y = element_text(size = 8),
-            strip.text.x = element_text(size = 7),
-            plot.title = element_text(size=8, hjust = 0.5))
-        
-        g2 = 
-        ggplot(drw, aes(x = VAP.May, y = VAP.June)) +
-        facet_wrap(~Morph, ncol = 1)  +
-        stat_smooth(method = 'lm', aes(col = Morph))+geom_point(pch = 21, aes(col = Morph))+
-        stat_cor(method="pearson",size = 2) +
-        geom_abline(b = 1, col = 'red', lty = 3) + 
-        xlim(c(min(c(drw$VAP.May,drw$VAP.June)), max(c(drw$VAP.May,drw$VAP.June)))) +  ylim(c(min(c(drw$VAP.May,drw$VAP.June)), max(c(drw$VAP.May,drw$VAP.June)))) + 
-        ggtitle('Average path')+
-        xlab('Velocity in May [μm/s]') + 
-        theme_bw() + 
-        theme(legend.position = "none",
-            axis.text = element_text(size=7), 
-            axis.title.y = element_blank(), 
-            axis.title.x = element_text(size = 8, hjust = 0.5),
-            strip.text.x = element_text(size = 7),
-            plot.title = element_text(size=8, hjust = 0.5))
+# Correlations of velocities
+    g1 = 
+    ggplot(drw, aes(x = VCL.May, y = VCL.June)) +
+    facet_wrap(~Morph, ncol = 1)  +
+    stat_smooth(method = 'lm', aes(col = Morph))+geom_point(pch = 21, aes(col = Morph))+
+    stat_cor(method="pearson",size = 2) +
+    geom_abline(b = 1, col = 'red', lty = 3) + 
+    xlim(c(min(c(drw$VCL.May,drw$VCL.June)), max(c(drw$VCL.May,drw$VCL.June)))) +  ylim(c(min(c(drw$VCL.May,drw$VCL.June)), max(c(drw$VCL.May,drw$VCL.June)))) + 
+    ggtitle('Curvilinear')+
+    ylab('Velocity in June [μm/s[') + 
+    theme_bw() + 
+    theme(legend.position = "none",
+        axis.text = element_text(size=7), 
+        axis.title.x = element_text(size = 8, color = 'white'),
+        axis.title.y = element_text(size = 8),
+        strip.text.x = element_text(size = 7),
+        plot.title = element_text(size=8, hjust = 0.5))
+    
+    g2 = 
+    ggplot(drw, aes(x = VAP.May, y = VAP.June)) +
+    facet_wrap(~Morph, ncol = 1)  +
+    stat_smooth(method = 'lm', aes(col = Morph))+geom_point(pch = 21, aes(col = Morph))+
+    stat_cor(method="pearson",size = 2) +
+    geom_abline(b = 1, col = 'red', lty = 3) + 
+    xlim(c(min(c(drw$VAP.May,drw$VAP.June)), max(c(drw$VAP.May,drw$VAP.June)))) +  ylim(c(min(c(drw$VAP.May,drw$VAP.June)), max(c(drw$VAP.May,drw$VAP.June)))) + 
+    ggtitle('Average path')+
+    xlab('Velocity in May [μm/s]') + 
+    theme_bw() + 
+    theme(legend.position = "none",
+        axis.text = element_text(size=7), 
+        axis.title.y = element_blank(), 
+        axis.title.x = element_text(size = 8, hjust = 0.5),
+        strip.text.x = element_text(size = 7),
+        plot.title = element_text(size=8, hjust = 0.5))
 
-        g3 = 
-        ggplot(drw, aes(x = VSL.May, y = VSL.June)) +
-        facet_wrap(~Morph, ncol = 1)  +
-        stat_smooth(method = 'lm', aes(col = Morph))+geom_point(pch = 21, aes(col = Morph))+
-        stat_cor(method="pearson",size = 2) +
-        geom_abline(b = 1, col = 'red', lty = 3) + 
-        xlim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) +  ylim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) + 
-        ggtitle('Straight line')+
-        theme_bw() + 
-        theme(legend.position = "none",
-          axis.text = element_text(size=7), 
-          axis.title.x = element_blank(), 
-          axis.title.y = element_blank(), 
-          strip.text.x = element_text(size = 7),
-          plot.title = element_text(size=8, hjust = 0.5))
+    g3 = 
+    ggplot(drw, aes(x = VSL.May, y = VSL.June)) +
+    facet_wrap(~Morph, ncol = 1)  +
+    stat_smooth(method = 'lm', aes(col = Morph))+geom_point(pch = 21, aes(col = Morph))+
+    stat_cor(method="pearson",size = 2) +
+    geom_abline(b = 1, col = 'red', lty = 3) + 
+    xlim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) +  ylim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) + 
+    ggtitle('Straight line')+
+    theme_bw() + 
+    theme(legend.position = "none",
+      axis.text = element_text(size=7), 
+      axis.title.x = element_blank(), 
+      axis.title.y = element_blank(), 
+      strip.text.x = element_text(size = 7),
+      plot.title = element_text(size=8, hjust = 0.5))
 
-        grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "first"))
-        
-        gg1 <- ggplotGrob(g1)
-        gg2 <- ggplotGrob(g2) 
-        gg3 <- ggplotGrob(g3) 
-        ggsave('Output/Motility-cor_MayJune.png',cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =7*1.5, units = 'cm')  
+    grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "first"))
+    
+    gg1 <- ggplotGrob(g1)
+    gg2 <- ggplotGrob(g2) 
+    gg3 <- ggplotGrob(g3) 
+    ggsave(here::here('Output/Motility-cor_MayJune.png'),cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =7*1.5, units = 'cm')  
+ 
 # Repeatability
     # prepare
       velo = 'VAP'
@@ -531,7 +825,6 @@
       r[velocity == 'VCL', velocity := 'Curvilinear']
       r[velocity == 'VAP', velocity := 'Average path']
       r[velocity == 'VSL', velocity := 'Straight line']
-
     # plot    
       ggplot(r, aes(x = velocity, y = pred, col = method_CI)) +
             geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0, position = position_dodge(width = 0.4) ) +
@@ -560,42 +853,22 @@
                 legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
                 legend.background = element_blank()
                 )
-      ggsave('Output/Motility-repeatability.png', width = 7*1.5, height =2.75*1.5, units = 'cm')  
+      ggsave(here::here('Output/Motility-repeatability.png'), width = 7*1.5, height =2.75*1.5, units = 'cm')  
 
-# Models - TEST Morph-blind
-    densityplot(d$VCL)
-    d[VCL<40]
-    sample(c('a','b','c'), size = nrow(d), replace = TRUE)
-    d[, blind := sample(c('a','b','c'), size = nrow(d), replace = TRUE)]
-    ggplot(d,aes(x = blind, y = VCL)) + 
-      geom_dotplot(binaxis = 'y', stackdir = 'center',
-                   position = position_dodge(), col = 'grey', aes(fill =blind), dotsize = 2)+
-      geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
-      stat_summary(fun=mean, geom="point", color="red", fill="red") +
-      scale_fill_viridis(discrete=TRUE)+
-      ylab('Curvilinear velocity') +
-      theme_bw() +
-      #guides(x =  guide_axis(angle = -45)) +
-      theme(legend.position = "none",
-        axis.title.x = element_blank(), 
-        axis.text.x = element_blank(),
-        plot.title = element_text(size=9)
-        )
-
-    m = lm(VCL ~ log(motileCount) + blind, d) 
-    summary(glht(m)) 
 # Models - Real Morph-values 
-  # June   
+  # plot May   
     g1= 
-    ggplot(d[date == 'June'],aes(x = Morph, y = VCL)) + 
+    ggplot(d[date == 'May'],aes(x = Morph, y = VCL)) + 
         geom_dotplot(binaxis = 'y', stackdir = 'center',
                      position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 1)+
         geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
         stat_summary(fun=mean, geom="point", color="red", fill="red") +
         scale_fill_viridis(discrete=TRUE)+
+        coord_cartesian(ylim = c(20,72)) +
         ylab('VCL [μm/s]') +
         theme_bw() +
         guides(x =  guide_axis(angle = -45)) +
+        ggtitle("May")+
         theme(
           legend.position = "none",
           axis.title.x = element_blank(), 
@@ -604,12 +877,13 @@
           )
 
     g2= 
-    ggplot(d[date == 'June'],aes(x = Morph, y = VSL)) + 
+    ggplot(d[date == 'May'],aes(x = Morph, y = VSL)) + 
         geom_dotplot(binaxis = 'y', stackdir = 'center',
                      position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 1)+
         geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
         stat_summary(fun=mean, geom="point", color="red", fill="red") +
         scale_fill_viridis(discrete=TRUE)+
+        coord_cartesian(ylim = c(8,47)) +
         ylab('VSL [μm/s]') +
         theme_bw() +
         guides(x =  guide_axis(angle = -45)) +
@@ -621,76 +895,61 @@
           )
     
     g3= 
-    ggplot(d[date == 'June'],aes(x = Morph, y = VAP)) + 
+    ggplot(d[date == 'May'],aes(x = Morph, y = VAP)) + 
         geom_dotplot(binaxis = 'y', stackdir = 'center',
                      position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 1)+
         geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
         stat_summary(fun=mean, geom="point", color="red", fill="red") +
         scale_fill_viridis(discrete=TRUE)+
+        coord_cartesian(ylim = c(13,51)) +
         ylab('VAP [μm/s]') +
         theme_bw() +
         guides(x =  guide_axis(angle = -45)) +
         theme(
           legend.position = "none",
-          #axis.title.x = element_blank(), 
+          axis.title.x = element_text(color = "white"), 
           #axis.text.x = element_blank(),
           plot.title = element_text(size=9)
           )   
 
-    ggplot(d[Morph!='Zebra finch' & date == 'June'],aes(x = Morph, y = VCL)) + 
-        geom_dotplot(binaxis = 'y', stackdir = 'center',
-                     position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 1)+
-        geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
-        stat_summary(fun=mean, geom="point", color="red", fill="red") +
-        scale_fill_viridis(discrete=TRUE)+
-        ylab('Curvilinear velocity') +
-        theme_bw() +
-        guides(x =  guide_axis(angle = -45)) +
-        theme(
-          legend.position = "none",
-          #axis.title.x = element_blank(), 
-          #axis.text.x = element_blank(),
-          plot.title = element_text(size=9)
-          )    
-    
     grid.draw(rbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "last"))
         #grid.arrange(g1,g2)
     gg1 <- ggplotGrob(g1)
     gg2 <- ggplotGrob(g2) 
     gg3 <- ggplotGrob(g3) 
-    ggsave('Output/Motility_Morp_boxplots.png',rbind(gg1,gg2,gg3, size = "last"), width = 7*1.5, height =15*1.5, units = 'cm')  
-
-    m = lm(VCL ~ log(motileCount) + Morph, d[Morph!='Zebra finch' & date == 'June']) 
-    m = lm(VAP ~ log(motileCount) + Morph, d[Morph!='Zebra finch' & date == 'June']) 
-    m = lm(VSL ~ log(motileCount) + Morph, d[Morph!='Zebra finch' & date == 'June']) 
-    summary(glht(m)) 
-    summary(m)
-    plot(allEffects(m))
-  # May   
-    g1= 
+    #ggsave(here::here('Output/Motility_Morp_boxplots_June.png'),rbind(gg1,gg2,gg3, size = "last"), width = 7*1.5, height =15*1.5, units = 'cm')  
+    #summary(glht(m)) 
+    #plot(allEffects(m))
+  # plot June   
+    g4= 
     ggplot(d[date == 'June'],aes(x = Morph, y = VCL)) + 
         geom_dotplot(binaxis = 'y', stackdir = 'center',
                      position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 1)+
         geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
         stat_summary(fun=mean, geom="point", color="red", fill="red") +
         scale_fill_viridis(discrete=TRUE)+
+        coord_cartesian(ylim = c(20,72)) +
         ylab('VCL [μm/s]') +
         theme_bw() +
         guides(x =  guide_axis(angle = -45)) +
+        ggtitle("June")+
         theme(
           legend.position = "none",
           axis.title.x = element_blank(), 
           axis.text.x = element_blank(),
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),  
           plot.title = element_text(size=9)
           )
 
-    g2= 
+    g5= 
     ggplot(d[date == 'June'],aes(x = Morph, y = VSL)) + 
         geom_dotplot(binaxis = 'y', stackdir = 'center',
                      position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 1)+
         geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
         stat_summary(fun=mean, geom="point", color="red", fill="red") +
         scale_fill_viridis(discrete=TRUE)+
+        coord_cartesian(ylim = c(8,47)) +
         ylab('VSL [μm/s]') +
         theme_bw() +
         guides(x =  guide_axis(angle = -45)) +
@@ -698,16 +957,19 @@
           legend.position = "none",
           axis.title.x = element_blank(), 
           axis.text.x = element_blank(),
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),  
           plot.title = element_text(size=9)
           )
     
-    g3= 
+    g6= 
     ggplot(d[date == 'June'],aes(x = Morph, y = VAP)) + 
         geom_dotplot(binaxis = 'y', stackdir = 'center',
                      position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 1)+
         geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
         stat_summary(fun=mean, geom="point", color="red", fill="red") +
         scale_fill_viridis(discrete=TRUE)+
+        coord_cartesian(ylim = c(13,51)) +
         ylab('VAP [μm/s]') +
         theme_bw() +
         guides(x =  guide_axis(angle = -45)) +
@@ -715,114 +977,97 @@
           legend.position = "none",
           #axis.title.x = element_blank(), 
           #axis.text.x = element_blank(),
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(),  
           plot.title = element_text(size=9)
           )   
 
-    ggplot(d[Morph!='Zebra finch' & date == 'June'],aes(x = Morph, y = VCL)) + 
+    
+    grid.draw(rbind(ggplotGrob(g4), ggplotGrob(g5), ggplotGrob(g6), size = "last"))
+        #grid.arrange(g1,g2)
+    gg4 <- ggplotGrob(g4)
+    gg5 <- ggplotGrob(g5) 
+    gg6 <- ggplotGrob(g6) 
+    #ggsave(here::here('Output/Motility_Morp_boxplots_May.png'),rbind(gg4,gg5,gg6, size = "last"), width = 7*1.5, height =15*1.5, units = 'cm')  
+  # plot ALL  together 
+    g7= 
+    ggplot(d,aes(x = Morph, y = VCL)) + 
         geom_dotplot(binaxis = 'y', stackdir = 'center',
                      position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 1)+
         geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
         stat_summary(fun=mean, geom="point", color="red", fill="red") +
         scale_fill_viridis(discrete=TRUE)+
-        ylab('Curvilinear velocity') +
+        coord_cartesian(ylim = c(20,72)) +
+        ylab('VCL [μm/s]') +
+        theme_bw() +
+        guides(x =  guide_axis(angle = -45)) +
+        ggtitle("May & June")+
+        theme(
+          legend.position = "none",
+          axis.title.x = element_blank(), 
+          axis.text.x = element_blank(),
+          axis.title.y = element_blank(),
+          axis.text.y = element_blank(), 
+          plot.title = element_text(size=9)
+          )
+
+    g8= 
+    ggplot(d,aes(x = Morph, y = VSL)) + 
+        geom_dotplot(binaxis = 'y', stackdir = 'center',
+                     position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 1)+
+        geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
+        stat_summary(fun=mean, geom="point", color="red", fill="red") +
+        scale_fill_viridis(discrete=TRUE)+
+        coord_cartesian(ylim = c(8,47)) +
+        ylab('VSL [μm/s]') +
         theme_bw() +
         guides(x =  guide_axis(angle = -45)) +
         theme(
           legend.position = "none",
-          #axis.title.x = element_blank(), 
+          axis.title.x = element_blank(), 
+          axis.text.x = element_blank(),
+          axis.title.y = element_blank(), 
+          axis.text.y = element_blank(), 
+          plot.title = element_text(size=9)
+          )
+    
+    g9= 
+    ggplot(d,aes(x = Morph, y = VAP)) + 
+        geom_dotplot(binaxis = 'y', stackdir = 'center',
+                     position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 1)+
+        geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
+        stat_summary(fun=mean, geom="point", color="red", fill="red") +
+        scale_fill_viridis(discrete=TRUE)+
+        coord_cartesian(ylim = c(13,51)) +
+        ylab('VAP [μm/s]') +
+        theme_bw() +
+        guides(x =  guide_axis(angle = -45)) +
+        theme(
+          legend.position = "none",
+          axis.title.x = element_text(color = "white"), 
+          #axis.title.y = element_text(color = "white"), 
+          axis.title.y = element_blank(), 
+          axis.text.y = element_blank(), 
           #axis.text.x = element_blank(),
           plot.title = element_text(size=9)
-          )    
-    
-    grid.draw(rbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "last"))
+          )   
+
+    grid.draw(rbind(ggplotGrob(g7), ggplotGrob(g8), ggplotGrob(g9), size = "last"))
         #grid.arrange(g1,g2)
-    gg1 <- ggplotGrob(g1)
-    gg2 <- ggplotGrob(g2) 
-    gg3 <- ggplotGrob(g3) 
-    ggsave('Output/Motility_Morp_boxplots.png',rbind(gg1,gg2,gg3, size = "last"), width = 7*1.5, height =15*1.5, units = 'cm')  
+    gg7 <- ggplotGrob(g7)
+    gg8 <- ggplotGrob(g8) 
+    gg9 <- ggplotGrob(g9) 
+    #ggsave(here::here('Output/Motility_Morp_boxplots.png'),rbind(gg1,gg2,gg3, size = "last"), width = 7*1.5, height =15*1.5, units = 'cm')
+  # combine
+    may = rbind(gg1,gg2,gg3, size = "last")
+    june = rbind(gg4,gg5,gg6, size = "last")
+    all = rbind(gg7,gg8,gg9, size = "last")
 
-    m = lm(VCL ~ log(motileCount) + Morph, d[Morph!='Zebra finch' & date == 'June']) 
-    m = lm(VAP ~ log(motileCount) + Morph, d[Morph!='Zebra finch' & date == 'June']) 
-    m = lm(VSL ~ log(motileCount) + Morph, d[Morph!='Zebra finch' & date == 'June']) 
-    summary(glht(m)) 
-    summary(m)
-    plot(allEffects(m))
-  # ALL 
-    # plot together 
-      g1= 
-      ggplot(d,aes(x = Morph, y = VCL)) + 
-          geom_dotplot(binaxis = 'y', stackdir = 'center',
-                       position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 1)+
-          geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
-          stat_summary(fun=mean, geom="point", color="red", fill="red") +
-          scale_fill_viridis(discrete=TRUE)+
-          ylab('VCL [μm/s]') +
-          theme_bw() +
-          guides(x =  guide_axis(angle = -45)) +
-          theme(
-            legend.position = "none",
-            axis.title.x = element_blank(), 
-            axis.text.x = element_blank(),
-            plot.title = element_text(size=9)
-            )
+    grid.draw(cbind(may,june,all, size = "first"))
 
-      g2= 
-      ggplot(d,aes(x = Morph, y = VSL)) + 
-          geom_dotplot(binaxis = 'y', stackdir = 'center',
-                       position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 1)+
-          geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
-          stat_summary(fun=mean, geom="point", color="red", fill="red") +
-          scale_fill_viridis(discrete=TRUE)+
-          ylab('VSL [μm/s]') +
-          theme_bw() +
-          guides(x =  guide_axis(angle = -45)) +
-          theme(
-            legend.position = "none",
-            axis.title.x = element_blank(), 
-            axis.text.x = element_blank(),
-            plot.title = element_text(size=9)
-            )
-      
-      g3= 
-      ggplot(d,aes(x = Morph, y = VAP)) + 
-          geom_dotplot(binaxis = 'y', stackdir = 'center',
-                       position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 1)+
-          geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
-          stat_summary(fun=mean, geom="point", color="red", fill="red") +
-          scale_fill_viridis(discrete=TRUE)+
-          ylab('VAP [μm/s]') +
-          theme_bw() +
-          guides(x =  guide_axis(angle = -45)) +
-          theme(
-            legend.position = "none",
-            #axis.title.x = element_blank(), 
-            #axis.text.x = element_blank(),
-            plot.title = element_text(size=9)
-            )   
+    ggsave(here::here('Output/Motility_Morp_boxplots_MayJuneAll.png'),cbind(may,june,all, size = "last"), width = 10*1.5, height =10*1.5, units = 'cm')
 
-      ggplot(d[Morph!='Zebra finch'],aes(x = Morph, y = VCL)) + 
-          geom_dotplot(binaxis = 'y', stackdir = 'center',
-                       position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 1)+
-          geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
-          stat_summary(fun=mean, geom="point", color="red", fill="red") +
-          scale_fill_viridis(discrete=TRUE)+
-          ylab('Curvilinear velocity') +
-          theme_bw() +
-          guides(x =  guide_axis(angle = -45)) +
-          theme(
-            legend.position = "none",
-            #axis.title.x = element_blank(), 
-            #axis.text.x = element_blank(),
-            plot.title = element_text(size=9)
-            )    
-      
-      grid.draw(rbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "last"))
-          #grid.arrange(g1,g2)
-      gg1 <- ggplotGrob(g1)
-      gg2 <- ggplotGrob(g2) 
-      gg3 <- ggplotGrob(g3) 
-      ggsave('Output/Motility_Morp_boxplots.png',rbind(gg1,gg2,gg3, size = "last"), width = 7*1.5, height =15*1.5, units = 'cm')  
-    # plot by date
+  # plot by date
       g1= 
       ggplot(d,aes(x = Morph, y = VCL, col = date)) + 
           geom_dotplot(binaxis = 'y', stackdir = 'center',
@@ -893,15 +1138,60 @@
       gg1 <- ggplotGrob(g1)
       gg2 <- ggplotGrob(g2) 
       gg3 <- ggplotGrob(g3) 
-      ggsave('Output/Motility_Morp_boxplots_date.png',rbind(gg1,gg2,gg3, size = "last"), width = 7*1.5, height =15*1.5, units = 'cm') 
+      ggsave(here::here('Output/Motility_Morp_boxplots_date.png'),rbind(gg1,gg2,gg3, size = "last"), width = 7*1.5, height =15*1.5, units = 'cm') 
     
-    d$Morph_F = as.factor(d$Morph)
-    m = lmer(VCL ~ log(motileCount) + date + age + Morph + (1|ID), d[Morph!='Zebra finch']) 
-    m = lmer(VAP ~ log(motileCount) + date + age + Morph + (1|ID), d[Morph!='Zebra finch']) 
-    m = lmer(VSL ~ log(motileCount) + date + age + Morph + (1|ID), d[Morph!='Zebra finch']) 
-    #m = lm(VSL ~ log(motileCount) + date + age + Morph, d[Morph!='Zebra finch']) 
+  # models
+    # may
+      m = lm(VCL ~ log(motileCount) + Morph, d[Morph!='Zebra finch' & date == 'May']) 
+      summary(m)
+      m = lm(VAP ~ log(motileCount) + Morph, d[Morph!='Zebra finch' & date == 'May']) 
+      summary(m)
+      m = lm(VSL ~ log(motileCount) + Morph, d[Morph!='Zebra finch' & date == 'May']) 
+      summary(m)
+      #summary(glht(m)) 
+      #plot(allEffects(m))
+
+    # june
+      m = lm(VCL ~ log(motileCount) + Morph, d[Morph!='Zebra finch' & date == 'June']) 
+      summary(m)
+      m = lm(VAP ~ log(motileCount) + Morph, d[Morph!='Zebra finch' & date == 'June']) 
+      summary(m)
+      m = lm(VSL ~ log(motileCount) + Morph, d[Morph!='Zebra finch' & date == 'June']) 
+      summary(m)
+      
+    # both #d$Morph_F = as.factor(d$Morph)
+      m = lmer(VCL ~ log(motileCount) + date + age + Morph + (1|ID), d[Morph!='Zebra finch']) 
+      summary(m)
+      m = lmer(VAP ~ log(motileCount) + date + age + Morph + (1|ID), d[Morph!='Zebra finch'])
+      summary(m) 
+      m = lmer(VSL ~ log(motileCount) + date + age + Morph + (1|ID), d[Morph!='Zebra finch']) 
+      summary(m)
+      #m = lm(VSL ~ log(motileCount) + date + age + Morph, d[Morph!='Zebra finch']) 
+      #summary(glht(m)) 
+      summary(m)
+      #plot(allEffects(m))
+
+# Models - TEST Morph-blind
+    densityplot(d$VCL)
+    d[VCL<40]
+    sample(c('a','b','c'), size = nrow(d), replace = TRUE)
+    d[, blind := sample(c('a','b','c'), size = nrow(d), replace = TRUE)]
+    ggplot(d,aes(x = blind, y = VCL)) + 
+      geom_dotplot(binaxis = 'y', stackdir = 'center',
+                   position = position_dodge(), col = 'grey', aes(fill =blind), dotsize = 2)+
+      geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
+      stat_summary(fun=mean, geom="point", color="red", fill="red") +
+      scale_fill_viridis(discrete=TRUE)+
+      ylab('Curvilinear velocity') +
+      theme_bw() +
+      #guides(x =  guide_axis(angle = -45)) +
+      theme(legend.position = "none",
+        axis.title.x = element_blank(), 
+        axis.text.x = element_blank(),
+        plot.title = element_text(size=9)
+        )
+
+    m = lm(VCL ~ log(motileCount) + blind, d) 
     summary(glht(m)) 
-    summary(m)
-    plot(allEffects(m))
 
 # END    
