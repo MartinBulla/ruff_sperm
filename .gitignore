@@ -25,3 +25,5 @@ freeze/
 .DS_Store
 EXP_test-40_files/
 EXP_test-40_cache/
+motility_files/
+motility_html_cache/
