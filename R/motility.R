@@ -1,3 +1,16 @@
+#' ---
+#' title: "Motility of ruff sperm - preliminary output"
+#' author: "Martin Bulla"
+#' date: "`r Sys.time()`"
+#' output: 
+#'     html_document:
+#'         toc: true
+#'         toc_float: true
+#'         toc_depth: 5
+#'         code_folding: hide
+#' ---
+
+#' Code to load tools and ata
 # TOOLS 
   require(here)
   source(here::here('R/tools.R'))
@@ -84,6 +97,8 @@
     d[Morph == 'F', Morph := 'Faeder']
     d[Morph == 'I', Morph := 'Independent']
     d[Morph == 'S', Morph := 'Satellite']
+    d[is.na(issues), issues := 'zero']
+
 
   # prepare for correlations and repeatability
     dr = d[ID%in%ID[duplicated(ID)]]
@@ -700,6 +715,117 @@
     gg3 <- ggplotGrob(g3) 
     ggsave(here::here('Output/Motility_corN-age.png'),cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
   
+  # velocity ~ issues - Morph
+    g1 = 
+    ggplot(d,aes(x = issues, y = VCL, col = Morph)) + 
+      geom_dotplot(binaxis = 'y', stackdir = 'center',
+                   position = position_dodge(), fill ='grey40', dotsize = 2)+
+      #geom_boxplot(col = 'grey',alpha = 0.2,position = position_dodge())+
+      #geom_boxplot(aes(col = Morph), fill = NA, alpha = 0.2,position = position_dodge())+
+      stat_summary(fun=mean, geom="point", color="red", fill="red") +
+      ylab('Velocity μm/s') + 
+      ylim(c(0,72)) + 
+      ggtitle('Curvilinear') +
+      facet_wrap(~Morph, ncol = 1)  +
+      guides(x =  guide_axis(angle = -45)) +
+      theme_bw() +
+      theme(legend.position = "none",
+        axis.title.x = element_text(color = "white"), 
+         plot.title = element_text(size=9, hjust = 0.5))
+    
+    g2 = 
+    ggplot(d,aes(x = issues, y = VAP)) + 
+      geom_dotplot(binaxis = 'y', stackdir = 'center',
+                   position = position_dodge(), aes(col = Morph), fill ='grey40', dotsize = 2)+
+      #geom_boxplot(col = 'grey',alpha = 0.2,position = position_dodge())+
+      stat_summary(fun=mean, geom="point", color="red", fill="red") +
+      ylim(c(0,72)) +
+      ggtitle('Average-path') + 
+      facet_wrap(~Morph, ncol = 1)  +
+      guides(x =  guide_axis(angle = -45)) +
+      theme_bw() +
+      theme(legend.position = "none",
+          plot.title = element_text(size=9, hjust = 0.5),
+          axis.title.y = element_blank(), 
+          axis.text.y = element_blank())
+    
+    g3 =  
+    ggplot(d,aes(x = issues, y = VSL, col = Morph)) + 
+      geom_dotplot(binaxis = 'y', stackdir = 'center',
+                   position = position_dodge(), aes(col = Morph), fill ='grey40', dotsize = 2)+
+      #geom_boxplot(col = 'grey',alpha = 0.2,position = position_dodge())+
+      #geom_boxplot(aes(col = Morph), fill = NA, alpha = 0.2,position = position_dodge())+
+      stat_summary(fun=mean, geom="point", color="red", fill="red") +
+      ylim(c(0,72)) + 
+      ggtitle('Straight-line') +
+      facet_wrap(~Morph, ncol = 1)  +
+      guides(x =  guide_axis(angle = -45)) +
+      theme_bw() +
+      theme(legend.position = "none",
+          plot.title = element_text(size=9, hjust = 0.5),
+          axis.title.x = element_blank(), 
+          axis.title.y = element_blank(), 
+          axis.text.y = element_blank())
+
+    grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "first"))
+    
+    gg1 <- ggplotGrob(g1)
+    gg2 <- ggplotGrob(g2) 
+    gg3 <- ggplotGrob(g3) 
+    ggsave(here::here('Output/Motility-corIssues_Morph.png'),cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =8*1.5, units = 'cm')  
+  # velocity ~ issues
+    g1 = 
+    ggplot(d,aes(x = issues, y = VCL, col = issues)) + 
+      geom_dotplot(binaxis = 'y', stackdir = 'center',
+                   position = position_dodge(), fill ='grey40', dotsize = 1)+
+      #geom_boxplot(col = 'grey',alpha = 0.2,position = position_dodge())+
+      #geom_boxplot(aes(col = Morph), fill = NA, alpha = 0.2,position = position_dodge())+
+      ylab('Velocity μm/s') + 
+      ylim(c(0,72)) + 
+      ggtitle('Curvilinear') +
+      guides(x =  guide_axis(angle = -45)) +
+      theme_bw() +
+      theme(legend.position = "none",
+        axis.title.x = element_text(color = "white"), 
+         plot.title = element_text(size=9, hjust = 0.5))
+    
+    g2 = 
+    ggplot(d,aes(x = issues, y = VAP, col = issues)) + 
+      geom_dotplot(binaxis = 'y', stackdir = 'center',
+                   position = position_dodge(), fill ='grey40', dotsize = 1)+
+      #geom_boxplot(col = 'grey',alpha = 0.2,position = position_dodge())+
+      ylim(c(0,72)) +
+      ggtitle('Average-path') + 
+      guides(x =  guide_axis(angle = -45)) +
+      theme_bw() +
+      theme(legend.position = "none",
+          plot.title = element_text(size=9, hjust = 0.5),
+          axis.title.y = element_blank(), 
+          axis.text.y = element_blank())
+    
+    g3 =  
+    ggplot(d,aes(x = issues, y = VSL, col = issues)) + 
+      geom_dotplot(binaxis = 'y', stackdir = 'center',
+                   position = position_dodge(),  fill ='grey40', dotsize = 1)+
+      #geom_boxplot(col = 'grey',alpha = 0.2,position = position_dodge())+
+      #geom_boxplot(aes(col = Morph), fill = NA, alpha = 0.2,position = position_dodge())+
+      ylim(c(0,72)) + 
+      ggtitle('Straight-line') +
+      guides(x =  guide_axis(angle = -45)) +
+      theme_bw() +
+      theme(legend.position = "none",
+          plot.title = element_text(size=9, hjust = 0.5),
+          axis.title.x = element_blank(), 
+          axis.title.y = element_blank(), 
+          axis.text.y = element_blank())
+
+    grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "first"))
+    
+    gg1 <- ggplotGrob(g1)
+    gg2 <- ggplotGrob(g2) 
+    gg3 <- ggplotGrob(g3) 
+    ggsave(here::here('Output/Motility-corIssues.png'),cbind(gg1,gg2,gg3, size = "first"), width = 18, height =5, units = 'cm')  
+
 # Correlations of velocities
     g1 = 
     ggplot(drw, aes(x = VCL.May, y = VCL.June)) +
