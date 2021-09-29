@@ -1,7 +1,7 @@
 require(rmarkdown)
 
-rmarkdown::render('R/motility_test.R', output_dir = 'Output')
-rmarkdown::render('R/motility.R', output_dir = 'Output')
+rmarkdown::render('R/motility_html.R', output_dir = 'Output',  output_file = 'motility.html')
+#rmarkdown::render('R/motility.R', output_dir = 'Output')
 rmarkdown::render('R/EXP_test-40.Rmd', output_dir = 'Output')
 
 rmarkdown::render('R/Methods.Rmd', output_dir = 'Output')
