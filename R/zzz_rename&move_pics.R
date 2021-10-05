@@ -25,7 +25,7 @@
   
   # rename & copy
   for(i in 1:nrow(d)){
-    i = 1 
+    #i = 1 
     file.copy(from = d$f[i], to = glue('all_photos/',d$new_name[i])) 
   }
 
@@ -48,4 +48,15 @@
     #i = 1 
     file.copy(from = d$f[i], to = glue('all_photos/',d$new_name[i])) 
   }
+
+ # test
+  d = data.table(
+    f = c(list.files(path = here::here('all_photos'), pattern = '.jpg', recursive = TRUE, full.names = TRUE)),
+    f2 = c(list.files(path = here::here('all_photos'), pattern = '.jpg', recursive = TRUE, full.names = FALSE))
+  )
+  d[ , sample_ID := substring(f2,6,8)]
+
+  nrow(d)
+  unique(d$sammple_ID)
+
   
