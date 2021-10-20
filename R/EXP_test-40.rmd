@@ -250,6 +250,7 @@ Code to load tools and prepare data:
       #x[, datetime_ := substr(j, 27, 45)]
       x[, id := substr(x$'File Name', 1, 2)]
       x[, pk := 1:nrow(x)]
+      x[, pic := substr(k[,f2], 13, 15)]
       #x[, manip := substr(x$'File Name', 4, nchar(x$'File Name')-7-(nchar(pk)))]
       
       #table(x$id)
@@ -284,6 +285,7 @@ Code to load tools and prepare data:
       #x[, datetime_ := substr(j, 27, 45)]
       x[, id := substr(x$'File Name', 1, 2)]
       x[, pk := 1:nrow(x)]
+      x[, pic := substr(k[,f2], 11, 13)]
       #x[, manip := substr(x$'File Name', 4, nchar(x$'File Name')-7-(nchar(pk)))]
       
       #table(x$id)
@@ -299,13 +301,15 @@ Code to load tools and prepare data:
       
     ff = f[substr(f2,8,9) == 'MC']
     d3 = foreach(j = 1:nrow(ff), .combine = rbind) %do% {
-      #k = ff[1,]
+      #k = ff[5,]
       k = ff[j,]
       x = fread(file = k[,f])
       x[, who := substr(k[,f2], 8, 9)]
       #x[, datetime_ := substr(j, 27, 45)]
       x[, id := substr(x$'File Name', 1, 2)]
       x[, pk := 1:nrow(x)]
+      x[, pic := substr(k[,f2], 13, 15)]
+      if(k$f2 == 'test40_MC_2_gre.csv'){x = x[!id == 28]}
       #x[, manip := substr(x$'File Name', 4, nchar(x$'File Name')-7-(nchar(pk)))]
       
       #table(x$id)
@@ -321,22 +325,40 @@ Code to load tools and prepare data:
         
     d = rbind(d1,d2,d3)  
     d[, id_part := paste(id, part)]
-    b = d[id_part %in% d[duplicated(id_part), id_part]] # only sperm ids and parts measured twice
 
-     # composite parts
-         b[, id_who := paste(id, who)]
-         bt = data.table(ddply(b,.(who, id, id_who), summarise, part = 'Total', Pixels = sum(Pixels)))
-         bt = bt[Pixels>1000]
-         bh = data.table(ddply(b[part %in% c('Acrosome','Nucleus')],.(who, id, id_who), summarise, part = 'Head', Pixels = sum(Pixels)))
-         bf = data.table(ddply(b[part %in% c('Midpiece','Tail')],.(who, id, id_who), summarise, part = 'Flagellum', Pixels = sum(Pixels)))
-         bf = bf[Pixels>1000]
-         bc = rbind(bh,bf,bt)
+    # inverted only
+      b = d[pic == "inv" & id_part %in% d[duplicated(id_part), id_part]] # only sperm ids and parts measured 
+      
+      # composite parts
+           b[, id_who := paste(id, who)]
+           bt = data.table(ddply(b,.(who, id, id_who), summarise, part = 'Total', Pixels = sum(Pixels)))
+           bt = bt[Pixels>1000]
+           bh = data.table(ddply(b[part %in% c('Acrosome','Nucleus')],.(who, id, id_who), summarise, part = 'Head', Pixels = sum(Pixels)))
+           bf = data.table(ddply(b[part %in% c('Midpiece','Tail')],.(who, id, id_who), summarise, part = 'Flagellum', Pixels = sum(Pixels)))
+           bf = bf[Pixels>1000]
+           bc = rbind(bh,bf,bt)
 
-     # wide format
-         bw = reshape(b[,.(who,id,part,Pixels)], idvar = c('id','part'), timevar = 'who', direction = "wide")
+      # wide format
+           bw = reshape(b[,.(who,id,part,Pixels)], idvar = c('id','part'), timevar = 'who', direction = "wide")
 
-         bcw = reshape(bc[,.(who,id,part,Pixels)], idvar = c('id','part'), timevar = 'who', direction = "wide")    
-  # Repeatability prep
+           bcw = reshape(bc[,.(who,id,part,Pixels)], idvar = c('id','part'), timevar = 'who', direction = "wide")    
+    # Maggie inverted vs desaturated vs gray scale
+      # composite parts
+           m = d[who == 'MC']
+           m[, id_pic := paste(id, pic)]
+           mt = data.table(ddply(m,.(pic, id, id_pic), summarise, part = 'Total', Pixels = sum(Pixels)))
+           mt = mt[Pixels>1000]
+           mh = data.table(ddply(m[part %in% c('Acrosome','Nucleus')],.(pic, id, id_pic), summarise, part = 'Head', Pixels = sum(Pixels)))
+           mf = data.table(ddply(m[part %in% c('Midpiece','Tail')],.(pic, id, id_pic), summarise, part = 'Flagellum', Pixels = sum(Pixels)))
+           mf = mf[Pixels>1000]
+           mc = rbind(mh,mf,mt)
+
+      # wide format
+           mw = reshape(m[,.(pic,id,part,Pixels)], idvar = c('id','part'), timevar = 'pic', direction = "wide")
+
+           mcw = reshape(mc[,.(pic,id,part,Pixels)], idvar = c('id','part'), timevar = 'pic', direction = "wide")    
+
+  # Repeatability prep inv
     # all  
       # estimate BASIC 
               lfsim = list()
@@ -405,7 +427,7 @@ Code to load tools and prepare data:
               xy2 = rbind(x,y)
               xy2[, part := factor(part, levels=c("Head","Flagellum","Total"))] 
               xy2[nchar(CI) == 7 & upr == 10, upr := 100]
-    # plot repeatability KT, MB
+    # KT, MB
       # estimate BASIC 
           lfsim = list()
           lfrpt = list()
@@ -473,7 +495,7 @@ Code to load tools and prepare data:
           xy2KTMB = rbind(x,y)
           xy2KTMB[, part := factor(part, levels=c("Head","Flagellum","Total"))] 
           xy2KTMB[nchar(CI) == 7 & upr == 10, upr := 100]
-    # plot repeatability MB, MC
+    # MB, MC
       # estimate BASIC 
           lfsim = list()
           lfrpt = list()
@@ -541,7 +563,7 @@ Code to load tools and prepare data:
           xy2MBMC = rbind(x,y)
           xy2MBMC[, part := factor(part, levels=c("Head","Flagellum","Total"))] 
           xy2MBMC[nchar(CI) == 7 & upr == 10, upr := 100]
-    # plot repeatability KT, MC
+    # KT, MC
       # estimate BASIC 
           lfsim = list()
           lfrpt = list()
@@ -610,12 +632,119 @@ Code to load tools and prepare data:
           xy2KTMC[, part := factor(part, levels=c("Head","Flagellum","Total"))] 
           xy2KTMC[nchar(CI) == 7 & upr == 10, upr := 100]              
 
+  # Repeatability prep MC acrosome
+    ma = m[part == 'Acrosome'] 
+    # all  
+      part_ = 'Acrosome'
+      dd = ma[part == part_]
+      m = lmer(Pixels ~ 1+(1|id), dd)
+      Rf = R_out(part_)
+      x = Rf[, method_CI:='arm package']
+      names(x)[1] = "part"
+
+      R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+      RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+      RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+      y=  RR[, method_CI := 'rpt package']
+      #print(i)
+
+      x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
+      x[, lwr:= as.numeric(substr(CI,1,2))]
+      x[, upr:= as.numeric(substr(CI,4,5))]
+
+      y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
+      y[nchar(CI) == 5, CI := paste0(0,CI) ]
+      y[, lwr:= as.numeric(substr(CI,1,2))]
+      y[, upr:= as.numeric(substr(CI,4,5))]
+      names(y)[2] = tolower( names(y)[2])
+      xy_ma = rbind(x,y)
+      #xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
+      xy_ma[nchar(CI) == 7 & upr == 10, upr := 100]     
+    # inv, des
+      part_ = 'Acrosome'
+      dd = ma[part == part_ & pic %in%c('inv','des')]
+      m = lmer(Pixels ~ 1+(1|id), dd)
+      Rf = R_out(part_)
+      x = Rf[, method_CI:='arm package']
+      names(x)[1] = "part"
+
+      R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+      RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+      RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+      y=  RR[, method_CI := 'rpt package']
+      #print(i)
+       
+      x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
+      x[, lwr:= as.numeric(substr(CI,1,2))]
+      x[, upr:= as.numeric(substr(CI,4,5))]
+
+      y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
+      y[nchar(CI) == 5, CI := paste0(0,CI) ]
+      y[, lwr:= as.numeric(substr(CI,1,2))]
+      y[, upr:= as.numeric(substr(CI,4,5))]
+      names(y)[2] = tolower( names(y)[2])
+      xy_ma_id = rbind(x,y)
+      #xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
+      xy_ma_id[nchar(CI) == 7 & upr == 10, upr := 100]
+    # inv, gre
+      part_ = 'Acrosome'
+      dd = ma[part == part_ & pic %in%c('inv','gre')]
+      m = lmer(Pixels ~ 1+(1|id), dd)
+      Rf = R_out(part_)
+      x = Rf[, method_CI:='arm package']
+      names(x)[1] = "part"
+
+      R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+      RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+      RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+      y=  RR[, method_CI := 'rpt package']
+      #print(i)
+       
+      x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
+      x[, lwr:= as.numeric(substr(CI,1,2))]
+      x[, upr:= as.numeric(substr(CI,4,5))]
+
+      y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
+      y[nchar(CI) == 5, CI := paste0(0,CI) ]
+      y[, lwr:= as.numeric(substr(CI,1,2))]
+      y[, upr:= as.numeric(substr(CI,4,5))]
+      names(y)[2] = tolower( names(y)[2])
+      xy_ma_ig = rbind(x,y)
+      #xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
+      xy_ma_ig[nchar(CI) == 7 & upr == 10, upr := 100]
+    # des, gre
+      part_ = 'Acrosome'
+      dd = ma[part == part_ & pic %in%c('des','gre')]
+      m = lmer(Pixels ~ 1+(1|id), dd)
+      Rf = R_out(part_)
+      x = Rf[, method_CI:='arm package']
+      names(x)[1] = "part"
+
+      R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+      RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
+      RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+      y=  RR[, method_CI := 'rpt package']
+      #print(i)
+       
+      x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
+      x[, lwr:= as.numeric(substr(CI,1,2))]
+      x[, upr:= as.numeric(substr(CI,4,5))]
+
+      y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
+      y[nchar(CI) == 5, CI := paste0(0,CI) ]
+      y[, lwr:= as.numeric(substr(CI,1,2))]
+      y[, upr:= as.numeric(substr(CI,4,5))]
+      names(y)[2] = tolower( names(y)[2])
+      xy_ma_dg = rbind(x,y)
+      #xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
+      xy_ma_dg[nchar(CI) == 7 & upr == 10, upr := 100]
+
 ```
 
 ***
 
 # Correlations
-Kim (KT), Martin (MB) & Maggie (MB):
+Kim (KT), Martin (MB) & Maggie (MC) using only inverted images:
 ```{r Cor,  warning = FALSE, message = FALSE, fig.width=6.5, fig.height=8}
   g1= ggplot(bw, aes(x = Pixels.KT, y = Pixels.MB)) +
         facet_wrap(~part, scales = "free") +  
@@ -673,7 +802,64 @@ Kim (KT), Martin (MB) & Maggie (MB):
   #ggsave(file = here::here('Output/test-40_cor-ALL.png'),rbind(cbind(ggplotGrob(g1), ggplotGrob(g2)),cbind(ggplotGrob(g5), ggplotGrob(g6)), cbind(ggplotGrob(g3), ggplotGrob(g4))), width = 6.5*2.5, height =8*2.5, units = 'cm')
  
 ```
+Maggie between inverted only (inv), inverted and desaturated (des) and inverted and greyscale (gre):
+```{r Cor_M,  warning = FALSE, message = FALSE, fig.width=6.5, fig.height=8}
+  g1= ggplot(mw, aes(x = Pixels.inv, y = Pixels.des)) +
+        facet_wrap(~part, scales = "free") +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()
+  g2 = ggplot(mcw, aes(x = Pixels.inv, y = Pixels.des)) +
+        facet_wrap(~part, scales = "free", nrow = 2) +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()
 
+  g3= ggplot(mw, aes(x = Pixels.inv, y = Pixels.gre)) +
+        facet_wrap(~part, scales = "free") +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()
+  g4 = ggplot(mcw, aes(x = Pixels.inv, y = Pixels.gre)) +
+        facet_wrap(~part, scales = "free", nrow = 2) +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()       
+
+  g5= ggplot(mw, aes(x = Pixels.gre, y = Pixels.des)) +
+        facet_wrap(~part, scales = "free") +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()
+  g6 = ggplot(mcw, aes(x = Pixels.gre, y = Pixels.des)) +
+        facet_wrap(~part, scales = "free", nrow = 2) +  
+        stat_smooth(method = 'lm')+geom_point()+
+        stat_cor(method="pearson",size = 2) +
+        geom_abline(b = 1, col = 'red', lty = 3) + 
+        #xlim(c(485, 565)) +  ylim(c(485, 565)) + 
+        #ggtitle('All')+
+        theme_bw()   
+
+  grid.draw(rbind(cbind(ggplotGrob(g1), ggplotGrob(g2)),cbind(ggplotGrob(g5), ggplotGrob(g6)), cbind(ggplotGrob(g3), ggplotGrob(g4))))
+
+  #ggsave(file = here::here('Output/test-40_cor-ALL.png'),rbind(cbind(ggplotGrob(g1), ggplotGrob(g2)),cbind(ggplotGrob(g5), ggplotGrob(g6)), cbind(ggplotGrob(g3), ggplotGrob(g4))), width = 6.5*2.5, height =8*2.5, units = 'cm')
+ 
+```
 ***
 
 # Repeatability
@@ -683,7 +869,12 @@ Kim (KT), Martin (MB) & Maggie (MB):
   xyKTMC[,comparison := 'Kim - Maggie']
   xyKTMB[,comparison := 'Kim - Martin']
   xy[,comparison := 'all three']
-  xy_ = rbind(xy, xyKTMC, xyKTMB, xyMBMC)
+
+  xy_ma[,comparison := 'Maggie inv, des, gre']
+  xy_ma_id[,comparison := 'Maggie inv - des']
+  xy_ma_ig[,comparison := 'Maggie inv - gre']
+  xy_ma_dg[,comparison := 'Maggie des - gre']
+  xy_ = rbind(xy, xyKTMC, xyKTMB, xyMBMC,xy_ma,xy_ma_id,xy_ma_ig,xy_ma_dg)
   xy_[pred==10,pred:=100]  
 
 
