@@ -201,6 +201,7 @@
       #x[, datetime_ := substr(j, 27, 45)]
       x[, id := substr(x$'File Name', 1, 2)]
       x[, pk := 1:nrow(x)]
+      x[, pic := substr(k[,f2], 13, 15)]
       #x[, manip := substr(x$'File Name', 4, nchar(x$'File Name')-7-(nchar(pk)))]
       
       #table(x$id)
@@ -235,6 +236,7 @@
       #x[, datetime_ := substr(j, 27, 45)]
       x[, id := substr(x$'File Name', 1, 2)]
       x[, pk := 1:nrow(x)]
+      x[, pic := substr(k[,f2], 13, 15)]
       #x[, manip := substr(x$'File Name', 4, nchar(x$'File Name')-7-(nchar(pk)))]
       
       #table(x$id)
@@ -250,13 +252,15 @@
       
     ff = f[substr(f2,8,9) == 'MC']
     d3 = foreach(j = 1:nrow(ff), .combine = rbind) %do% {
-      #k = ff[1,]
+      #k = ff[5,]
       k = ff[j,]
       x = fread(file = k[,f])
       x[, who := substr(k[,f2], 8, 9)]
       #x[, datetime_ := substr(j, 27, 45)]
       x[, id := substr(x$'File Name', 1, 2)]
       x[, pk := 1:nrow(x)]
+      x[, pic := substr(k[,f2], 13, 15)]
+      if(k$f2 == 'test40_MC_2_gre.csv'){x = x[!id == 28]}
       #x[, manip := substr(x$'File Name', 4, nchar(x$'File Name')-7-(nchar(pk)))]
       
       #table(x$id)
@@ -272,7 +276,7 @@
         
     d = rbind(d1,d2,d3)  
     d[, id_part := paste(id, part)]
-    b = d[id_part %in% d[duplicated(id_part), id_part]] # only sperm ids and parts measured twice
+    b = d[pic == "inv" & id_part %in% d[duplicated(id_part), id_part]] # only sperm ids and parts measured twice using inv pics
 
      # composite parts
          b[, id_who := paste(id, who)]
