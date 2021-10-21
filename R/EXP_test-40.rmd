@@ -802,7 +802,7 @@ Kim (KT), Martin (MB) & Maggie (MC) using only inverted images:
   #ggsave(file = here::here('Output/test-40_cor-ALL.png'),rbind(cbind(ggplotGrob(g1), ggplotGrob(g2)),cbind(ggplotGrob(g5), ggplotGrob(g6)), cbind(ggplotGrob(g3), ggplotGrob(g4))), width = 6.5*2.5, height =8*2.5, units = 'cm')
  
 ```
-Maggie between inverted only (inv), inverted and desaturated (des) and inverted and greyscale (gre):
+Maggie between inverted only (inv), inverted and tail measured on desaturated (des) and inverted and tail measured on greyscale (gre):
 ```{r Cor_M,  warning = FALSE, message = FALSE, fig.width=6.5, fig.height=8}
   g1= ggplot(mw, aes(x = Pixels.inv, y = Pixels.des)) +
         facet_wrap(~part, scales = "free") +  
