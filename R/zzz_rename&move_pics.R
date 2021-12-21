@@ -42,7 +42,6 @@
   d[, new_name := paste0("Ruff ", sample_ID, "_", substring(file_name, 6))]
   #d[substring(new_name, nchar(new_name)-8, nchar(new_name)-7) == "p-", new_name := gsub("p-", "p-0", new_name)]
   
-  
   # rename & copy
   for(i in 1:nrow(d)){
     #i = 1 
@@ -55,8 +54,103 @@
     f2 = c(list.files(path = here::here('all_photos'), pattern = '.jpg', recursive = TRUE, full.names = FALSE))
   )
   d[ , sample_ID := substring(f2,6,8)]
-
   nrow(d)
-  unique(d$sammple_ID)
+  unique(d$sample_ID)
+  length(unique(d$sample_ID))
 
+# REST with correct names
+  d = data.table(
+    f = c(list.files(path = here::here('June_2021/Photos_WITH_sample_ID_no'), pattern = '.jpg', recursive = TRUE, full.names = TRUE)),
+    f2 = c(list.files(path = here::here('June_2021/Photos_WITH_sample_ID_no'), pattern = '.jpg', recursive = TRUE, full.names = FALSE))
+  )
+  d = d[!grepl('metadata', f2, fixed = TRUE)]
+  d[ , sample_ID := substring(f2,6,8)]
+  d[, file_name :=sub(".*/", "", f2)]
+  #d[nchar(file_name)<32]
   
+  # test whether abnormal sperm sample present
+  d[grepl('abn', f2, fixed = TRUE)]
+
+  #d[, new_name := paste0("Ruff ", sample_ID, "_", substring(file_name, 6))]
+  #d[substring(new_name, nchar(new_name)-8, nchar(new_name)-7) == "p-", new_name := gsub("p-", "p-0", new_name)]
+  
+  
+  # copy
+  for(i in 1:nrow(d)){
+    #i = 1 
+    file.copy(from = d$f[i], to = glue('all_photos/',d$file_name[i])) 
+  }
+
+ # test
+  d = data.table(
+    f = c(list.files(path = here::here('all_photos'), pattern = '.jpg', recursive = TRUE, full.names = TRUE)),
+    f2 = c(list.files(path = here::here('all_photos'), pattern = '.jpg', recursive = TRUE, full.names = FALSE))
+  )
+  d[ , sample_ID := substring(f2,6,8)]
+  nrow(d)
+  unique(d$sample_ID)
+  length(unique(d$sample_ID))
+  summary(factor(d$sample_ID))
+  dd = d[ ,  .N , by = sample_ID ]
+  dd[N<10]
+
+# RANDOMIZE and RENAME
+  d1 = data.table(
+    f = c(list.files(path = here::here('all_photos/1'), pattern = '.jpg', recursive = TRUE, full.names = TRUE)),
+    f2 = c(list.files(path = here::here('all_photos/1'), pattern = '.jpg', recursive = TRUE, full.names = FALSE))
+  )
+  d2 = data.table(
+    f = c(list.files(path = here::here('all_photos/2'), pattern = '.jpg', recursive = TRUE, full.names = TRUE)),
+    f2 = c(list.files(path = here::here('all_photos/2'), pattern = '.jpg', recursive = TRUE, full.names = FALSE))
+  )
+  d3 = data.table(
+    f = c(list.files(path = here::here('all_photos/3'), pattern = '.jpg', recursive = TRUE, full.names = TRUE)),
+    f2 = c(list.files(path = here::here('all_photos/3'), pattern = '.jpg', recursive = TRUE, full.names = FALSE))
+  )
+  d4 = data.table(
+    f = c(list.files(path = here::here('all_photos/4'), pattern = '.jpg', recursive = TRUE, full.names = TRUE)),
+    f2 = c(list.files(path = here::here('all_photos/4'), pattern = '.jpg', recursive = TRUE, full.names = FALSE))
+  )
+  d5 = data.table(
+    f = c(list.files(path = here::here('all_photos/5'), pattern = '.jpg', recursive = TRUE, full.names = TRUE)),
+    f2 = c(list.files(path = here::here('all_photos/5'), pattern = '.jpg', recursive = TRUE, full.names = FALSE))
+  )
+  d6 = data.table(
+    f = c(list.files(path = here::here('all_photos/6'), pattern = '.jpg', recursive = TRUE, full.names = TRUE)),
+    f2 = c(list.files(path = here::here('all_photos/6'), pattern = '.jpg', recursive = TRUE, full.names = FALSE))
+  )
+  d = rbind(d1,d2,d3,d4,d5,d6)
+  d[ , sample_ID := substring(f2,6,8)]
+  d[, file_name :=sub(".*/", "", f2)]
+  d[, bird_ID :=substring(f2, 10,nchar(f2)-29)]
+  d[, bird_ID :=substring(f2, 10,nchar(f2)-29)]
+  d[bird_ID=="", bird_ID :=substring(f2, 10,nchar(f2)-25)]
+  #substring('Ruff 018_1307 2021-11-10 Snap-3277.jpg', 10,nchar('Ruff 018_1307 2021-11-10 Snap-3277.jpg')-25)
+  d[bird_ID == 'G200067 2', bird_ID := 'G200067']
+  length(unique(d$bird_ID)) # 1 - 14, 2 - 16, 3 - 26, 4 - 16, 5 - 23
+  #d[nchar(file_name)<32]
+  
+  # TEST
+    dd = d[ ,  .N , by = sample_ID ]
+    #dd
+    dd[N<10]
+
+    dd = d[ ,  .N , by = bird_ID ]
+    #dd
+    dd[N<10]
+    dd[N>10]
+    d[bird_ID%in%dd$bird_ID[dd$N>10],.N, by = list(bird_ID,sample_ID)]
+
+  # add randomization
+    d[, id := as.character(sample.int(n = nrow(d), size = nrow(d)))]
+    d[nchar(id)==1, id := paste0('00',id)]
+    d[nchar(id)==2, id := paste0('0',id)]
+    fwrite(d, file = 'R/all_randomized.csv')
+    d =d[order(id)]
+    fwrite(d, file = 'R/all_randomized_updated.csv')
+
+    for(i in 1:nrow(d)){
+    #i = 1 
+    file.copy(from = d$f[i], to = glue('randomized/',d$id[i], '.jpg'))
+    print(i)    
+    }
