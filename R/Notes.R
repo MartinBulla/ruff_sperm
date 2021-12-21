@@ -1,3 +1,12 @@
+LEFT OVER
+mw[,des_inv := Pixels.des-Pixels.gre]                                                              
+mw[,des_gre := Pixels.des-Pixels.gre]                                                              
+mw[,inv_gre := Pixels.inv-Pixels.gre]                                                              
+mw[,des_inv := Pixels.des-Pixels.inv]  
+
+mw[part == 'Acrosome' & abs(des_inv)>4] 
+mw[part == 'Acrosome' & abs(des_gre)>4] 
+
 OUR REPEATABILITY sample:
 - Batch of 40 sperm (20 males, 2 sperm per mail)
 - worth having few "funny" ones in there
