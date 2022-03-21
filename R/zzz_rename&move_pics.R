@@ -95,6 +95,7 @@
   dd[N<10]
 
 # RANDOMIZE and RENAME
+
   d1 = data.table(
     f = c(list.files(path = here::here('all_photos/1'), pattern = '.jpg', recursive = TRUE, full.names = TRUE)),
     f2 = c(list.files(path = here::here('all_photos/1'), pattern = '.jpg', recursive = TRUE, full.names = FALSE))
@@ -119,7 +120,11 @@
     f = c(list.files(path = here::here('all_photos/6'), pattern = '.jpg', recursive = TRUE, full.names = TRUE)),
     f2 = c(list.files(path = here::here('all_photos/6'), pattern = '.jpg', recursive = TRUE, full.names = FALSE))
   )
-  d = rbind(d1,d2,d3,d4,d5,d6)
+  d7 = data.table(
+    f = c(list.files(path = here::here('all_photos/7'), pattern = '.jpg', recursive = TRUE, full.names = TRUE)),
+    f2 = c(list.files(path = here::here('all_photos/7'), pattern = '.jpg', recursive = TRUE, full.names = FALSE))
+  )
+  d = rbind(d1,d2,d3,d4,d5,d6,d7)
   d[ , sample_ID := substring(f2,6,8)]
   d[, file_name :=sub(".*/", "", f2)]
   d[, bird_ID :=substring(f2, 10,nchar(f2)-29)]
@@ -145,12 +150,11 @@
     d[, id := as.character(sample.int(n = nrow(d), size = nrow(d)))]
     d[nchar(id)==1, id := paste0('00',id)]
     d[nchar(id)==2, id := paste0('0',id)]
-    fwrite(d, file = 'R/all_randomized.csv')
     d =d[order(id)]
-    fwrite(d, file = 'R/all_randomized_updated.csv')
+    fwrite(d, file = 'R/all_randomized_2022-03-21.csv')
 
     for(i in 1:nrow(d)){
     #i = 1 
-    file.copy(from = d$f[i], to = glue('randomized/',d$id[i], '.jpg'))
+    file.copy(from = d$f[i], to = glue('random_inv/',d$id[i], '.jpg'))
     print(i)    
     }
