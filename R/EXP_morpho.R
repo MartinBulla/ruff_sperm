@@ -25,6 +25,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     require(gridExtra)
     require(magrittr)
     require(multcomp)
+    require(PerformanceAnalytics)
     require(rptR) 
     require(stringi)
     require(viridis)
@@ -80,38 +81,39 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
          
          return(ri)
          }
+  # DATA  - TO DO add 'manip' column
+    # composite measures
+      x = fread(here::here('Data/DAT_morpho.csv'))
+      setnames(x,old = 'pic', new = 'sperm_ID')
+      x[, sample_ID:=as.character(sample_ID)]
 
-  # DATA  - add 'manip' column
-    x = fread(here::here('Data/DAT_morpho.csv'))
-    setnames(x,old = 'pic', new = 'sperm_ID')
-    x[, sample_ID:=as.character(sample_ID)]
+      d1 = x[,.(bird_ID, sample_ID, sperm_ID, part, Pixels)]
+      
+      d2 = d1[, sum(Pixels), by = list(bird_ID, sample_ID, sperm_ID)]
+      names(d2)[4] = 'Pixels'
+      d2[,part := 'Total']
 
-    d1 = x[,.(bird_ID, sample_ID, sperm_ID, part, Pixels)]
-    
-    d2 = d1[, sum(Pixels), by = list(bird_ID, sample_ID, sperm_ID)]
-    names(d2)[4] = 'Pixels'
-    d2[,part := 'Total']
+      d3 = d1[part%in%c('Midpiece', 'Tail'), sum(Pixels), by = list(bird_ID, sample_ID, sperm_ID)]
+      names(d3)[4] = 'Pixels'
+      d3[,part := 'Flagellum']
 
-    d3 = d1[part%in%c('Midpiece', 'Tail'), sum(Pixels), by = list(bird_ID, sample_ID, sperm_ID)]
-    names(d3)[4] = 'Pixels'
-    d3[,part := 'Flagellum']
+      d4 = d1[part%in%c('Acrosome', 'Nucleus'), sum(Pixels), by = list(bird_ID, sample_ID, sperm_ID)]
+      names(d4)[4] = 'Pixels'
+      d4[,part := 'Head']
 
-    d4 = d1[part%in%c('Acrosome', 'Nucleus'), sum(Pixels), by = list(bird_ID, sample_ID, sperm_ID)]
-    names(d4)[4] = 'Pixels'
-    d4[,part := 'Head']
+      b = merge(d1,d2, all = TRUE)
+      b = merge(b,d3, all = TRUE)
+      b = merge(b,d4, all = TRUE)
+      b[, Length_µm:=Pixels*0.078]
 
-    b = merge(d1,d2, all = TRUE)
-    b = merge(b,d3, all = TRUE)
-    b = merge(b,d4, all = TRUE)
-    b[, Length_µm:=Pixels*0.078]
-    b = merge(b, x[,.(bird_ID, sample_ID, sperm_ID, part, manip)], all.x = TRUE, by=c('bird_ID', 'sample_ID', 'sperm_ID', 'part'))
-    b[manip%in%"", manip:=NA]
-    
-    d = data.table(read_excel(here::here('Data/motility.xlsx'), sheet = 1))
-    s = data.table(read_excel(here::here('Data/sampling_2021_cleaned.xlsx'), sheet = 1))
-    s = s[!is.na(recording)]
+    # add metadata and motility
+      b = merge(b, x[,.(bird_ID, sample_ID, sperm_ID, part, manip)], all.x = TRUE, by=c('bird_ID', 'sample_ID', 'sperm_ID', 'part'))
+      b[manip%in%"", manip:=NA]
+      
+      d = data.table(read_excel(here::here('Data/motility.xlsx'), sheet = 1))
+      s = data.table(read_excel(here::here('Data/sampling_2021_cleaned.xlsx'), sheet = 1))
+      s = s[!is.na(recording)]
 
-    # add morph, age & motility
       m = data.table(read_excel(here::here('Data/ruff_males_Seewiesen.xlsx'), sheet = 1))#, range = "A1:G161"))
       m[, hatch_year:=as.numeric(substr(Hatch_date,1,4)) ]
       m[, age := 2021-hatch_year]
@@ -130,28 +132,48 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       b[is.na(issues), issues := 'zero']
 
       b = b[!Morph %in% 'Zebra finch']
-      b[, part := factor(part, levels = levels(c('Acrosome', 'Nucleus', 'Midpiece', 'Tail','Head','Flagelum', 'Total')))]
-      b[part %in% c('Acrosome', 'Nucleus', 'Midpiece', 'Tail'), type:='original']
-      b[part %in% c('Head','Flagelum', 'Total'), type:='composite']
+      b[, part := factor(part, levels = c('Acrosome', 'Nucleus', 'Midpiece', 'Tail','Head','Flagellum', 'Total'))]
+      b[part %in% c('Acrosome', 'Nucleus', 'Midpiece', 'Tail'), measure := 'original']
+      b[part %in% c('Head','Flagellum', 'Total'), measure := 'composite']
 
       #nrow(d) # N 139
 
     # prepare for correlations and repeatability
-      brw = reshape(b[,.(bird_ID,Morph, age, datetime, month, sample_ID, sperm_ID, VAP,VSL,VCL, motileCount, part, Length_µm)], idvar = c('bird_ID','Morph','age','datetime', 'month', 'sample_ID', 'sperm_ID','VAP','VSL','VCL', 'motileCount'), timevar = 'part', direction = "wide")  
-      setnames(brw,old = c('Length_µm.Acrosome', 'Length_µm.Nucleus','Length_µm.Flagellum','Length_µm.Head','Length_µm.Midpiece','Length_µm.Tail', 'Length_µm.Total'), new = c('Acrosome', 'Flagelum', 'Head','Nucleus', 'Midpiece', 'Tail','Total'))
+      bw = reshape(b[,.(bird_ID,Morph, age, datetime, month, sample_ID, sperm_ID, VAP,VSL,VCL, motileCount, part, Length_µm)], idvar = c('bird_ID','Morph','age','datetime', 'month', 'sample_ID', 'sperm_ID','VAP','VSL','VCL', 'motileCount'), timevar = 'part', direction = "wide")  
+      setnames(bw,old = c('Length_µm.Acrosome', 'Length_µm.Nucleus','Length_µm.Flagellum','Length_µm.Head','Length_µm.Midpiece','Length_µm.Tail', 'Length_µm.Total'), new = c('Acrosome', 'Flagellum', 'Head','Nucleus', 'Midpiece', 'Tail','Total'))
+    # add relative measures
+      bw[, Midpiece_rel := Midpiece/Total]
+      bw[, Flagellum_rel := Flagellum/Total]
+    
+    # mean/male dataset
+      a = b[, mean(Length_µm), by = list(bird_ID, Morph, age, part)]
+      setnames(a, old = 'V1', new = 'Length_avg')
+      a1 = data.table(bird_ID = unique(a$bird_ID), blind = c(rep(c('Independent','Satellite', 'Faeder'), floor(length(unique(a$bird_ID))/3)), 'Independent','Satellite'))
+      a = merge(a,a1, all.x = TRUE)
+
+      aw = reshape(a, idvar = c('bird_ID','Morph', 'blind','age'), timevar = "part", direction = "wide")
+      names(aw) = c('bird_ID','Morph', 'blind','age',as.character(unique(a$part)))
+      aw[, Midpiece_rel := Midpiece/Total]
+      aw[, Flagellum_rel := Flagellum/Total]
+
+    # morph as factor
+      b[, Morph := factor(Morph, levels=c("Independent", "Satellite", "Faeder"))] 
+      bw[, Morph := factor(Morph, levels=c("Independent", "Satellite", "Faeder"))] 
+      a[, Morph := factor(Morph, levels=c("Independent", "Satellite", "Faeder"))] 
+      aw[, Morph := factor(Morph, levels=c("Independent", "Satellite", "Faeder"))] 
 
 #' ## Exploration
+ 
+#+ fig.width=10, fig.height = 14
   b[, order_ := mean(Length_µm), by = bird_ID]
-
   b_ = b[part =='Total']
   b_[,bird_ID := reorder(bird_ID, Length_µm, mean)]
   b[, bird_ID := factor(bird_ID, levels = levels(b_$bird_ID))]
- 
-#+ fig.width=10, fig.height = 14
+
   g = ggplot(b, aes(x = reorder(as.factor(bird_ID),Length_µm,mean), y = Length_µm)) + facet_wrap(~part, nrow = 7, scales = 'free') + #x = reorder(as.factor(bird_ID),Length_µm,mean)
     geom_boxplot(aes(col = Morph)) + 
-    geom_dotplot(binaxis = 'y', stackdir = 'center',
-                 position = position_dodge(), col = 'red', fill ='red')+
+    #geom_dotplot(binaxis = 'y', stackdir = 'center',
+     #            position = position_dodge(), col = 'red', fill ='red')+
     scale_colour_manual(values = colors) + 
     #scale_color_viridis(discrete=TRUE)+
     xlab('Male ID') +
@@ -161,24 +183,31 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
   g
   #ggsave('Output/morpho_within_male_boxplots_ordered.png', g, width = 20, height = 15, units = 'cm')
   
-  
-  chart.Correlation(brw[, c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total')], histogram=TRUE, pch=19)
-  dev.copy(png,'Output/VD_corr_single.png')
-  dev.off()
-  
-  chart.Correlation(aw[, c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total')], histogram=TRUE, pch=19)
-  dev.copy(png,'Output/VD_corr_avg.png')
-  dev.off()
-
-  chart.Correlation(bw[Morph == 'Independent', c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total')], histogram=TRUE, pch=19)
-  dev.copy(png,'Output/VD_corr_single_I.png')
-  dev.off()
-  chart.Correlation(bw[Morph == 'Satellite', c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total')], histogram=TRUE, pch=19)
-  dev.copy(png,'Output/VD_corr_single_S.png')
-  dev.off()
-  chart.Correlation(bw[Morph == 'Faeder', c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total')], histogram=TRUE, pch=19)
-  dev.copy(png,'Output/VD_corr_single_F.png')
-  dev.off()
+#+ cor_parts, fig.width=7, fig.height = 7
+  chart.Correlation(bw[, c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')], histogram=TRUE, pch=19)
+  mtext("Single sperm", side=3, line=3)
+  #dev.copy(png,'Output/VD_corr_single.png')
+  #dev.off()
+#+ cor_parts_avg, fig.width=7, fig.height = 7  
+  chart.Correlation(aw[, c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total'.'Midpiece_rel', 'Flagellum_rel')], histogram=TRUE, pch=19)
+  mtext("Male averages", side=3, line=3)
+  #dev.copy(png,'Output/VD_corr_avg.png')
+  #dev.off()
+#+ cor_parts_I, fig.width=7, fig.height = 7  
+  chart.Correlation(bw[Morph == 'Independent', c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')], histogram=TRUE, pch=19)
+  mtext("Independent", side=3, line=3)
+  #dev.copy(png,'Output/morpho_corr_single_I.png')
+  #dev.off()
+#+ cor_parts_S, fig.width=7, fig.height = 7    
+  chart.Correlation(bw[Morph == 'Satellite', c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')], histogram=TRUE, pch=19)
+  mtext("Satellite", side=3, line=3)
+  #dev.copy(png,'Output/morpho_corr_single_S.png')
+  #dev.off()
+#+ cor_parts_F, fig.width=7, fig.height = 7    
+  chart.Correlation(bw[Morph == 'Faeder', c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')], histogram=TRUE, pch=19)
+  mtext("Feader", side=3, line=3)
+  #dev.copy(png,'Output/morpho_corr_single_F.png')
+  #dev.off()
 
 # repeatability within male
   # estimate
