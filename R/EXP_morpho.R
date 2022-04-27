@@ -81,12 +81,15 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
          
          return(ri)
          }
-  # DATA  - TO DO add 'manip' column
+  # DATA 
     # composite measures
       x = fread(here::here('Data/DAT_morpho.csv'))
       setnames(x,old = 'pic', new = 'sperm_ID')
       x[, sample_ID:=as.character(sample_ID)]
 
+        #  mneasurements from minip vs rest are the same - so no need to control for
+        #ggplot(x[part == 'Tail'], aes(x = manip, y = Pixels)) + geom_boxplot()
+      
       d1 = x[,.(bird_ID, sample_ID, sperm_ID, part, Pixels)]
       
       d2 = d1[, sum(Pixels), by = list(bird_ID, sample_ID, sperm_ID)]
@@ -162,6 +165,30 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       a[, Morph := factor(Morph, levels=c("Independent", "Satellite", "Faeder"))] 
       aw[, Morph := factor(Morph, levels=c("Independent", "Satellite", "Faeder"))] 
 
+    # create dataset for correlations
+    # dataset for correlations
+      h = b[part == 'Head']
+      setnames(h, old = "Length_µm", new="Head_µm")
+      h[, Acrosome_µm := b[part == 'Acrosome',.(Length_µm)]]
+      h[, Nucleus_µm := b[part == 'Nucleus',.(Length_µm)]]
+      h[, Midpiece_µm := b[part == 'Midpiece',.(Length_µm)]]
+      h[, Tail_µm := b[part == 'Tail',.(Length_µm)]]
+      h[, Flagellum_µm := b[part == 'Flagellum',.(Length_µm)]]
+      h[, Total_µm := b[part == 'Total',.(Length_µm)]]
+      h[, MidpieceRel_µm := b[part == 'Midpiece_rel',.(Length_µm)]]
+      h[, FlagellumRel_µm := b[part == 'Flagellum_rel',.(Length_µm)]]
+
+      ha = a[part == 'Head']
+      setnames(ha, old = "Length_avg", new="Head_µm")
+      ha[, Acrosome_µm := a[part == 'Acrosome',.(Length_avg)]]
+      ha[, Nucleus_µm := a[part == 'Nucleus',.(Length_avg)]]
+      ha[, Midpiece_µm := a[part == 'Midpiece',.(Length_avg)]]
+      ha[, Tail_µm := a[part == 'Tail',.(Length_avg)]]
+      ha[, Flagellum_µm := a[part == 'Flagellum',.(Length_avg)]]
+      ha[, Total_µm := a[part == 'Total',.(Length_avg)]]
+      ha[, MidpieceRel_µm := a[part == 'Midpiece_rel',.(Length_avg)]]
+      ha[, FlagellumRel_µm := a[part == 'Flagellum_rel',.(Length_avg)]]
+  
 #' ## Exploration
  
 #+ fig.width=10, fig.height = 14
@@ -209,7 +236,8 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
   #dev.copy(png,'Output/morpho_corr_single_F.png')
   #dev.off()
 
-# repeatability within male
+#' ## Repeatability 
+#' ### within male
   # estimate
     lfsim = list()
     lfrpt = list()
@@ -243,7 +271,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     names(y)[2] = tolower( names(y)[2])
     xy = rbind(x,y)
     xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total"))] 
-  # plot
+#+ R_male, fig.width=10, fig.height = 7
     g1 = 
       ggplot(xy, aes(x = part, y = pred, col = method_CI)) +
         geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
@@ -251,14 +279,15 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
         geom_point(position = position_dodge(width = 0.25)) +
         scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
         scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
-        labs(x = NULL, y = "Repeatability [%]")+
+        labs(x = NULL, y = "Repeatability [%]", subtitle = "within male")+
         ylim(c(0,100))+
         coord_flip()+
         theme_bw() +
         theme(plot.title = element_text(size=9))
-  
-    ggsave('Output/VD_within-male_Repeatability.png',g1, width = 10, height =7, units = 'cm')
-# repeatability within morph
+   g1
+   ggsave('Output/morpho_Repeatability_within-male.png',g1, width = 10, height =7, units = 'cm')
+
+#' ### within morph
   # estimate
     lfsim = list()
     lfrpt = list()
@@ -294,7 +323,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     names(y)[2] = tolower( names(y)[2])
     xy = rbind(x,y)
     xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total"))] 
-  # plot
+#+ R_morph, fig.width=10, fig.height = 7
     g = 
       ggplot(xy, aes(x = part, y = pred, col = method_CI)) +
         geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
@@ -302,34 +331,26 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
         geom_point(position = position_dodge(width = 0.25)) +
         scale_color_viridis(discrete=TRUE, begin=0, end = 0.5, guide = guide_legend(reverse = TRUE)) +
         #scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
-        labs(x = NULL, y = "Repeatability [%]")+
+        labs(x = NULL, y = "Repeatability [%]", subtitle = "within morph")+
         ylim(c(0,100))+
         coord_flip()+
         theme_bw() +
         theme(plot.title = element_text(size=9))
-  
-    ggsave('Output/VD_within-morph_Repeatability.png',g, width = 10, height =7, units = 'cm')
+    g
+    ggsave('Output/morpho_Repeatability_within-morph.png',g, width = 10, height =7, units = 'cm')
 
-# MORPH differences BLIND
-    ggplot(b, aes(x = Blind, y = Length_avg)) +
-    geom_boxplot() + 
-    geom_dotplot(binaxis = 'y', stackdir = 'center',
-                 position = position_dodge(), col = 'darkgrey', aes(fill =Blind))+
-    scale_fill_viridis(discrete=TRUE)+
-    facet_wrap(~part, scales = 'free', nrow = 3)+
-    ylab('Length [µm]') +
-    theme_bw() +
-    theme(axis.title.x = element_blank(), axis.text.x = element_blank(), legend.position = "none")    
-# MORPH differences TRUE
-  # distributions 
+
+#' ## Differences 
+#+ boxplot, fig.width=8, fig.height = 8
       g1 =  # dummy to extract variables for median calculation
       ggplot(b, aes(x = Morph, y = Length_µm)) +
       geom_dotplot(binaxis = 'y', stackdir = 'center',
-                   position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 2)+
+                   position = position_dodge(), aes(col = Morph, fill =Morph), dotsize = 0.5)+
       geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
       stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
-      scale_fill_viridis(discrete=TRUE)+
-      facet_wrap(~part, scales = 'free_y', nrow = 3)+
+      scale_fill_viridis(discrete=TRUE, alpha = 0.4)+
+      scale_color_viridis(discrete=TRUE, alpha = 0.8)+
+      facet_wrap(~part, scales = 'free_y', nrow = 2)+
       ggtitle('Single measurements') +
       ylab('Length [µm]') +
       theme_bw() +
@@ -344,10 +365,12 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       ggplot(a, aes(x = Morph, y = Length_avg)) +
       geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
       geom_dotplot(binaxis = 'y', stackdir = 'center',
-                   position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 3)+
-      scale_fill_viridis(discrete=TRUE)+
+                   position = position_dodge(), aes(col = Morph, fill =Morph), dotsize = 1)+
+      #              position = position_dodge(), col = 'grey', aes(fill =Morph), dotsize = 1)+
+      scale_fill_viridis(discrete=TRUE, alpha = 0.4)+
+      scale_color_viridis(discrete=TRUE, alpha = 0.8)+
       stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
-      facet_wrap(~part, scales = 'free_y', nrow = 3)+
+      facet_wrap(~part, scales = 'free_y', nrow = 2)+
       ggtitle('Means per male') +
       ylab('Length [µm]') +
       theme_bw() +
@@ -360,41 +383,44 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       #grid.arrange(g1,g2)
       gg1 <- ggplotGrob(g1)
       gg2 <- ggplotGrob(g2) 
-      ggsave('Output/VD_Morp_boxplots.png',rbind(gg1,gg2, size = "last"), width = 7*1.5, height =15*1.5, units = 'cm')  
+      ggsave('Output/morpho_boxplots.png',rbind(gg1,gg2, size = "last"), width = 7*2, height =10*1.5, units = 'cm')  
 
   # CV
-   cv_ =  b[, cv(Length_µm), by = list(part, Morph)]
-   cv_[ , Morph123 := as.numeric(Morph)]
-   names(cv_) [3]='CV' 
-   g=
-   ggplot(cv_, aes(x =Morph123 , y = CV, col = part, fill = part)) + geom_point() + geom_line() + scale_x_continuous(br eaks =c(1,2,3), labels = c('Independent','Satellite','Faeder')) +
-        theme_bw() +
-        theme(axis.title.x = element_blank())
-   ggsave('Output/VD_CV_overall.png',g, width = 10, height =7, units = 'cm')
-
    cv_ =  b[, cv(Length_µm), by = list(bird_ID, part, Morph)]
    cv_[ , Morph123 := as.numeric(Morph)]
    names(cv_) [4]='CV' 
+#+ CV_boxplot, fig.width=8, fig.height = 4
+   g = 
+   ggplot(cv_, aes(x =Morph , y = CV)) + 
+   geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
+   geom_dotplot(binaxis = 'y', stackdir = 'center',
+                   position = position_dodge(), aes(col = Morph, fill =Morph), dotsize = 1)+
+   stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
+   scale_fill_viridis(discrete=TRUE, alpha = 0.4)+
+   scale_color_viridis(discrete=TRUE, alpha = 0.8)+
+   facet_wrap(~part, nrow = 2, scales = "free_y") +
+   guides(x =  guide_axis(angle = -45)) +
+   ylab('Coefficient of variation') +
+   theme_bw() +
+   theme(legend.position = "none",
+        plot.title = element_text(size=9),
+        axis.title.x = element_blank()
+        )
+   g
+   ggsave('Output/CV_per_male.png',g, width = 10, height =10, units = 'cm')
+#+ CV_box_alt, fig.width=8, fig.height = 4   
    g=
    ggplot(cv_, aes(x =Morph , y = CV, col = part, fill = part)) + 
    #geom_dotplot(binaxis = 'y', stackdir = 'center', position = position_dodge(), col = 'grey',  dotsize = 0.5)+
    geom_boxplot(fill = NA) + 
    theme_bw() +
    theme(axis.title.x = element_blank())
-   ggsave('Output/VD_CV_male_alternative.png',g, width = 10, height =7, units = 'cm')
-   
-   g=
-   ggplot(cv_, aes(x =Morph , y = CV)) + 
-   geom_boxplot(fill = NA) + 
-   geom_dotplot(binaxis = 'y', stackdir = 'center', position = position_dodge(), col = 'red',  fill = 'grey', dotsize = 1)+
-   facet_wrap(~part, nrow = 3, scales = "free_y") +
-   guides(x =  guide_axis(angle = -45)) +
-   theme_bw() +
-   theme(axis.title.x = element_blank())
-   ggsave('Output/VD_CV_male.png',g, width = 10, height =10, units = 'cm')
-    
-  # correlations
-    # median with 95%
+   g
+   ggsave('Output/CV_per_male_alternative.png',g, width = 10, height =7, units = 'cm')
+  
+
+#' ## Correlations
+#' cor_with_95% fig.width=15, fig.height = 20
     bs = b[, quantile(Length_µm, prob = c(0.5)), by = list(part,Morph)]
     names(bs)[3] = 'median'
     bs$lwr = b[, quantile(Length_µm, prob = c(0.025)), by = list(part,Morph)]$V1
@@ -413,18 +439,21 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     bs_m[,Head_µm:= bs[part == 'Head',.(median)]]
     
     g1 =
-    ggplot(h, aes(x = Head_µm, y = Midpiece_µm, col = Morph)) +
-      geom_point()+
-      geom_point(data = bs_h, aes(x = median, y = Midpiece_µm),position = position_dodge(width = 0.25), col = 'black', size = 2) +
+    ggplot(h, aes(x = Head_µm, y = Midpiece_µm, col = Morph, fill = Morph)) +
+      geom_point(pch = 21)+
+      geom_point(data = bs_h, aes(x = median, y = Midpiece_µm), col = 'black', size = 2) +
       geom_segment(data = bs_h, aes(x = lwr, xend = upr, y =Midpiece_µm, yend =Midpiece_µm), col = "black" ) +
       geom_segment(data = bs_m, aes(x = Head_µm, xend = Head_µm, y =lwr, yend =upr), col = "black" )+
+      geom_point(data = bs_h, aes(x = median, y = Midpiece_µm, col = Morph), size = 1) +
       scale_colour_manual(values = colors)+
+      scale_fill_manual(values = alpha(colors, 0.4))+
+      #geom_point(data = bs_h, aes(x = median, y = Midpiece_µm),position = position_dodge(width = 0.25), col = 'black', size = 2) +
       #ylim(c(20,28)) +
       #xlim(c(24,36)) +
-      annotate(geom="text", x=32, y=27.5, label="Independent", size = 2, col = colors[1], hjust = 0) +
-      annotate(geom="text", x=32, y=27, label="Satellite", size = 2, col = colors[2], hjust = 0) +
-      annotate(geom="text", x=32, y=26.5, label="Faeder", size = 2, col = colors[3], hjust = 0) +
-      annotate(geom="text", x=32, y=26, label="Mean +/-SD", size = 2, hjust = 0) +
+      annotate(geom="text", x=25, y=29.5, label="Independent", size = 2, col = colors[1], hjust = 0) +
+      annotate(geom="text", x=25, y=29, label="Satellite", size = 2, col = colors[2], hjust = 0) +
+      annotate(geom="text", x=25, y=28.5, label="Faeder", size = 2, col = colors[3], hjust = 0) +
+      annotate(geom="text", x=25, y=28, label="Mean +/-SD", size = 2, hjust = 0) +
       #scale_colour_viridis(discrete=TRUE)+
       ggtitle('Single measurements') +
       theme_bw() +
@@ -443,12 +472,16 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     bs_f[,Head_µm:= bs[part == 'Head',.(median)]]
       
     g2 =
-    ggplot(h, aes(x = Head_µm, y = Flagellum_µm, col = Morph)) +
-      geom_point()+
-      geom_point(data = bs_h_, aes(x = median, y = Flagellum_µm),position = position_dodge(width = 0.25), col = 'black', size = 2) +
+    ggplot(h, aes(x = Head_µm, y = Flagellum_µm, col = Morph, fill = Morph)) +
+      geom_point(pch = 21)+
+      geom_point(pch = 21)+
+      geom_point(data = bs_h_, aes(x = median, y = Flagellum_µm), col = 'black', size = 2) +
       geom_segment(data = bs_h_, aes(x = lwr, xend = upr, y =Flagellum_µm, yend =Flagellum_µm), col = "black" ) +
       geom_segment(data = bs_f, aes(x = Head_µm, xend = Head_µm, y =lwr, yend =upr), col = "black" )+
+      geom_point(data = bs_h_, aes(x = median, y = Flagellum_µm, col = Morph), size = 1) +
       scale_colour_manual(values = colors)+
+      scale_fill_manual(values = alpha(colors, 0.4))+
+      #geom_point(data = bs_h_, aes(x = median, y = Flagellum_µm),position = position_dodge(width = 0.25), col = 'black', size = 2) +
       #scale_colour_viridis(discrete=TRUE)+
       theme_bw() +
       theme(legend.position = "none",
@@ -464,12 +497,15 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     bs_a[,Nucleus_µm:= bs[part == 'Nucleus',.(median)]] 
     
     g3 =
-    ggplot(h, aes(x = Nucleus_µm, y = Acrosome_µm, col = Morph)) +
-      geom_point()+
-      geom_point(data = bs_n, aes(x = median, y = Acrosome_µm),position = position_dodge(width = 0.25), col = 'black', size = 2) +
+    ggplot(h, aes(x = Nucleus_µm, y = Acrosome_µm, col = Morph, fill = Morph)) +
+     geom_point(pch = 21)+
+      geom_point(data = bs_n, aes(x = median, y = Acrosome_µm), col = 'black', size = 2) +
       geom_segment(data = bs_n, aes(x = lwr, xend = upr, y =Acrosome_µm, yend =Acrosome_µm), col = "black" ) +
       geom_segment(data = bs_a, aes(x = Nucleus_µm, xend = Nucleus_µm, y =lwr, yend =upr), col = "black" )+
+      geom_point(data = bs_n, aes(x = median, y = Acrosome_µm, col = Morph), size = 1) +
+      # geom_point(data = bs_n, aes(x = median, y = Acrosome_µm),position = position_dodge(width = 0.25), col = 'black', size = 2) +
       scale_colour_manual(values = colors)+
+      scale_fill_manual(values = alpha(colors, 0.4))+
       #scale_colour_viridis(discrete=TRUE)+
       theme_bw() +
       theme(legend.position = "none",
@@ -496,13 +532,15 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     as_m[,Head_µm:= as[part == 'Head',.(median)]]
 
     g1a =
-    ggplot(ha, aes(x = Head_µm, y = Midpiece_µm, col = Morph)) +
-      geom_point()+
-      geom_point(data = as_h, aes(x = median, y = Midpiece_µm),position = position_dodge(width = 0.25), col = 'black', size = 2) +
+    ggplot(ha, aes(x = Head_µm, y = Midpiece_µm, col = Morph, fill = Morph)) +
+      geom_point(pch = 21)+
+      geom_point(data = as_h, aes(x = median, y = Midpiece_µm), col = 'black', size = 2) +
       geom_segment(data = as_h, aes(x = lwr, xend = upr, y =Midpiece_µm, yend =Midpiece_µm), col = "black" ) +
       geom_segment(data = as_m, aes(x = Head_µm, xend = Head_µm, y =lwr, yend =upr), col = "black" )+
+      geom_point(data = as_h, aes(x = median, y = Midpiece_µm, col = Morph), size = 1) +
       scale_colour_manual(values = colors)+
-      #scale_colour_viridis(discrete=TRUE)+
+      scale_fill_manual(values = alpha(colors, 0.4))+
+      #geom_point(data = as_h, aes(x = median, y = Midpiece_µm),position = position_dodge(width = 0.25), col = 'black', size = 2) +
       ggtitle('Means per male') +
       theme_bw() +
       theme(legend.position = "none",
@@ -518,12 +556,14 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     as_f[,Head_µm:= as[part == 'Head',.(median)]]
 
     g2a =
-    ggplot(ha, aes(x = Head_µm, y = Flagellum_µm, col = Morph)) +
-      geom_point()+
-      geom_point(data = as_h_, aes(x = median, y = Flagellum_µm),position = position_dodge(width = 0.25), col = 'black', size = 2) +
+    ggplot(ha, aes(x = Head_µm, y = Flagellum_µm, col = Morph, fill = Morph)) +
+      geom_point(pch = 21)+
+      geom_point(data = as_h_, aes(x = median, y = Flagellum_µm), col = 'black', size = 2) +
       geom_segment(data = as_h_, aes(x = lwr, xend = upr, y =Flagellum_µm, yend =Flagellum_µm), col = "black" ) +
       geom_segment(data = as_f, aes(x = Head_µm, xend = Head_µm, y =lwr, yend =upr), col = "black" )+
+      geom_point(data = as_h_, aes(x = median, y = Flagellum_µm, col = Morph), size = 1) +
       scale_colour_manual(values = colors)+
+      scale_fill_manual(values = alpha(colors, 0.4))+
       #scale_colour_viridis(discrete=TRUE)+
       theme_bw() +
       theme(legend.position = "none",
@@ -537,14 +577,17 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
 
     as_a = as[part == 'Acrosome']
     as_a[,Nucleus_µm:= as[part == 'Nucleus',.(median)]] 
+    
     g3a =
-    ggplot(ha, aes(x = Nucleus_µm, y = Acrosome_µm, col = Morph)) +
-      geom_point()+
-      geom_point(data = as_n, aes(x = median, y = Acrosome_µm),position = position_dodge(width = 0.25), col = 'black', size = 2) +
+    ggplot(ha, aes(x = Nucleus_µm, y = Acrosome_µm, col = Morph, fill = Morph)) +
+      geom_point(pch = 21)+
+      geom_point(data = as_n, aes(x = median, y = Acrosome_µm), col = 'black', size = 2) +
       geom_segment(data = as_n, aes(x = lwr, xend = upr, y =Acrosome_µm, yend =Acrosome_µm), col = "black" ) +
       geom_segment(data = as_a, aes(x = Nucleus_µm, xend = Nucleus_µm, y =lwr, yend =upr), col = "black" )+
+      geom_point(data = as_n, aes(x = median, y = Acrosome_µm, col = Morph), size = 1) +
       scale_colour_manual(values = colors)+
-      #scale_colour_viridis(discrete=TRUE)+
+      scale_fill_manual(values = alpha(colors, 0.4))+
+      #geom_point(data = as_n, aes(x = median, y = Acrosome_µm),position = position_dodge(width = 0.25), col = 'black', size = 2) +
       theme_bw() +
       theme(legend.position = "none",
         axis.title.y = element_blank(), 
@@ -560,9 +603,9 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       gg1a <- ggplotGrob(g1a)
       gg2a <- ggplotGrob(g2a) 
       gg3a <- ggplotGrob(g3a) 
-      ggsave('Output/VD_Morp_corWithMeans.png',cbind(rbind(gg1,gg2, gg3, size = "first"), rbind(gg1a,gg2a, gg3a, size = "first"), size = "first"), width = 7*1.5, height =15, units = 'cm') 
-  
-  # correlations 3D
+      ggsave('Output/morpho_corWithMeans.png',cbind(rbind(gg1,gg2, gg3, size = "first"), rbind(gg1a,gg2a, gg3a, size = "first"), size = "first"), width = 15, height =20, units = 'cm') 
+#' cor_3D, fig.width = 10, fig.height = 7
+    
     bw[,morph123 :=ifelse(Morph == 'Independent', 1, ifelse(Morph == 'Satellite', 2,3))]             
 
     # lattice working
@@ -585,46 +628,23 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       npanel <- c(4, 2)
       rotx <- c(-50, -80)
       rotz <- seq(30, 300, length = npanel[1]+1)  
-    
-      png('Output/VD_correltations_3D.png',width = 20, height = 10, units = "cm", res = 600)
       update(p[rep(1, prod(npanel))], layout = npanel,
             panel = function(..., screen) {
                 panel.cloud(..., screen = list(z = rotz[current.column()],
                                                    x = rotx[current.row()]))
             })
-      dev.off()
-
-    # plotly
-      plot_ly(data = bw, x=~Head, y=~Midpiece, z=~Tail, color=~Morph, colors = colors)
-
-    # poorly working
-      colors_ <- colors[bw$morph123]
-      par(las = 1, cex.axis = 0.6, cex.lab = 0.8, cex.main = 0.8)
-      s3d=scatterplot3d(bw$Head, bw$Midpiece, bw$Tail, pch = 16, type="h", 
-                  color=colors_, grid=TRUE, box=FALSE,
-                  #xlab = "",
-                  #ylab = "",
-                  #zlab = "",
-                  #x.ticklabs=c("short","","","","","long"),
-                  #y.ticklabs=c("short","","","","long",""),
-                  #z.ticklabs=c("slow","","","","","fast"),
-                  mar = c(3, 3, 0, 1.5)
-                  )     
-      text(x = 30, y = 20, "Head", srt = 90,xpd = TRUE, cex = 0.8)
-      text(x = 30, y = -0.5, "Midpiece", srt = 0,xpd = TRUE, cex = 0.8)
-      text(x = 24, y = 80, "Tail", srt = 0, cex = 0.8)
-     
-      text(x = 7.5, y = 1, "Tail", srt = 0, cex = 0.8)
-      text(x = 2.5, y = -0.5, "Mipiece", srt = 0,xpd = TRUE, cex = 0.8)
-      text(x = -0.5, y = 2.5, "Velocity", srt = 90,xpd = TRUE, cex = 0.8)
-
-      legend("bottom", legend = levels(factor(bw$Morph,levels = c('Independent','Satellite','Faeder'))),
-          col =  colors, pch = 16,xpd = TRUE, horiz = TRUE,inset = -0.03, bty = "n", cex = 0.7)
     
+      #png('Output/morpho_cor_3D.png',width = 20, height = 10, units = "cm", res = 600)
+      #update(p[rep(1, prod(npanel))], layout = npanel,
+       #     panel = function(..., screen) {
+       #         panel.cloud(..., screen = list(z = rotz[current.column()],
+       #                                            x = rotx[current.row()]))
+       #     })
+       # dev.off()
 
-  # models differences in Morphs  
-    # averages     
-      # prepare estimates and predictions
+#' ## Models  
+   # prepare estimates and predictions
+      # for averages
         l = list()
         lp =list()
         for(i in unique(a$part)){
@@ -659,49 +679,11 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
         ll = data.table(do.call(rbind,l) ) 
         ll[, response := factor(response, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
         ll[, effect := factor(effect, levels=rev(c("(Intercept)", "MorphSatellite", "MorphFaeder")))]
-        
+        ll[, unit := 'male average']
         llp = data.table(do.call(rbind,lp) ) 
         llp[, part := factor(part, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
         llp[, Morph := factor(Morph, levels=rev(c("Independent", "Satellite", "Faeder")))]
-      # plot effect sizes     
-        g1 = 
-        ggplot(ll, aes(y = effect, x = estimate, col = response)) +
-          geom_vline(xintercept = 0, col = "grey", lty =3)+
-          geom_errorbar(aes(xmin = lwr, xmax = upr, col = response), width = 0.1, position = position_dodge(width = 0.25) ) +
-          #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.25)) +
-          scale_color_viridis(discrete=TRUE,guide = guide_legend(reverse = TRUE))  +
-          scale_fill_viridis(discrete=TRUE,guide = guide_legend(reverse = TRUE)) + 
-          labs(y = NULL ,x = "Standardized effect size")+
-          #ylim(c(0,100))+
-          #coord_flip()+
-          theme_bw() +
-          theme(plot.title = element_text(size=9))
-  
-        ggsave('Output/VD_lm_effectSizes.png',g1, width = 10, height =14, units = 'cm')    
-      # prepare plot with distributions with predictions
-        g1 = 
-          ggplot(a, aes(x = Morph, y = Length_avg)) +
-          geom_dotplot(binaxis = 'y', stackdir = 'center',
-                        position = position_dodge(), col = 'grey', fill = 'lightgrey', dotsize = 1.5)+
-          geom_boxplot(aes(col = Morph), fill = NA, alpha = 0.2) + 
-          geom_errorbar(data = llp, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
-          geom_point(data = llp, aes(x = Morph, y =Length_avg), position = position_dodge(width = 0.25), col = 'red') +
-          #stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
-          scale_color_viridis(discrete=TRUE)+
-          facet_wrap(~part, scales = 'free_y', nrow = 3)+
-          ggtitle('Means per male') +
-          ylab('Length [µm]') +
-          theme_bw() +
-          guides(x =  guide_axis(angle = -45)) +
-          theme(legend.position = "none",
-            axis.title.x = element_blank(), 
-            #axis.text.x = element_blank(),
-            plot.title = element_text(size=9)
-            ) #panel.spacing.y = unit(0, "mm")) #,    
- 
-    # single values 
-      # prepare estimates and predictions
+      # for single values 
         ls = list()
         lps = list()
         for(i in unique(a$part)){
@@ -736,81 +718,36 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
         lls = data.table(do.call(rbind,ls) ) 
         lls[, response := factor(response, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
         lls[, effect := factor(effect, levels=rev(c("(Intercept)", "MorphSatellite", "MorphFaeder")))]
-  
+        lls[, unit := 'single sperm']
         llps = data.table(do.call(rbind,lps) ) 
         llps[, part := factor(part, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
         llps[, Morph := factor(Morph, levels=rev(c("Independent", "Satellite", "Faeder")))]
-      # plot effect sizes     
+#' effect_sizes, fig.width =12, fig.height = 10        
+        llll = rbind(ll,lls)  
+        llll[, unit := factor(unit, levels=rev(c("single sperm", "male average")))] 
+        llll[effect == '(Intercept)', effect:='Independent\n(Intercept)']
+        llll[effect == 'MorphSatellite', effect := 'Satellite\n(relative to Independent)']
+        llll[effect == 'MorphFaeder', effect := 'Faeder\n(relative to Independent)']
+        llll[, effect := factor(effect, levels=c("Faeder\n(relative to Independent)","Satellite\n(relative to Independent)","Independent\n(Intercept)"))] 
+        
         g = 
-        ggplot(lls, aes(y = effect, x = estimate, col = response)) +
-          geom_vline(xintercept = 0, col = "grey", lty =3)+
-          geom_errorbar(aes(xmin = lwr, xmax = upr, col = response), width = 0.1, position = position_dodge(width = 0.25) ) +
+        ggplot(llll, aes(y = effect, x = estimate, col = response, shape = unit)) +
+          geom_vline(xintercept = 0, col = "grey30", lty =3)+
+          geom_errorbar(aes(xmin = lwr, xmax = upr, col = response), width = 0.1, position = position_dodge(width = 0.4) ) +
           #ggtitle ("Sim based")+
-          geom_point(position = position_dodge(width = 0.25)) +
+          geom_point(position = position_dodge(width = 0.4)) +
+          #scale_colour_brewer(type = 'qual', palette = 'Paired',guide = guide_legend(reverse = TRUE))+
+          #scale_fill_brewer(type = 'qual', palette = 'Paired',guide = guide_legend(reverse = TRUE))+
           scale_color_viridis(discrete=TRUE,guide = guide_legend(reverse = TRUE))  +
           scale_fill_viridis(discrete=TRUE,guide = guide_legend(reverse = TRUE)) + 
-          labs(y = NULL ,x = "Standardized effect size")+
+          scale_shape(guide = guide_legend(reverse = TRUE)) + 
+          #scale_x_continuous(limits = c(-2, 2), expand = c(0, 0), breaks = seq(-2,2, by = 1), labels = seq(-2,2, by = 1)) +
+          labs(y = NULL ,x = "Standardized effect size",title = 'Sperm-part specific models') +
           #ylim(c(0,100))+
           #coord_flip()+
           theme_bw() +
-          theme(plot.title = element_text(size=9))
-    
-        ggsave('Output/VD_lmer_effectSizes.png',g, width = 10, height =14, units = 'cm')
-      # prepare plot for distributions with predictions
-        g2 = 
-          ggplot(b, aes(x = Morph, y = Length_µm)) +
-          geom_dotplot(binaxis = 'y', stackdir = 'center',
-                        position = position_dodge(), col = 'grey', fill = 'lightgrey', dotsize = 1)+
-          geom_boxplot(aes(col = Morph), fill = NA, alpha = 0.2) + 
-          geom_errorbar(data = llps, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
-          geom_point(data = llps, aes(x = Morph, y =Length_µm), position = position_dodge(width = 0.25), col = 'red') +
-          #stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
-          scale_color_viridis(discrete=TRUE)+
-          facet_wrap(~part, scales = 'free_y', nrow = 3)+
-          ggtitle('Single measurements') +
-          ylab('Length [µm]') +
-          theme_bw() +
-          guides(x =  guide_axis(angle = -45)) +
-          theme(legend.position = "none",
-            axis.title.x = element_blank(), 
-            axis.text.x = element_blank(),
-            plot.title = element_text(size=9)
-            ) #panel.spacing.y = unit(0, "mm")) #,     
-
-    # plot predictions and boxplots in one plot
-      grid.draw(rbind(ggplotGrob(g2), ggplotGrob(g1), size = "last"))
-      #grid.arrange(g1,g2)
-      gg1 <- ggplotGrob(g1)
-      gg2 <- ggplotGrob(g2) 
-      ggsave('Output/VD_predictions+boxPlots_boxCol.png',rbind(gg2,gg1, size = "last"), width = 7*1.5, height =15*1.5, units = 'cm')    
-
-    # plot effects sizes in one plot
-      ll[,model := paste0(response, ', average sperm')]
-      lls[,model := paste0(response, ', single sperm')]
-      ll[,data_ := 'average sperm']
-      lls[,data_ := 'single sperm']
-      ba = rbind(ll,lls)
-      #ba[, data_ := factor(data_, levels=c("single sperm", "average sperm"))] 
-      ba = ba[!effect=='(Intercept)']
-      ba[effect=='MorphSatellite', effect := 'Satellite\n(relative to Independent)']
-      ba[effect=='MorphFaeder', effect := 'Faeder\n(relative to Independent)']
-      ba[, effect := factor(effect, levels=c("Faeder\n(relative to Independent)","Satellite\n(relative to Independent)"))] 
-      g = 
-        ggplot(ba, aes(y = effect, x = estimate, col = response, shape = data_)) +
-          geom_vline(xintercept = 0, col = "grey", lty =3)+
-          geom_errorbar(aes(xmin = lwr, xmax = upr, col = response), width = 0, position = position_dodge(width =0.5) ) +
-          #ggtitle ("Relative to Independent")+
-          geom_point(position = position_dodge(width = 0.5)) +
-          scale_colour_brewer(type = 'qual', palette = 'Paired',guide = guide_legend(reverse = TRUE))+
-          scale_fill_brewer(type = 'qual', palette = 'Paired',guide = guide_legend(reverse = TRUE))+
-          #scale_color_viridis(discrete=TRUE,guide = guide_legend(reverse = TRUE))  +
-          #scale_fill_viridis(discrete=TRUE,guide = guide_legend(reverse = TRUE)) + 
-          scale_shape(guide = guide_legend(reverse = TRUE)) +
-          scale_x_continuous(limits = c(-3, 3), expand = c(0, 0), breaks = seq(-3,3, by = 1), labels = seq(-3,3, by = 1)) +
-          labs(y = NULL ,x = "Standardized effect size", fill = 'Response', col = 'Response', shape = 'Data')+
-          #coord_flip()+
-          theme_bw() +
           theme( #legend.position ="right",
+                plot.title = element_text(size=7),
                 legend.title=element_text(size=7), 
                 legend.text=element_text(size=6),
                 ##legend.spacing.y = unit(0.1, 'cm'), 
@@ -823,14 +760,61 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
                 axis.line.y = element_blank(),
                 axis.ticks.y = element_blank(),
                 axis.ticks.x= element_line( colour = ax_lines, size = 0.25),
-                #axis.text.x = element_text()
                 axis.ticks.length = unit(1, "pt"),
-                axis.text.x=element_text(, size = 6),
+                axis.text.x = element_text(colour="black", size = 7),
                 axis.text.y=element_text(colour="black", size = 7),
-                axis.title=element_text(size=7)
+                axis.title=element_text(size=9)
                 )
+    
+        ggsave('Output/morpho_effectSizes_virid.png',g, width = 12, height =10, units = 'cm')
+        #ggsave('Output/morpho_effectSizes_pair.png',g, width = 12, height =10, units = 'cm')
+   
+  
+#' effectSizes&dist, fig.width =15, fig.height = 15 
+      g1 = 
+          ggplot(a, aes(x = Morph, y = Length_avg)) +
+          geom_dotplot(binaxis = 'y', stackdir = 'center',
+                        position = position_dodge(), col = 'grey', fill = 'lightgrey', dotsize = 1.5)+
+          geom_boxplot(aes(col = Morph), fill = NA, alpha = 0.2) + 
+          geom_errorbar(data = llp, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
+          geom_point(data = llp, aes(x = Morph, y =Length_avg), position = position_dodge(width = 0.25), col = 'red', size = 0.75) +
+          #stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
+          scale_color_viridis(discrete=TRUE)+
+          facet_wrap(~part, scales = 'free_y', nrow = 2)+
+          labs(title = 'Models on means per male\n& sperm part specific') +
+          ylab('Length [µm]') +
+          theme_bw() +
+          guides(x =  guide_axis(angle = -45)) +
+          theme(legend.position = "none",
+            axis.title.x = element_blank(), 
+            #axis.text.x = element_blank(),
+            plot.title = element_text(size=9)
+            ) #panel.spacing.y = unit(0, "mm")) #,    
+ 
+      g2 = 
+          ggplot(b, aes(x = Morph, y = Length_µm)) +
+          geom_dotplot(binaxis = 'y', stackdir = 'center',
+                        position = position_dodge(), col = 'grey', fill = 'lightgrey', dotsize = 1)+
+          geom_boxplot(aes(col = Morph), fill = NA, alpha = 0.2) + 
+          geom_errorbar(data = llps, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
+          geom_point(data = llps, aes(x = Morph, y =Length_µm), position = position_dodge(width = 0.25), col = 'red', size = 0.75) +
+          #stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
+          scale_color_viridis(discrete=TRUE)+
+          facet_wrap(~part, scales = 'free_y', nrow = 2)+
+          labs(title = 'Models on single sperm\n& sperm part specific') +
+          ylab('Length [µm]') +
+          theme_bw() +
+          guides(x =  guide_axis(angle = -45)) +
+          theme(legend.position = "none",
+            axis.title.x = element_blank(), 
+            axis.text.x = element_blank(),
+            plot.title = element_text(size=9)
+            ) #panel.spacing.y = unit(0, "mm")) #,     
 
-      ggsave('Output/VD_ALL_effectSizes.png',g, width = 10*1.5, height =5*1.5, units = 'cm')
-
+      grid.draw(rbind(ggplotGrob(g2), ggplotGrob(g1), size = "last"))
+      #grid.arrange(g1,g2)
+      gg1 <- ggplotGrob(g1)
+      gg2 <- ggplotGrob(g2) 
+      ggsave('Output/morpho_predictions+boxPlots.png',rbind(gg2,gg1, size = "last"), width = 15, height =15, units = 'cm')    
 
 # End     
