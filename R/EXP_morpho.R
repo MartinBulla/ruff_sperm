@@ -1,5 +1,5 @@
 #' ---
-#' title: "Motility of ruff sperm - preliminary output"
+#' title: "Morphology of ruff sperm"
 #' author: "Martin Bulla"
 #' date: "`r Sys.time()`"
 #' output: 
@@ -22,6 +22,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     require(effects)
     require(ggpubr)
     require(ggsci) 
+    require(grid)
     require(gridExtra)
     require(magrittr)
     require(multcomp)
@@ -191,7 +192,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
   
 #' ## Exploration
  
-#+ fig.width=10, fig.height = 14
+#+ fig.width=8, fig.height = 10
   b[, order_ := mean(Length_µm), by = bird_ID]
   b_ = b[part =='Total']
   b_[,bird_ID := reorder(bird_ID, Length_µm, mean)]
@@ -208,37 +209,36 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     theme(axis.text.x = element_blank())
     #$, legend.position = "none")
   g
-  #ggsave('Output/morpho_within_male_boxplots_ordered.png', g, width = 20, height = 15, units = 'cm')
+  ggsave(here::here('Output/morpho_within_male_boxplots_ordered.png'), g, width = 20, height = 15, units = 'cm')
   
-#+ cor_parts, fig.width=7, fig.height = 7
+#+ cor_parts, fig.width=5, fig.height = 5
   chart.Correlation(bw[, c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')], histogram=TRUE, pch=19)
   mtext("Single sperm", side=3, line=3)
   #dev.copy(png,'Output/VD_corr_single.png')
   #dev.off()
-#+ cor_parts_avg, fig.width=7, fig.height = 7  
-  chart.Correlation(aw[, c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total'.'Midpiece_rel', 'Flagellum_rel')], histogram=TRUE, pch=19)
+#+ cor_parts_avg, fig.width=5, fig.height=5  
+  chart.Correlation(aw[, c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total','Midpiece_rel', 'Flagellum_rel')], histogram=TRUE, pch=19)
   mtext("Male averages", side=3, line=3)
   #dev.copy(png,'Output/VD_corr_avg.png')
   #dev.off()
-#+ cor_parts_I, fig.width=7, fig.height = 7  
+#+ cor_parts_I, fig.width=5, fig.height = 5  
   chart.Correlation(bw[Morph == 'Independent', c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')], histogram=TRUE, pch=19)
   mtext("Independent", side=3, line=3)
   #dev.copy(png,'Output/morpho_corr_single_I.png')
   #dev.off()
-#+ cor_parts_S, fig.width=7, fig.height = 7    
+#+ cor_parts_S, fig.width=5, fig.height = 5    
   chart.Correlation(bw[Morph == 'Satellite', c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')], histogram=TRUE, pch=19)
   mtext("Satellite", side=3, line=3)
   #dev.copy(png,'Output/morpho_corr_single_S.png')
   #dev.off()
-#+ cor_parts_F, fig.width=7, fig.height = 7    
+#+ cor_parts_F, fig.width=5, fig.height = 5    
   chart.Correlation(bw[Morph == 'Faeder', c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')], histogram=TRUE, pch=19)
   mtext("Feader", side=3, line=3)
   #dev.copy(png,'Output/morpho_corr_single_F.png')
   #dev.off()
 
 #' ## Repeatability 
-#' ### within male
-  # estimate
+#+ estimate_male, results = "hide"  
     lfsim = list()
     lfrpt = list()
     for(i in c('Acrosome','Flagellum','Head','Midpiece','Nucleus','Tail','Total')){
@@ -271,7 +271,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     names(y)[2] = tolower( names(y)[2])
     xy = rbind(x,y)
     xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total"))] 
-#+ R_male, fig.width=10, fig.height = 7
+#+ R_male, fig.width=4, fig.height = 3
     g1 = 
       ggplot(xy, aes(x = part, y = pred, col = method_CI)) +
         geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
@@ -285,10 +285,8 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
         theme_bw() +
         theme(plot.title = element_text(size=9))
    g1
-   ggsave('Output/morpho_Repeatability_within-male.png',g1, width = 10, height =7, units = 'cm')
-
-#' ### within morph
-  # estimate
+   ggsave(here::here('Output/morpho_Repeatability_within-male.png'),g1, width = 10, height =7, units = 'cm')
+#+ estimate_m, results = "hide"   
     lfsim = list()
     lfrpt = list()
     for(i in c('Acrosome','Flagellum','Head','Midpiece','Nucleus','Tail','Total')){
@@ -323,7 +321,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     names(y)[2] = tolower( names(y)[2])
     xy = rbind(x,y)
     xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total"))] 
-#+ R_morph, fig.width=10, fig.height = 7
+#+ R_morph, fig.width=4, fig.height = 3
     g = 
       ggplot(xy, aes(x = part, y = pred, col = method_CI)) +
         geom_errorbar(aes(ymin = lwr, ymax = upr, col = method_CI), width = 0.1, position = position_dodge(width = 0.25) ) +
@@ -337,11 +335,10 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
         theme_bw() +
         theme(plot.title = element_text(size=9))
     g
-    ggsave('Output/morpho_Repeatability_within-morph.png',g, width = 10, height =7, units = 'cm')
+    ggsave(here::here('Output/morpho_Repeatability_within-morph.png'),g, width = 10, height =7, units = 'cm')
 
-
-#' ## Differences 
-#+ boxplot, fig.width=8, fig.height = 8
+#' ## Differences - "raw"
+#+ boxplot, fig.width=7, fig.height = 7
       g1 =  # dummy to extract variables for median calculation
       ggplot(b, aes(x = Morph, y = Length_µm)) +
       geom_dotplot(binaxis = 'y', stackdir = 'center',
@@ -383,13 +380,11 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       #grid.arrange(g1,g2)
       gg1 <- ggplotGrob(g1)
       gg2 <- ggplotGrob(g2) 
-      ggsave('Output/morpho_boxplots.png',rbind(gg1,gg2, size = "last"), width = 7*2, height =10*1.5, units = 'cm')  
-
-  # CV
+      ggsave(here::here('Output/morpho_boxplots.png'),rbind(gg1,gg2, size = "last"), width = 7*2, height =10*1.5, units = 'cm')  
+#+ CV_boxplot, fig.width=7, fig.height = 3.5
    cv_ =  b[, cv(Length_µm), by = list(bird_ID, part, Morph)]
    cv_[ , Morph123 := as.numeric(Morph)]
    names(cv_) [4]='CV' 
-#+ CV_boxplot, fig.width=8, fig.height = 4
    g = 
    ggplot(cv_, aes(x =Morph , y = CV)) + 
    geom_boxplot(col = 'grey40', fill = NA, alpha = 0.2) + 
@@ -407,8 +402,11 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
         axis.title.x = element_blank()
         )
    g
-   ggsave('Output/CV_per_male.png',g, width = 10, height =10, units = 'cm')
-#+ CV_box_alt, fig.width=8, fig.height = 4   
+   ggsave(here::here('Output/CV_per_male.png'),g, width = 10, height =10, units = 'cm')
+#+ CV_box_alt, fig.width=6, fig.height = 3   
+   cv_ =  b[, cv(Length_µm), by = list(bird_ID, part, Morph)]
+   cv_[ , Morph123 := as.numeric(Morph)]
+   names(cv_) [4]='CV' 
    g=
    ggplot(cv_, aes(x =Morph , y = CV, col = part, fill = part)) + 
    #geom_dotplot(binaxis = 'y', stackdir = 'center', position = position_dodge(), col = 'grey',  dotsize = 0.5)+
@@ -416,11 +414,10 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
    theme_bw() +
    theme(axis.title.x = element_blank())
    g
-   ggsave('Output/CV_per_male_alternative.png',g, width = 10, height =7, units = 'cm')
+   ggsave(here::here('Output/CV_per_male_alternative.png'),g, width = 10, height =7, units = 'cm')
   
-
 #' ## Correlations
-#' cor_with_95% fig.width=15, fig.height = 20
+#+ cor_with_95, fig.width=5, fig.height = 6
     bs = b[, quantile(Length_µm, prob = c(0.5)), by = list(part,Morph)]
     names(bs)[3] = 'median'
     bs$lwr = b[, quantile(Length_µm, prob = c(0.025)), by = list(part,Morph)]$V1
@@ -603,21 +600,12 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       gg1a <- ggplotGrob(g1a)
       gg2a <- ggplotGrob(g2a) 
       gg3a <- ggplotGrob(g3a) 
-      ggsave('Output/morpho_corWithMeans.png',cbind(rbind(gg1,gg2, gg3, size = "first"), rbind(gg1a,gg2a, gg3a, size = "first"), size = "first"), width = 15, height =20, units = 'cm') 
-#' cor_3D, fig.width = 10, fig.height = 7
-    
+  
+      ggsave(here::here('Output/morpho_corWithMeans.png'),cbind(rbind(gg1,gg2, gg3, size = "first"), rbind(gg1a,gg2a, gg3a, size = "first"), size = "first"), width = 15, height =20, units = 'cm') 
+#+ cor_3D, fig.width=10 
     bw[,morph123 :=ifelse(Morph == 'Independent', 1, ifelse(Morph == 'Satellite', 2,3))]             
 
-    # lattice working
-      cloud(Tail ~ Head * Midpiece, data=bw, group = Morph, col = colors,
-      key = list(text = list(c('Independent', 'Satellite','Faeder'),col=colors,cex=0.6)),
-      pch = 16, cex = 1.5, alpha = 0.75, 
-      xlab=list(cex=0.7),
-      ylab=list(cex=0.7),
-      zlab = list(cex=0.7)
-      )
-
-      p = cloud(Tail ~ Head * Midpiece, data=bw, group = Morph, col = colors,
+    p = cloud(Tail ~ Head * Midpiece, data=bw, group = Morph, col = colors,
               key = list(text = list(c('Independent', 'Satellite','Faeder'),col=colors,cex=0.6)),
               pch = 16, cex = 0.8, alpha = 0.75, 
               xlab=list(cex=0.7),
@@ -625,25 +613,25 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
               zlab = list(cex=0.7) 
               )
 
-      npanel <- c(4, 2)
-      rotx <- c(-50, -80)
-      rotz <- seq(30, 300, length = npanel[1]+1)  
+    npanel <- c(4, 2)
+    rotx <- c(-50, -80)
+    rotz <- seq(30, 300, length = npanel[1]+1)  
+    update(p[rep(1, prod(npanel))], layout = npanel,
+           panel = function(..., screen) {
+              panel.cloud(..., screen = list(z = rotz[current.column()],
+                                                 x = rotx[current.row()]))
+          })
+#+ export, results = "hide"    
+    png(here::here('Output/morpho_cor_3D.png'),width = 20, height = 10, units = "cm", res = 600)
       update(p[rep(1, prod(npanel))], layout = npanel,
-            panel = function(..., screen) {
-                panel.cloud(..., screen = list(z = rotz[current.column()],
-                                                   x = rotx[current.row()]))
+       panel = function(..., screen) {
+        panel.cloud(..., screen = list(z = rotz[current.column()],
+                x = rotx[current.row()]))
             })
-    
-      #png('Output/morpho_cor_3D.png',width = 20, height = 10, units = "cm", res = 600)
-      #update(p[rep(1, prod(npanel))], layout = npanel,
-       #     panel = function(..., screen) {
-       #         panel.cloud(..., screen = list(z = rotz[current.column()],
-       #                                            x = rotx[current.row()]))
-       #     })
-       # dev.off()
+       dev.off()
 
 #' ## Models  
-   # prepare estimates and predictions
+#+ est_pred, results = "hide"
       # for averages
         l = list()
         lp =list()
@@ -722,7 +710,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
         llps = data.table(do.call(rbind,lps) ) 
         llps[, part := factor(part, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
         llps[, Morph := factor(Morph, levels=rev(c("Independent", "Satellite", "Faeder")))]
-#' effect_sizes, fig.width =12, fig.height = 10        
+#+ effect_sizes, fig.width =4, fig.height = 4.5        
         llll = rbind(ll,lls)  
         llll[, unit := factor(unit, levels=rev(c("single sperm", "male average")))] 
         llll[effect == '(Intercept)', effect:='Independent\n(Intercept)']
@@ -765,12 +753,10 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
                 axis.text.y=element_text(colour="black", size = 7),
                 axis.title=element_text(size=9)
                 )
-    
-        ggsave('Output/morpho_effectSizes_virid.png',g, width = 12, height =10, units = 'cm')
+        g
+        ggsave(here::here('Output/morpho_effectSizes_virid.png'),g, width = 12, height =10, units = 'cm')
         #ggsave('Output/morpho_effectSizes_pair.png',g, width = 12, height =10, units = 'cm')
-   
-  
-#' effectSizes&dist, fig.width =15, fig.height = 15 
+#+ effectSizes&dist, fig.width =7 
       g1 = 
           ggplot(a, aes(x = Morph, y = Length_avg)) +
           geom_dotplot(binaxis = 'y', stackdir = 'center',
@@ -781,7 +767,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
           #stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
           scale_color_viridis(discrete=TRUE)+
           facet_wrap(~part, scales = 'free_y', nrow = 2)+
-          labs(title = 'Models on means per male\n& sperm part specific') +
+          labs(title = 'Predictions from sperm part specific models\non male means') +
           ylab('Length [µm]') +
           theme_bw() +
           guides(x =  guide_axis(angle = -45)) +
@@ -801,7 +787,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
           #stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
           scale_color_viridis(discrete=TRUE)+
           facet_wrap(~part, scales = 'free_y', nrow = 2)+
-          labs(title = 'Models on single sperm\n& sperm part specific') +
+          labs(title = 'Predictions from sperm part specific models\non single sperm') +
           ylab('Length [µm]') +
           theme_bw() +
           guides(x =  guide_axis(angle = -45)) +
@@ -815,6 +801,6 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       #grid.arrange(g1,g2)
       gg1 <- ggplotGrob(g1)
       gg2 <- ggplotGrob(g2) 
-      ggsave('Output/morpho_predictions+boxPlots.png',rbind(gg2,gg1, size = "last"), width = 15, height =15, units = 'cm')    
+      ggsave(here::here('Output/morpho_predictions+boxPlots.png'),rbind(gg2,gg1, size = "last"), width = 15, height =15, units = 'cm')    
 
 # End     
