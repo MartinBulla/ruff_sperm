@@ -147,6 +147,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
 
       b = merge(b, s[,.(sample_ID, bird_ID, Morph, age, datetime, type, sperm, recording, rec_measured, month)], by.x = c('sample_ID', 'bird_ID'), by.y = c('sample_ID', 'bird_ID'), all.x = TRUE)
       
+      # fwrite(ss[!duplicated(bird_ID), .(DB_ID, bird_ID)], file = 'Data/used_males_for_Clemens.csv')
       #b = (b[!duplicated(b)]) # shouldn't be necessary,
     
     # add motility on to individual morpho measurements (only one motility value per individual)
