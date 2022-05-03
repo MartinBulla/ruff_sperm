@@ -1,5 +1,6 @@
 require(rmarkdown)
 
+rmarkdown::render('R/EXP_morpho_mot.R', output_dir = 'Output',  output_file = 'morpho_mot.html')
 rmarkdown::render('R/EXP_morpho.R', output_dir = 'Output',  output_file = 'morpho.html')
 
 rmarkdown::render('R/motility_html.R', output_dir = 'Output',  output_file = 'motility.html')
