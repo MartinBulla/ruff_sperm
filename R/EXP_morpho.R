@@ -196,8 +196,9 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
         bw[, Flagellum_rel := Flagellum/Total]
 
      dw = reshape(d[bird_ID%in%d[duplicated(bird_ID), bird_ID],.(bird_ID,species, Morph, age, month, VAP,VSL,VCL, motileCount, motileCount_ln)], idvar = c('bird_ID','species','Morph','age'), timevar = 'month', direction = "wide")  
+   
     # mean/male dataset
-      a = b[, list(mean(Length_µm), mean(VAP),mean(VSL), mean(VCL), mean(motileCount)), by = list(bird_ID, Morph, age, part)]
+      a = b[, list(mean(Length_µm), mean(VAP),mean(VSL), mean(VCL), mean(motileCount)), by = list(month, bird_ID, Morph, age, part)]
        setnames(a, old = c('V1', 'V2','V3','V4','V5'), new = c('Length_avg', 'VAP', 'VSL', 'VCL', 'motileCount'))
       a1 = data.table(bird_ID = unique(a$bird_ID), blind = c(rep(c('Independent','Satellite', 'Faeder'), floor(length(unique(a$bird_ID))/3)), 'Independent','Satellite'))
       a = merge(a,a1, all.x = TRUE)
@@ -274,9 +275,12 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
 #' - for all morpho data we have a motility measurement that corresponds with the sampling date, except for one male, where motility measured in May, but morpho from June sample
 #' - initial exploration of the motility is available from [here](https://rawcdn.githack.com/MartinBulla/ruff_sperm/60918bbc69163e2820df7c712c33d0ad11ea6e61/Output/motility.html).
 #' - to decide: 
-#'   - currently I use, June motility values and for 4 males without June, May values. Is this ok or better to use male averages?
-#'   - motility ~ morph is controlled for number of tracked sperm, do the models on motility ~ morpho need such control?
 #'   - whether to control for pedigree
+#'   - for motility ~ morph analyses I, use
+#'      1. June motility values and for 4 males without June, May values. Is this ok or better to use male averages? 
+#'      2. bird_ID as random intercept - 50 males measured once 42 twice (June & May)
+#'   - motility models are controlled for number of tracked sperm, do we need to control also for issues (like few sperm, shit, running sample) or age?
+#'   - in motility ~ morphology - the motility measurement (with one exception) comes from the same sample as the morphology measurement. Is this ok? 
 #'
 #' ***
 #' ## Exploration
@@ -1050,7 +1054,8 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       lvp =list()
       d[, motileCount_ln:=scale(log(motileCount))]
       dd = d[!Morph%in%'Zebra finch']
-
+      #dd = a[part =='Acrosome']
+      #dd[, motileCount_ln:=scale(log(motileCount))]
       # VAP
         m = lm(scale(VAP) ~ scale(log(motileCount)) + Morph, dd)
         #summary(m)
@@ -1220,7 +1225,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
         lvpx[['VCL']] = data.table(newD) 
                  
       llvx = data.table(do.call(rbind,lvx) ) 
-      llvx = llv[effect != 'scale(log(motileCount))' ]
+      llvx = llvx[effect != 'scale(log(motileCount))' ]
       llvx[, response := factor(response, levels=rev(c("Curvilinear (VCL)", "Straight-line (VSL)", "Average-path (VAP)")))] 
       llvx[effect == '(Intercept)', effect:='Independent\n(Intercept)']
       llvx[effect == 'MorphSatellite', effect := 'Satellite\n(relative to Independent)']
@@ -1230,6 +1235,97 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       llvpx = data.table(do.call(rbind,lvpx) ) 
       llvpx[, motility := factor(motility, levels=rev(c("Curvilinear (VCL)", "Straight-line (VSL)", "Average-path (VAP)")))] 
       llvpx[, Morph := factor(Morph, levels=rev(c("Independent", "Satellite", "Faeder")))]
+    # motility 3 - mixed model
+      #chart.Correlation(d[, c('VAP', 'VSL','VCL', 'motileCount','motileCount_ln', 'NumberFields')], histogram=TRUE, pch=19)
+      #mtext("Single sperm", side=3, line=3)
+      lvq = list()
+      lvpq =list()
+      d[, motileCount_ln:=scale(log(motileCount))]
+      dd = d[!Morph%in%'Zebra finch']
+      # VAP
+        m = lmer(scale(VAP) ~ scale(log(motileCount)) + Morph + (1|bird_ID), dd)
+        #summary(m)
+        #plot(allEffects(m))
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        ci = apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975)) 
+        lvq[['VAP']]=data.frame(response='Average-path (VAP)',effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+        # get predictions
+        m = lmer(VAP ~ motileCount_ln + Morph+ (1|bird_ID), dd)
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        newD=data.frame(motileCount_ln = mean(dd$motileCount_ln), Morph = unique(b$Morph)) # values to predict for
+        X <- model.matrix(~ motileCount_ln + Morph,data=newD) # exactly the model which was used has to be specified here 
+        newD$pred <-(X%*%v) 
+        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@fixef[j,])}
+                    predmatrix[predmatrix < 0] <- 0
+                    newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                    newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                    #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+        newD$motility = 'Average-path (VAP)'
+        lvpq[['vap']] = data.table(newD)   
+      # VSL
+        m = lmer(scale(VSL) ~ scale(log(motileCount))  + Morph + (1|bird_ID), dd)
+        #summary(m)
+        #plot(allEffects(m))
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        ci = apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975)) 
+        lvq[['VSL']]=data.frame(response='Straight-line (VSL)',effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+        # get predictions
+        m = lmer(VSL ~ motileCount_ln + Morph + (1|bird_ID), dd)
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        newD=data.frame(motileCount_ln = mean(dd$motileCount_ln),Morph = unique(b$Morph)) # values to predict for
+        X <- model.matrix(~ motileCount_ln + Morph,data=newD) # exactly the model which was used has to be specified here 
+        newD$pred <-(X%*%v) 
+        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@fixef[j,])}
+                    predmatrix[predmatrix < 0] <- 0
+                    newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                    newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                    #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+        newD$motility = 'Straight-line (VSL)'
+        lvpq[['VSL']] = data.table(newD)
+      # VCL
+        m = lmer(scale(VCL) ~scale(log(motileCount)) + Morph + (1|bird_ID), dd)
+        #summary(m)
+        #plot(allEffects(m))
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        ci = apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975)) 
+        lvq[['VCL']]=data.frame(response='Curvilinear (VCL)',effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+        # get predictions
+        m = lmer(VCL ~ motileCount_ln + Morph + (1|bird_ID), dd)
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        newD=data.frame(motileCount_ln = mean(dd$motileCount_ln), Morph = unique(b$Morph)) # values to predict for
+        X <- model.matrix(~ motileCount_ln + Morph,data=newD) # exactly the model which was used has to be specified here 
+        newD$pred <-(X%*%v) 
+        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@fixef[j,])}
+                    predmatrix[predmatrix < 0] <- 0
+                    newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                    newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                    #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+        newD$motility = 'Curvilinear (VCL)'
+        lvpq[['VCL']] = data.table(newD) 
+                 
+      llvq = data.table(do.call(rbind,lvq) ) 
+      llvq = llvq[effect != 'scale(log(motileCount))' ]
+      llvq[, response := factor(response, levels=rev(c("Curvilinear (VCL)", "Straight-line (VSL)", "Average-path (VAP)")))] 
+      llvq[effect == '(Intercept)', effect:='Independent\n(Intercept)']
+      llvq[effect == 'MorphSatellite', effect := 'Satellite\n(relative to Independent)']
+      llvq[effect == 'MorphFaeder', effect := 'Faeder\n(relative to Independent)']
+      llvq[, effect := factor(effect, levels=c("Faeder\n(relative to Independent)","Satellite\n(relative to Independent)","Independent\n(Intercept)"))] 
+
+      llvpq = data.table(do.call(rbind,lvpq) ) 
+      llvpq[, motility := factor(motility, levels=rev(c("Curvilinear (VCL)", "Straight-line (VSL)", "Average-path (VAP)")))] 
+      llvpq[, Morph := factor(Morph, levels=rev(c("Independent", "Satellite", "Faeder")))]
 
 #+ effect_sizes, fig.width =4, fig.height = 4.5        
         llll = rbind(ll,lls)  
@@ -1363,6 +1459,44 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
                 )
         g2
         ggsave(here::here('Output/motility_effectSizes_virid.png'),g2, width = 10, height =8, units = 'cm')
+#+ effect_sizes_motility, fig.width =4, fig.height = 2 
+        g2 = 
+        ggplot(llvq, aes(y = effect, x = estimate, col = response)) +
+          geom_vline(xintercept = 0, col = "grey30", lty =3)+
+          geom_errorbar(aes(xmin = lwr, xmax = upr, col = response), width = 0.1, position = position_dodge(width = 0.4) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.4)) +
+          #scale_colour_brewer(type = 'qual', palette = 'Paired',guide = guide_legend(reverse = TRUE))+
+          #scale_fill_brewer(type = 'qual', palette = 'Paired',guide = guide_legend(reverse = TRUE))+
+          scale_color_viridis(discrete=TRUE,guide = guide_legend(reverse = TRUE))  +
+          scale_fill_viridis(discrete=TRUE,guide = guide_legend(reverse = TRUE)) + 
+          #scale_shape(guide = guide_legend(reverse = TRUE)) + 
+          #scale_x_continuous(limits = c(-2, 2), expand = c(0, 0), breaks = seq(-2,2, by = 1), labels = seq(-2,2, by = 1)) +
+          labs(y = NULL ,x = "Standardized effect size",title = 'Velocity-type specific models on male velocity\nusing all recording and bird_ID as random intercept') +
+          #ylim(c(0,100))+
+          #coord_flip()+
+          theme_bw() +
+          theme( #legend.position ="right",
+                plot.title = element_text(size=7),
+                legend.title=element_text(size=7), 
+                legend.text=element_text(size=6),
+                ##legend.spacing.y = unit(0.1, 'cm'), 
+                legend.key.height= unit(0.5,"line"),
+                #plot.margin = margin(b = 0.5, l = 0.5, t = 0.5, r =0.5, unit =  "pt"),
+                panel.grid = element_blank(),
+                panel.border = element_blank(),
+                panel.background = element_blank(),
+                axis.line = element_line(colour = ax_lines, size = 0.25),
+                axis.line.y = element_blank(),
+                axis.ticks.y = element_blank(),
+                axis.ticks.x= element_line( colour = ax_lines, size = 0.25),
+                axis.ticks.length = unit(1, "pt"),
+                axis.text.x = element_text(colour="black", size = 7),
+                axis.text.y=element_text(colour="black", size = 7),
+                axis.title=element_text(size=9)
+                )
+        g2
+        ggsave(here::here('Output/motility_effectSizes_virid_mixed.png'),g2, width = 10, height =8, units = 'cm')
 #'
 #' <span style="color: red;">!!! Against prediction about selection for the fastest sperm, faeders might have most variable & slowest sperm !!!</span>    
 #' 
@@ -1463,7 +1597,6 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
 #'
 #' ***
 #' ### Does morpho predict motility?
-#' Not controlled for 
 #+ pred, results = "hide"   
     # not controlled for motile count  
       l = list()
