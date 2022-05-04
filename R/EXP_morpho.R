@@ -203,8 +203,8 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       a1 = data.table(bird_ID = unique(a$bird_ID), blind = c(rep(c('Independent','Satellite', 'Faeder'), floor(length(unique(a$bird_ID))/3)), 'Independent','Satellite'))
       a = merge(a,a1, all.x = TRUE)
 
-      aw = reshape(a, idvar = c('bird_ID','Morph', 'blind','age','VAP','VSL','VCL', 'motileCount'), timevar = "part", direction = "wide")
-      names(aw) = c('bird_ID','Morph', 'VAP','VSL','VCL', 'motileCount', 'blind','age',as.character(unique(a$part)))
+      aw = reshape(a, idvar = c('month','bird_ID','Morph', 'blind','age','VAP','VSL','VCL', 'motileCount'), timevar = "part", direction = "wide")
+      names(aw) = c('month','bird_ID','Morph', 'VAP','VSL','VCL', 'motileCount', 'blind','age',as.character(unique(a$part)))
       # add relative measures
       aw[, Midpiece_rel := Midpiece/Total]
       aw[, Flagellum_rel := Flagellum/Total]
@@ -1459,7 +1459,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
                 )
         g2
         ggsave(here::here('Output/motility_effectSizes_virid.png'),g2, width = 10, height =8, units = 'cm')
-#+ effect_sizes_motility, fig.width =4, fig.height = 2 
+#+ effect_sizes_motil_mix, fig.width =4, fig.height = 2 
         g2 = 
         ggplot(llvq, aes(y = effect, x = estimate, col = response)) +
           geom_vline(xintercept = 0, col = "grey30", lty =3)+
