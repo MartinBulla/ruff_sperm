@@ -30,6 +30,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     require(rptR) 
     require(stringi)
     require(viridis)
+    require(readxl)
 
 
     # constants
@@ -204,10 +205,149 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       a = merge(a,a1, all.x = TRUE)
 
       aw = reshape(a, idvar = c('month','bird_ID','Morph', 'blind','age','VAP','VSL','VCL', 'motileCount'), timevar = "part", direction = "wide")
-      names(aw) = c('month','bird_ID','Morph', 'VAP','VSL','VCL', 'motileCount', 'blind','age',as.character(unique(a$part)))
+      names(aw) = c('bird_ID','month','Morph', 'age','VAP','VSL','VCL', 'motileCount', 'blind', as.character(unique(a$part)))
       # add relative measures
       aw[, Midpiece_rel := Midpiece/Total]
       aw[, Flagellum_rel := Flagellum/Total]
+    # add inbreeding & HL    
+      # prepare
+        n = data.table(read_excel(here::here("Data/Ruffs2020_inbreeding.xlsx"), sheet = "allBins", na = "NA"))
+        n = n[Sex == 1]
+        n = n[!is.na(OriginalRing)]
+        n[, c('Ruff8a', 'Ruff8b') := NULL]
+        n[ Cme9a==Cme9b, Cme9 := 1]
+        n[ Cme9a!=Cme9b, Cme9 := 0]
+        n[ Ppu47a==Ppu47b, Ppu47 := 1]
+        n[ Ppu47a!=Ppu47b, Ppu47 := 0]
+        n[ Ruff1a==Ruff1b, Ruff1 := 1]
+        n[ Ruff1a!=Ruff1b, Ruff1 := 0]
+        n[ Ruff12a==Ruff12b, Ruff12 := 1]
+        n[ Ruff12a!=Ruff12b, Ruff12 := 0]
+        n[ Ruff50a==Ruff50b, Ruff50 := 1]
+        n[ Ruff50a!=Ruff50b, Ruff50 := 0]
+        n[ Ppu20a==Ppu20b, Ppu20 := 1]
+        n[ Ppu20a!=Ppu20b, Ppu20 := 0]
+        n[ Ppu22a==Ppu22b, Ppu22 := 1]
+        n[ Ppu22a!=Ppu22b, Ppu22 := 0]
+        n[ Ppu24a==Ppu24b, Ppu24 := 1]
+        n[ Ppu24a!=Ppu24b, Ppu24 := 0]
+        n[ Ppu25a==Ppu25b, Ppu25 := 1]
+        n[ Ppu25a!=Ppu25b, Ppu25 := 0]
+        n[ Ppu28a==Ppu28b, Ppu28 := 1]
+        n[ Ppu28a!=Ppu28b, Ppu28 := 0]
+        n[ Ppu48a==Ppu24b, Ppu48 := 1]
+        n[ Ppu48a!=Ppu24b, Ppu48 := 0]
+        n[ Cme2a==Cme2b, Cme2 := 1]
+        n[ Cme2a!=Cme2b, Cme2 := 0]   
+        n[ Cme6a==Cme6b, Cme6 := 1]
+        n[ Cme6a!=Cme6b, Cme6 := 0]
+        n[ Ruff6a==Ruff6b, Ruff6 := 1]
+        n[ Ruff6a!=Ruff6b, Ruff6 := 0]
+        n[ Ppu9a==Ppu9b, Ppu9 := 1]
+        n[ Ppu9a!=Ppu9b, Ppu9 := 0]
+        n[ Ppu19a==Ppu19b, Ppu19 := 1]
+        n[ Ppu19a!=Ppu19b, Ppu19 := 0]
+        n[ Ppu31a==Ppu31b, Ppu31 := 1]
+        n[ Ppu31a!=Ppu31b, Ppu31 := 0]
+        n[ Ppu56a==Ppu56b, Ppu56 := 1]
+        n[ Ppu56a!=Ppu56b, Ppu56 := 0]
+        n[ Tgu06_Slatea==Tgu06_Slateb, Tgu06_Slate := 1]
+        n[ Tgu06_Slatea!=Tgu06_Slateb, Tgu06_Slate := 0]
+        n[ Phil2a==Phil2b, Phil2 := 1]
+        n[ Phil2a!=Phil2b, Phil2 := 0]  
+        
+        nn = melt(n, id.vars = c("OriginalRing"),
+                measure.vars = c("Cme9", "Ppu47", "Ruff1","Ruff12","Ruff50","Ppu20","Ppu22","Ppu24","Ppu25","Ppu28","Ppu48","Cme2","Cme6","Ruff6","Ppu9","Ppu19","Ppu31",'Ppu56',"Tgu06_Slate","Phil2"),
+                variable.name = "marker", value.name = "homo")
+        nn = nn[!(OriginalRing %in% '7 -04 - 105' & marker %in% 'Ppu9') ] # remove uncertain assignment
+        h = nn[, .(sum(homo)/.N, .N), by = OriginalRing]
+        #h = nn[, .(sum(homo)/.N), by = OriginalRing]
+        setnames(h, old = 'V1', new = 'inbreeding') 
+           
+        n = data.table(read_excel(here::here("Data/RuffsCK_2010-2019_RunData6.xlsx"), sheet = "allAlleles", na = "NA", col_type = 'text'))
+        n = n[sex == 1]
+        n = n[!is.na(OriginalRing)]
+        n[, c('Ruff8a', 'Ruff8b') := NULL]
+        n[ Cme9a==Cme9b, Cme9 := 1]
+        n[ Cme9a!=Cme9b, Cme9 := 0]
+        n[ Ppu47a==Ppu47b, Ppu47 := 1]
+        n[ Ppu47a!=Ppu47b, Ppu47 := 0]
+        n[ Ruff1a==Ruff1b, Ruff1 := 1]
+        n[ Ruff1a!=Ruff1b, Ruff1 := 0]
+        n[ Ruff12a==Ruff12b, Ruff12 := 1]
+        n[ Ruff12a!=Ruff12b, Ruff12 := 0]
+        n[ Ruff50a==Ruff50b, Ruff50 := 1]
+        n[ Ruff50a!=Ruff50b, Ruff50 := 0]
+        n[ Ppu20a==Ppu20b, Ppu20 := 1]
+        n[ Ppu20a!=Ppu20b, Ppu20 := 0]
+        n[ Ppu22a==Ppu22b, Ppu22 := 1]
+        n[ Ppu22a!=Ppu22b, Ppu22 := 0]
+        n[ Ppu24a==Ppu24b, Ppu24 := 1]
+        n[ Ppu24a!=Ppu24b, Ppu24 := 0]
+        n[ Ppu25a==Ppu25b, Ppu25 := 1]
+        n[ Ppu25a!=Ppu25b, Ppu25 := 0]
+        n[ Ppu28a==Ppu28b, Ppu28 := 1]
+        n[ Ppu28a!=Ppu28b, Ppu28 := 0]
+        n[ Ppu48a==Ppu24b, Ppu48 := 1]
+        n[ Ppu48a!=Ppu24b, Ppu48 := 0]
+        n[ Cme2a==Cme2b, Cme2 := 1]
+        n[ Cme2a!=Cme2b, Cme2 := 0]   
+        n[ Cme6a==Cme6b, Cme6 := 1]
+        n[ Cme6a!=Cme6b, Cme6 := 0]
+        n[ Ruff6a==Ruff6b, Ruff6 := 1]
+        n[ Ruff6a!=Ruff6b, Ruff6 := 0]
+        n[ Ppu9a==Ppu9b, Ppu9 := 1]
+        n[ Ppu9a!=Ppu9b, Ppu9 := 0]
+        n[ Ppu19a==Ppu19b, Ppu19 := 1]
+        n[ Ppu19a!=Ppu19b, Ppu19 := 0]
+        n[ Ppu31a==Ppu31b, Ppu31 := 1]
+        n[ Ppu31a!=Ppu31b, Ppu31 := 0]
+        n[ Ppu56a==Ppu56b, Ppu56 := 1]
+        n[ Ppu56a!=Ppu56b, Ppu56 := 0]
+        n[ Tgu06_Slatea==Tgu06_Slateb, Tgu06_Slate := 1]
+        n[ Tgu06_Slatea!=Tgu06_Slateb, Tgu06_Slate := 0]
+        n[ Phil2a==Phil2b, Phil2 := 1]
+        n[ Phil2a!=Phil2b, Phil2 := 0]  
+        
+        nn = melt(n, id.vars = c("OriginalRing"),
+                measure.vars = c("Cme9", "Ppu47", "Ruff1","Ruff12","Ruff50","Ppu20","Ppu22","Ppu24","Ppu25","Ppu28","Ppu48","Cme2","Cme6","Ruff6","Ppu9","Ppu19","Ppu31",'Ppu56',"Tgu06_Slate","Phil2"),
+                variable.name = "marker", value.name = "homo")
+        h2 = nn[, .(sum(homo)/.N, .N), by = OriginalRing]
+        #h2 = nn[, .(sum(homo)/.N), by = OriginalRing]
+        setnames(h2, old = 'V1', new = 'inb2014_19') 
+
+        hh = merge(h,h2, by = 'OriginalRing', all.x = TRUE)
+        hh[N.x!=N.y, inbreeding := inb2014_19]
+        h = hh[,.(OriginalRing,inbreeding)]
+        h2 = h2[!OriginalRing%in%h$OriginalRing]
+        h2[, N := NULL]
+        setnames(h2, old = 'inb2014_19', new = 'inbreeding')
+        h = rbind(h,h2)
+
+        h[ OriginalRing== '7 -04 - 105', OriginalRing := 704105]
+        h[ OriginalRing== 'AIF AO - 15 - 11', OriginalRing := 'AIFAO15-11']
+        h[ OriginalRing== 'A 8209 AIF AO 16 507', OriginalRing := 'AIFAO16507']
+        h[ OriginalRing== 'AO 2712-16-49-B 6.5', OriginalRing := 'AO27121649']
+        h[ OriginalRing== 'AO 3999-18-3-NL 6.5', OriginalRing := 'AO3999183']
+        h[ OriginalRing== 'AO 414-17-3-NL 6.5', OriginalRing := 'AO414-17-3-NL']
+        h[ OriginalRing== 'AO 414-17-5-NL 6.5', OriginalRing := 'AO414-17-5']
+        h[ OriginalRing== 'AO 5938-18-30-NL 6.5', OriginalRing := 'AO59381830']
+        h[ OriginalRing== 'AO 7422-18-1-NL 6.5', OriginalRing := 'AO7422181NL']
+        h[ OriginalRing== 'AO 7422-18-1-NL 6.5', OriginalRing := 'AO7422181NL']
+        h[ OriginalRing== 'AO 7956-17-18-NL 6.5', OriginalRing := 'AO7956-17-18']
+        h[ OriginalRing== 'AO 7956-16-54-NL 6.5', OriginalRing := 'AO79561654']
+        h[ OriginalRing== 'AO 7956-16-56-NL 6.5', OriginalRing := 'AO79561656']
+        h[ OriginalRing== 'CZ 6.5 005', OriginalRing := 'CZ005']
+        h[ OriginalRing== 'G 5.0 - 14 - 223', OriginalRing := 'G14223']
+        h[ OriginalRing== 'G 5.0 - 17 - 267', OriginalRing := 'G17267']
+        h[substr(OriginalRing, 1,3) == 'G20', OriginalRing := paste0('G20', substring(OriginalRing, 5,8))]
+      
+      # merge
+        aw = merge(aw,h, by.x = 'bird_ID', by.y = 'OriginalRing')
+        a = merge(a,h, by.x = 'bird_ID', by.y = 'OriginalRing')
+        z = fread("Data/Dat_HL.txt")
+        aw = merge(aw,z[,.(sampleid, HL)], by.x = 'bird_ID', by.y = 'sampleid')
+        a = merge(a,z[,.(sampleid, HL)], by.x = 'bird_ID', by.y = 'sampleid')
 
     # morph as factor
       b[, Morph := factor(Morph, levels=c("Independent", "Satellite", "Faeder"))] 
@@ -218,6 +358,14 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       d[, Morph := factor(Morph, levels=c("Independent", "Satellite", "Faeder", "Zebra finch"))] 
       dw[, Morph := factor(Morph, levels=c("Independent", "Satellite", "Faeder", "Zebra finch"))] 
       #ggplot(dw, aes(x = VAP.May, y = VAP.June))+geom_point() + stat_smooth(method = 'lm') + geom_abline(intercept = 0, slope = 1, lty = 3, col = 'red')
+    
+    # CV dataset
+        cv_ =  b[, cv(Length_µm), by = list(bird_ID, part, Morph)]
+        cv_[ , Morph123 := as.numeric(Morph)]
+        names(cv_) [4]='CV'
+        cv_ = merge(cv_,h, by.x = 'bird_ID', by.y = 'OriginalRing')
+        cv_ = merge(cv_,z[,.(sampleid, HL)], by.x = 'bird_ID', by.y = 'sampleid')
+
     # dataset for relative measurements
       bt = b[part == 'Total',.(Morph, bird_ID, sample_ID, sperm_ID, part, Length_µm, VAP, VSL, VCL, motileCount, motileCount_ln)]
       
@@ -240,6 +388,8 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       
       ar = rbind(a1,a2)
       ar$Length_avg = NULL
+      ar = merge(ar,h, by.x = 'bird_ID', by.y = 'OriginalRing')
+      ar = merge(ar,z[,.(sampleid, HL)], by.x = 'bird_ID', by.y = 'sampleid')
     
     # dataset for correlations
       h = b[part == 'Head']
@@ -263,11 +413,6 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       ha[, Total_µm := a[part == 'Total',.(Length_avg)]]
       ha[, Midpiece_rel := ar[part == 'Midpiece',.(Length_rel)]]
       ha[, Flagellum_rel := ar[part == 'Flagellum',.(Length_rel)]]
-    
-    # CV dataset
-        cv_ =  b[, cv(Length_µm), by = list(bird_ID, part, Morph)]
-        cv_[ , Morph123 := as.numeric(Morph)]
-        names(cv_) [4]='CV'
 
 #' ## Basic info
 #' - for each male 10 sperm measured from one of the two sampling occasions
@@ -284,6 +429,189 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
 #'
 #' ***
 #' ## Exploration
+#+ inbr_HL,fig.width=4, fig.height = 4
+  ggplot(aw, aes(x = HL, y = inbreeding)) + geom_point() + geom_abline(slope = 1, col = 'red')
+#+ inbr_morph, fig.width=4, fig.height = 4
+  ggplot(aw, aes(x = Morph, y = inbreeding)) +
+          geom_dotplot(binaxis = 'y', stackdir = 'center',
+                        position = position_dodge(), col = 'grey', fill = 'lightgrey', dotsize = 0.75)+
+          geom_boxplot(aes(col = Morph), fill = NA, alpha = 0.2) + 
+          stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
+          #stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
+          scale_color_viridis(discrete=TRUE)+
+          theme_bw() +
+          theme(legend.position = "none",
+            plot.title = element_text(size=9)
+            )  
+#+ inbr_part, fig.width=8, fig.height = 4
+  ggplot(aw, aes(x = Morph, y = inbreeding)) +
+          geom_dotplot(binaxis = 'y', stackdir = 'center',
+                        position = position_dodge(), col = 'grey', fill = 'lightgrey', dotsize = 0.75)+
+          geom_boxplot(aes(col = Morph), fill = NA, alpha = 0.2) + 
+          stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
+          #stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
+          scale_color_viridis(discrete=TRUE)+
+          theme_bw() +
+          theme(legend.position = "none",
+            plot.title = element_text(size=9)
+            )  
+#+ inbr_CV, fig.width=8, fig.height = 4 
+ ggplot(cv_, aes(x = inbreeding, y = CV)) +
+          stat_smooth(method = 'rlm') +
+          geom_point(aes(col = Morph), alpha = 0.5) + 
+          scale_color_viridis(discrete=TRUE)+
+          facet_wrap(~part, scales = 'free_y', nrow = 2)+
+          #labs(title = 'Predictions from sperm part specific models\non single sperm') +
+          xlab('Inbreeding') +
+          ylab('CV') +
+          theme_bw() +
+          guides(x =  guide_axis(angle = -45)) +
+          theme(legend.position = "none",
+            #axis.title.x = element_blank(), 
+            #axis.text.x = element_blank(),
+            plot.title = element_text(size=9)
+            ) #panel.spacing.y = unit(0, "mm")) #,     
+#+ inbr_velo fig.width=8, fig.height = 4     
+  ga1 = 
+    ggplot(aw, aes(x = inbreeding, y = VAP)) +
+      geom_smooth(method = 'rlm') +
+      geom_point(aes(col = Morph), alpha = 0.5) + 
+      scale_color_viridis(discrete=TRUE)+
+     # xlab('Inbreeding') +
+      theme_bw() +
+      theme(
+        #legend.position=c(.9,.9),  
+        legend.position = "none",
+        axis.title.x = element_blank(), 
+        axis.text.x = element_blank(),
+        plot.title = element_text(size=9)
+        ) 
+  
+  ga2 = 
+  ggplot(aw, aes(x = inbreeding, y = VSL)) +
+      geom_smooth(method = 'rlm') +
+      geom_point(aes(col = Morph), alpha = 0.5) + 
+      scale_color_viridis(discrete=TRUE)+
+      theme_bw() +
+      theme(
+        #legend.position=c(.9,.9),  
+        legend.position = "none",
+        axis.title.x = element_blank(), 
+        axis.text.x = element_blank(),
+        plot.title = element_text(size=9)
+        )    
+  ga3 = 
+  ggplot(aw, aes(x = inbreeding, y = VCL)) +
+      geom_smooth(method = 'rlm') +
+      geom_point(aes(col = Morph), alpha = 0.5) + 
+      scale_color_viridis(discrete=TRUE)+
+      xlab("Inbreeding") + 
+      theme_bw() +
+      theme(
+        #legend.position=c(.9,.9),  
+        legend.position = "none",
+        #axis.title.x = element_blank(), 
+        #axis.text.x = element_blank(),
+        plot.title = element_text(size=9)
+        ) 
+  grid.draw(
+    rbind(ggplotGrob(ga1), ggplotGrob(ga2), ggplotGrob(ga3), size = "first")
+    )
+
+#+ HL_morph, fig.width=4, fig.height = 4
+  ggplot(aw, aes(x = Morp, y = HL)) +
+          geom_dotplot(binaxis = 'y', stackdir = 'center',
+                        position = position_dodge(), col = 'grey', fill = 'lightgrey', dotsize = 0.75)+
+          geom_boxplot(aes(col = Morph), fill = NA, alpha = 0.2) + 
+          stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
+          #stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
+          scale_color_viridis(discrete=TRUE)+
+          theme_bw() +
+          theme(legend.position = "none",
+            plot.title = element_text(size=9)
+            )  
+#+ HL_part, fig.width=8, fig.height = 4
+  ggplot(a, aes(x = HL, y = Length_avg)) +
+    stat_smooth(method = 'rlm') +
+    geom_point(aes(col = Morph), alpha = 0.5) + 
+    stat_cor(aes(label = ..r.label..),  label.x = 0.3, size = 2)+
+    scale_color_viridis(discrete=TRUE)+
+    facet_wrap(~part, scales = 'free_y', nrow = 2)+
+    #stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
+    scale_color_viridis(discrete=TRUE)+
+    xlab('Homozygousity by locus') +
+    ylab('Length [µm]') +
+    theme_bw() +
+    theme(legend.position = "none",
+      plot.title = element_text(size=9)
+      )  
+#+ HL_CV, fig.width=8, fig.height = 4 
+ ggplot(cv_, aes(x = HL, y = CV)) +
+          stat_smooth(method = 'rlm') +
+          geom_point(aes(col = Morph), alpha = 0.5) + 
+          stat_cor(aes(label = ..r.label..),  label.x = 0.3, size = 2)+
+          scale_color_viridis(discrete=TRUE)+
+          facet_wrap(~part, scales = 'free_y', nrow = 2)+
+          #labs(title = 'Predictions from sperm part specific models\non single sperm') +
+          xlab('Homozygousity by locus') +
+          ylab('CV') +
+          theme_bw() +
+          #guides(x =  guide_axis(angle = -45)) +
+          theme(legend.position = "none",
+            #axis.title.x = element_blank(), 
+            #axis.text.x = element_blank(),
+            plot.title = element_text(size=9)
+            ) #panel.spacing.y = unit(0, "mm")) #,     
+#+ HL_velo fig.width=8, fig.height = 4     
+  ga1 = 
+    ggplot(aw, aes(x = HL, y = VAP)) +
+      geom_smooth(method = 'rlm') +
+      geom_point(aes(col = Morph), alpha = 0.5) + 
+      stat_cor(aes(label = ..r.label..),  label.x = 0.3, size = 2)+
+      scale_color_viridis(discrete=TRUE)+
+     # xlab('Inbreeding') +
+      theme_bw() +
+      theme(
+        #legend.position=c(.9,.9),  
+        legend.position = "none",
+        axis.title.x = element_blank(), 
+        axis.text.x = element_blank(),
+        plot.title = element_text(size=9)
+        ) 
+  
+  ga2 = 
+  ggplot(aw, aes(x = HL, y = VSL)) +
+      geom_smooth(method = 'rlm') +
+      geom_point(aes(col = Morph), alpha = 0.5) + 
+      stat_cor(aes(label = ..r.label..),  label.x = 0.3, size = 2)+
+      scale_color_viridis(discrete=TRUE)+
+      theme_bw() +
+      theme(
+        #legend.position=c(.9,.9),  
+        legend.position = "none",
+        axis.title.x = element_blank(), 
+        axis.text.x = element_blank(),
+        plot.title = element_text(size=9)
+        )    
+  ga3 = 
+  ggplot(aw, aes(x = HL, y = VCL)) +
+      geom_smooth(method = 'rlm') +
+      geom_point(aes(col = Morph), alpha = 0.5) + 
+      stat_cor(aes(label = ..r.label..),  label.x = 0.3, size = 2)+
+      scale_color_viridis(discrete=TRUE)+
+      xlab("Homozygousity by locus") + 
+      theme_bw() +
+      theme(
+        #legend.position=c(.9,.9),  
+        legend.position = "none",
+        #axis.title.x = element_blank(), 
+        #axis.text.x = element_blank(),
+        plot.title = element_text(size=9)
+        ) 
+  grid.draw(
+    rbind(ggplotGrob(ga1), ggplotGrob(ga2), ggplotGrob(ga3), size = "first")
+    )
+
 #+ fig.width=8, fig.height = 10
   b[, order_ := mean(Length_µm), by = bird_ID]
   b_ = b[part =='Total']
@@ -1326,7 +1654,282 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       llvpq = data.table(do.call(rbind,lvpq) ) 
       llvpq[, motility := factor(motility, levels=rev(c("Curvilinear (VCL)", "Straight-line (VSL)", "Average-path (VAP)")))] 
       llvpq[, Morph := factor(Morph, levels=rev(c("Independent", "Satellite", "Faeder")))]
+    # motility 4 - mixed model with month
+      #chart.Correlation(d[, c('VAP', 'VSL','VCL', 'motileCount','motileCount_ln', 'NumberFields')], histogram=TRUE, pch=19)
+      #mtext("Single sperm", side=3, line=3)
+      lvm = list()
+      lvpm =list()
+      d[, motileCount_ln:=scale(log(motileCount))]
+      dd = d[!Morph%in%'Zebra finch']
+      # VAP
+        m = lmer(scale(VAP) ~ scale(log(motileCount)) + month + Morph + (1|bird_ID), dd)
+        #summary(m)
+        #plot(allEffects(m))
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        ci = apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975)) 
+        lvm[['VAP']]=data.frame(response='Average-path (VAP)',effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
 
+        # get predictions
+        m = lmer(VAP ~ motileCount_ln+ month + Morph+ (1|bird_ID), dd)
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        newD=data.frame(motileCount_ln = mean(dd$motileCount_ln), month = 0.5, Morph = unique(b$Morph)) # values to predict for
+        X <- model.matrix(~ motileCount_ln+ month + Morph,data=newD) # exactly the model which was used has to be specified here 
+        newD$pred <-(X%*%v) 
+        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@fixef[j,])}
+                    predmatrix[predmatrix < 0] <- 0
+                    newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                    newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                    #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+        newD$motility = 'Average-path (VAP)'
+        lvpm[['vap']] = data.table(newD)   
+      # VSL
+        m = lmer(scale(VSL) ~ scale(log(motileCount))+ month  + Morph + (1|bird_ID), dd)
+        #summary(m)
+        #plot(allEffects(m))
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        ci = apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975)) 
+        lvm[['VSL']]=data.frame(response='Straight-line (VSL)',effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+        # get predictions
+        m = lmer(VSL ~ motileCount_ln + Morph+ month + (1|bird_ID), dd)
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        newD=data.frame(motileCount_ln = mean(dd$motileCount_ln), month = 0.5,Morph = unique(b$Morph)) # values to predict for
+        X <- model.matrix(~ motileCount_ln+ month + Morph,data=newD) # exactly the model which was used has to be specified here 
+        newD$pred <-(X%*%v) 
+        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@fixef[j,])}
+                    predmatrix[predmatrix < 0] <- 0
+                    newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                    newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                    #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+        newD$motility = 'Straight-line (VSL)'
+        lvpm[['VSL']] = data.table(newD)
+      # VCL
+        m = lmer(scale(VCL) ~scale(log(motileCount))+ month + Morph + (1|bird_ID), dd)
+        #summary(m)
+        #plot(allEffects(m))
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        ci = apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975)) 
+        lvm[['VCL']]=data.frame(response='Curvilinear (VCL)',effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+        # get predictions
+        m = lmer(VCL ~ motileCount_ln+ month + Morph + (1|bird_ID), dd)
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        newD=data.frame(motileCount_ln = mean(dd$motileCount_ln), month = 0.5, Morph = unique(b$Morph)) # values to predict for
+        X <- model.matrix(~ motileCount_ln+ month + Morph,data=newD) # exactly the model which was used has to be specified here 
+        newD$pred <-(X%*%v) 
+        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@fixef[j,])}
+                    predmatrix[predmatrix < 0] <- 0
+                    newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                    newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                    #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+        newD$motility = 'Curvilinear (VCL)'
+        lvpm[['VCL']] = data.table(newD) 
+                 
+      llvm = data.table(do.call(rbind,lvm) ) 
+      llvm = llvm[!effect %in% c('scale(log(motileCount))','monthMay') ]
+      llvm[, response := factor(response, levels=rev(c("Curvilinear (VCL)", "Straight-line (VSL)", "Average-path (VAP)")))] 
+      llvm[effect == '(Intercept)', effect:='Independent\n(Intercept)']
+      llvm[effect == 'MorphSatellite', effect := 'Satellite\n(relative to Independent)']
+      llvm[effect == 'MorphFaeder', effect := 'Faeder\n(relative to Independent)']
+      llvm[, effect := factor(effect, levels=c("Faeder\n(relative to Independent)","Satellite\n(relative to Independent)","Independent\n(Intercept)"))] 
+
+      llvpm = data.table(do.call(rbind,lvpm) ) 
+      llvpm[, motility := factor(motility, levels=rev(c("Curvilinear (VCL)", "Straight-line (VSL)", "Average-path (VAP)")))] 
+      llvpm[, Morph := factor(Morph, levels=rev(c("Independent", "Satellite", "Faeder")))]
+    # motility 5 - mixed model, only data without issues
+      #chart.Correlation(d[, c('VAP', 'VSL','VCL', 'motileCount','motileCount_ln', 'NumberFields')], histogram=TRUE, pch=19)
+      #mtext("Single sperm", side=3, line=3)
+      lvi = list()
+      lvpi =list()
+      d[, motileCount_ln:=scale(log(motileCount))]
+      dd = d[!Morph%in%'Zebra finch']
+      ddi = dd[issues == 'zero']
+      # VAP
+        m = lmer(scale(VAP) ~ scale(log(motileCount)) + Morph + (1|bird_ID), ddi)
+        #summary(m)
+        #plot(allEffects(m))
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        ci = apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975)) 
+        lvi[['VAP']]=data.frame(response='Average-path (VAP)',effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+        # get predictions
+        m = lmer(VAP ~ motileCount_ln + Morph+ (1|bird_ID), ddi)
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        newD=data.frame(motileCount_ln = mean(ddi$motileCount_ln), Morph = unique(b$Morph)) # values to predict for
+        X <- model.matrix(~ motileCount_ln + Morph,data=newD) # exactly the model which was used has to be specified here 
+        newD$pred <-(X%*%v) 
+        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@fixef[j,])}
+                    predmatrix[predmatrix < 0] <- 0
+                    newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                    newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                    #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+        newD$motility = 'Average-path (VAP)'
+        lvpi[['vap']] = data.table(newD)   
+      # VSL
+        m = lmer(scale(VSL) ~ scale(log(motileCount))  + Morph + (1|bird_ID), ddi)
+        #summary(m)
+        #plot(allEffects(m))
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        ci = apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975)) 
+        lvi[['VSL']]=data.frame(response='Straight-line (VSL)',effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+        # get predictions
+        m = lmer(VSL ~ motileCount_ln + Morph + (1|bird_ID), ddi)
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        newD=data.frame(motileCount_ln = mean(ddi$motileCount_ln),Morph = unique(b$Morph)) # values to predict for
+        X <- model.matrix(~ motileCount_ln + Morph,data=newD) # exactly the model which was used has to be specified here 
+        newD$pred <-(X%*%v) 
+        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@fixef[j,])}
+                    predmatrix[predmatrix < 0] <- 0
+                    newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                    newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                    #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+        newD$motility = 'Straight-line (VSL)'
+        lvpi[['VSL']] = data.table(newD)
+      # VCL
+        m = lmer(scale(VCL) ~scale(log(motileCount)) + Morph + (1|bird_ID), ddi)
+        #summary(m)
+        #plot(allEffects(m))
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        ci = apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975)) 
+        lvi[['VCL']]=data.frame(response='Curvilinear (VCL)',effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+        # get predictions
+        m = lmer(VCL ~ motileCount_ln + Morph + (1|bird_ID), ddi)
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        newD=data.frame(motileCount_ln = mean(ddi$motileCount_ln), Morph = unique(b$Morph)) # values to predict for
+        X <- model.matrix(~ motileCount_ln + Morph,data=newD) # exactly the model which was used has to be specified here 
+        newD$pred <-(X%*%v) 
+        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@fixef[j,])}
+                    predmatrix[predmatrix < 0] <- 0
+                    newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                    newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                    #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+        newD$motility = 'Curvilinear (VCL)'
+        lvpi[['VCL']] = data.table(newD)              
+      llvi = data.table(do.call(rbind,lvi) ) 
+      llvi = llvi[effect != 'scale(log(motileCount))' ]
+      llvi[, response := factor(response, levels=rev(c("Curvilinear (VCL)", "Straight-line (VSL)", "Average-path (VAP)")))] 
+      llvi[effect == '(Intercept)', effect:='Independent\n(Intercept)']
+      llvi[effect == 'MorphSatellite', effect := 'Satellite\n(relative to Independent)']
+      llvi[effect == 'MorphFaeder', effect := 'Faeder\n(relative to Independent)']
+      llvi[, effect := factor(effect, levels=c("Faeder\n(relative to Independent)","Satellite\n(relative to Independent)","Independent\n(Intercept)"))] 
+
+      llvpi = data.table(do.call(rbind,lvpi) ) 
+      llvpi[, motility := factor(motility, levels=rev(c("Curvilinear (VCL)", "Straight-line (VSL)", "Average-path (VAP)")))] 
+      llvpi[, Morph := factor(Morph, levels=rev(c("Independent", "Satellite", "Faeder")))]
+    # motility 6- mixed model with month and issuee
+      #chart.Correlation(d[, c('VAP', 'VSL','VCL', 'motileCount','motileCount_ln', 'NumberFields')], histogram=TRUE, pch=19)
+      #mtext("Single sperm", side=3, line=3)
+      lvs = list()
+      lvps =list()
+      d[, motileCount_ln:=scale(log(motileCount))]
+      dd = d[!Morph%in%'Zebra finch']
+      dd[issues == 'zero', issue:='no']
+      dd[issues != 'zero', issue:='yes']
+      # VAP
+        m = lmer(scale(VAP) ~ scale(log(motileCount)) + month + issue +  Morph + (1|bird_ID), dd)
+        #summary(m)
+        #plot(allEffects(m))
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        ci = apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975)) 
+        lvs[['VAP']]=data.frame(response='Average-path (VAP)',effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+        # get predictions
+        m = lmer(VAP ~ motileCount_ln+ month + issue + Morph+ (1|bird_ID), dd)
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        newD=data.frame(motileCount_ln = mean(dd$motileCount_ln), month = 0.5, issue = 0.5,  Morph = unique(b$Morph)) # values to predict for
+        X <- model.matrix(~ motileCount_ln+ month + issue + Morph,data=newD) # exactly the model which was used has to be specified here 
+        newD$pred <-(X%*%v) 
+        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@fixef[j,])}
+                    predmatrix[predmatrix < 0] <- 0
+                    newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                    newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                    #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+        newD$motility = 'Average-path (VAP)'
+        lvps[['vap']] = data.table(newD)   
+      # VSL
+        m = lmer(scale(VSL) ~ scale(log(motileCount))+ month + issue  + Morph + (1|bird_ID), dd)
+        #summary(m)
+        #plot(allEffects(m))
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        ci = apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975)) 
+        lvs[['VSL']]=data.frame(response='Straight-line (VSL)',effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+        # get predictions
+        m = lmer(VSL ~ motileCount_ln + Morph+ month + issue + (1|bird_ID), dd)
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        newD=data.frame(motileCount_ln = mean(dd$motileCount_ln), month = 0.5, issue = 0.5, Morph = unique(b$Morph)) # values to predict for
+        X <- model.matrix(~ motileCount_ln+ month + issue + Morph,data=newD) # exactly the model which was used has to be specified here 
+        newD$pred <-(X%*%v) 
+        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@fixef[j,])}
+                    predmatrix[predmatrix < 0] <- 0
+                    newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                    newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                    #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+        newD$motility = 'Straight-line (VSL)'
+        lvps[['VSL']] = data.table(newD)
+      # VCL
+        m = lmer(scale(VCL) ~scale(log(motileCount))+ month + issue + Morph + (1|bird_ID), dd)
+        #summary(m)
+        #plot(allEffects(m))
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        ci = apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975)) 
+        lvs[['VCL']]=data.frame(response='Curvilinear (VCL)',effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+        # get predictions
+        m = lmer(VCL ~ motileCount_ln+ month + Morph + issue + (1|bird_ID), dd)
+        bsim = sim(m, n.sim=nsim) 
+        v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+        newD=data.frame(motileCount_ln = mean(dd$motileCount_ln), month = 0.5, issue = 0.5, Morph = unique(b$Morph)) # values to predict for
+        X <- model.matrix(~ motileCount_ln+ month + issue + Morph,data=newD) # exactly the model which was used has to be specified here 
+        newD$pred <-(X%*%v) 
+        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@fixef[j,])}
+                    predmatrix[predmatrix < 0] <- 0
+                    newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                    newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                    #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+        newD$motility = 'Curvilinear (VCL)'
+        lvps[['VCL']] = data.table(newD) 
+                 
+      llvs = data.table(do.call(rbind,lvs) ) 
+      llvs = llvs[!effect %in% c('scale(log(motileCount))','monthMay','issueyes') ]
+      llvs[, response := factor(response, levels=rev(c("Curvilinear (VCL)", "Straight-line (VSL)", "Average-path (VAP)")))] 
+      llvs[effect == '(Intercept)', effect:='Independent\n(Intercept)']
+      llvs[effect == 'MorphSatellite', effect := 'Satellite\n(relative to Independent)']
+      llvs[effect == 'MorphFaeder', effect := 'Faeder\n(relative to Independent)']
+      llvs[, effect := factor(effect, levels=c("Faeder\n(relative to Independent)","Satellite\n(relative to Independent)","Independent\n(Intercept)"))] 
+
+      llvps = data.table(do.call(rbind,lvps) ) 
+      llvps[, motility := factor(motility, levels=rev(c("Curvilinear (VCL)", "Straight-line (VSL)", "Average-path (VAP)")))] 
+      llvps[, Morph := factor(Morph, levels=rev(c("Independent", "Satellite", "Faeder")))]
+    
 #+ effect_sizes, fig.width =4, fig.height = 4.5        
         llll = rbind(ll,lls)  
         llll[, unit := factor(unit, levels=rev(c("single sperm", "male average")))] 
@@ -1421,7 +2024,56 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
                 )
         g
         ggsave(here::here('Output/morpho_effectSizes_virid_CV.png'),g, width = 12, height =10, units = 'cm')
-#+ effect_sizes_motility, fig.width =4, fig.height = 2 
+#+ effect_sizes_motil_ALL, fig.width =4, fig.height = 2 
+        llvx[,model := 'linear on June recordings']
+        llvq[,model := 'mixed, all recordings']
+        llvm[,model := 'mixed, all recordings & control for month']
+        llvs[,model := 'mixed, all recordings & control for month & issues']
+        llvi[,model := 'mixed, recordings without issues']
+        
+
+        xqm = rbind(llvx,llvq, llvm, llvi, llvs)
+        xqm[, model := factor(model, levels=c('mixed, recordings without issues', 'mixed, all recordings & control for month & issues','mixed, all recordings & control for month', 'mixed, all recordings',"linear on June recordings"))] 
+        #table(dd$issues,dd$Morph) 
+        g2 = 
+        ggplot(xqm, aes(y = effect, x = estimate, col = response, fill = response, shape = model)) +
+          geom_vline(xintercept = 0, col = "grey30", lty =3)+
+          geom_errorbar(aes(xmin = lwr, xmax = upr, col = response), width = 0.1, position = position_dodge(width = 0.6) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.6)) +
+          #scale_colour_brewer(type = 'qual', palette = 'Paired',guide = guide_legend(reverse = TRUE))+
+          #scale_fill_brewer(type = 'qual', palette = 'Paired',guide = guide_legend(reverse = TRUE))+
+          scale_color_viridis(discrete=TRUE,guide = guide_legend(reverse = TRUE))  +
+          scale_fill_viridis(discrete=TRUE,guide = guide_legend(reverse = TRUE)) + 
+          scale_shape_manual(guide = guide_legend(reverse = TRUE, override.aes = list(fill = c('black'))), values =c(25, 24,23,22,21))+
+          #scale_shape_manual(guide = guide_legend(reverse = TRUE), values =c(5,2,0,1)) + 
+          #scale_x_continuous(limits = c(-2, 2), expand = c(0, 0), breaks = seq(-2,2, by = 1), labels = seq(-2,2, by = 1)) +
+          labs(y = NULL ,x = "Standardized effect size",title = 'Velocity-type specific models') +
+          #ylim(c(0,100))+
+          #coord_flip()+
+          theme_bw() +
+          theme( #legend.position ="right",
+                plot.title = element_text(size=7),
+                legend.title=element_text(size=7), 
+                legend.text=element_text(size=6),
+                ##legend.spacing.y = unit(0.1, 'cm'), 
+                legend.key.height= unit(0.5,"line"),
+                #plot.margin = margin(b = 0.5, l = 0.5, t = 0.5, r =0.5, unit =  "pt"),
+                panel.grid = element_blank(),
+                panel.border = element_blank(),
+                panel.background = element_blank(),
+                axis.line = element_line(colour = ax_lines, size = 0.25),
+                axis.line.y = element_blank(),
+                axis.ticks.y = element_blank(),
+                axis.ticks.x= element_line( colour = ax_lines, size = 0.25),
+                axis.ticks.length = unit(1, "pt"),
+                axis.text.x = element_text(colour="black", size = 7),
+                axis.text.y=element_text(colour="black", size = 7),
+                axis.title=element_text(size=9)
+                )
+        g2
+        ggsave(here::here('Output/motility_effectSizes_virid_all.png'),g2, width = 14, height =10, units = 'cm')
+# effect_sizes_motility, fig.width =4, fig.height = 2 
         g2 = 
         ggplot(llvx, aes(y = effect, x = estimate, col = response)) +
           geom_vline(xintercept = 0, col = "grey30", lty =3)+
@@ -1457,9 +2109,9 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
                 axis.text.y=element_text(colour="black", size = 7),
                 axis.title=element_text(size=9)
                 )
-        g2
+        #g2
         ggsave(here::here('Output/motility_effectSizes_virid.png'),g2, width = 10, height =8, units = 'cm')
-#+ effect_sizes_motil_mix, fig.width =4, fig.height = 2 
+# effect_sizes_motil_mix, fig.width =4, fig.height = 2 
         g2 = 
         ggplot(llvq, aes(y = effect, x = estimate, col = response)) +
           geom_vline(xintercept = 0, col = "grey30", lty =3)+
@@ -1495,8 +2147,46 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
                 axis.text.y=element_text(colour="black", size = 7),
                 axis.title=element_text(size=9)
                 )
-        g2
+        #g2
         ggsave(here::here('Output/motility_effectSizes_virid_mixed.png'),g2, width = 10, height =8, units = 'cm')
+# effect_sizes_motil_mix_m, fig.width =4, fig.height = 2 
+        g2 = 
+        ggplot(llvm, aes(y = effect, x = estimate, col = response)) +
+          geom_vline(xintercept = 0, col = "grey30", lty =3)+
+          geom_errorbar(aes(xmin = lwr, xmax = upr, col = response), width = 0.1, position = position_dodge(width = 0.4) ) +
+          #ggtitle ("Sim based")+
+          geom_point(position = position_dodge(width = 0.4)) +
+          #scale_colour_brewer(type = 'qual', palette = 'Paired',guide = guide_legend(reverse = TRUE))+
+          #scale_fill_brewer(type = 'qual', palette = 'Paired',guide = guide_legend(reverse = TRUE))+
+          scale_color_viridis(discrete=TRUE,guide = guide_legend(reverse = TRUE))  +
+          scale_fill_viridis(discrete=TRUE,guide = guide_legend(reverse = TRUE)) + 
+          #scale_shape(guide = guide_legend(reverse = TRUE)) + 
+          #scale_x_continuous(limits = c(-2, 2), expand = c(0, 0), breaks = seq(-2,2, by = 1), labels = seq(-2,2, by = 1)) +
+          labs(y = NULL ,x = "Standardized effect size",title = 'Velocity-type specific models on male velocity\nusing all recordings, controlled for month and bird_ID (random intercept)') +
+          #ylim(c(0,100))+
+          #coord_flip()+
+          theme_bw() +
+          theme( #legend.position ="right",
+                plot.title = element_text(size=7),
+                legend.title=element_text(size=7), 
+                legend.text=element_text(size=6),
+                ##legend.spacing.y = unit(0.1, 'cm'), 
+                legend.key.height= unit(0.5,"line"),
+                #plot.margin = margin(b = 0.5, l = 0.5, t = 0.5, r =0.5, unit =  "pt"),
+                panel.grid = element_blank(),
+                panel.border = element_blank(),
+                panel.background = element_blank(),
+                axis.line = element_line(colour = ax_lines, size = 0.25),
+                axis.line.y = element_blank(),
+                axis.ticks.y = element_blank(),
+                axis.ticks.x= element_line( colour = ax_lines, size = 0.25),
+                axis.ticks.length = unit(1, "pt"),
+                axis.text.x = element_text(colour="black", size = 7),
+                axis.text.y=element_text(colour="black", size = 7),
+                axis.title=element_text(size=9)
+                )
+        #g2
+        ggsave(here::here('Output/motility_effectSizes_virid_mixed_m.png'),g2, width = 10, height =8, units = 'cm')
 #'
 #' <span style="color: red;">!!! Against prediction about selection for the fastest sperm, faeders might have most variable & slowest sperm !!!</span>    
 #' 
@@ -1611,7 +2301,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
             bsim = sim(m, n.sim=nsim) 
             v = apply(bsim@coef, 2, quantile, prob=c(0.5))
             ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
-            l[[paste('VAP',i)]]=data.frame(mot = 'VAP', response=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+            l[[paste('VAP',i)]]=data.frame(mot = 'VAP', part=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
 
             # get predictions
             m = lm(VAP ~ Morph+Length_avg, ai)
@@ -1650,7 +2340,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
             bsim = sim(m, n.sim=nsim) 
             v = apply(bsim@coef, 2, quantile, prob=c(0.5))
             ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
-            l[[paste('VSL',i)]]=data.frame(mot = 'VSL', response=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+            l[[paste('VSL',i)]]=data.frame(mot = 'VSL', part=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
 
             # get predictions
             m = lm(VSL ~ Morph+Length_avg, ai)
@@ -1687,7 +2377,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
             bsim = sim(m, n.sim=nsim) 
             v = apply(bsim@coef, 2, quantile, prob=c(0.5))
             ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
-            l[[paste('VCL',i)]]=data.frame(mot = 'VCL', response=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+            l[[paste('VCL',i)]]=data.frame(mot = 'VCL', part=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
 
             # get predictions
             m = lm(VCL ~ Morph+Length_avg, ai)
@@ -1716,7 +2406,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
             }          
                  
       ll = data.table(do.call(rbind,l) ) 
-      ll[, response := factor(response, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
+      ll[, part := factor(part, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
       ll[effect == '(Intercept)', effect:='Independent\n(Intercept)']
       ll[effect == 'MorphSatellite', effect := 'Satellite\n(relative to Independent)']
       ll[effect == 'MorphFaeder', effect := 'Faeder\n(relative to Independent)']
@@ -1748,7 +2438,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
             bsim = sim(m, n.sim=nsim) 
             v = apply(bsim@coef, 2, quantile, prob=c(0.5))
             ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
-            lz[[paste('VAP',i)]]=data.frame(mot = 'VAP', response=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+            lz[[paste('VAP',i)]]=data.frame(mot = 'VAP', part=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
 
             # get predictions
             m = lm(VAP ~ motileCount_ln_z + Morph+Length_avg, ai)
@@ -1788,7 +2478,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
             bsim = sim(m, n.sim=nsim) 
             v = apply(bsim@coef, 2, quantile, prob=c(0.5))
             ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
-            lz[[paste('VAP',ii)]]=data.frame(mot = 'VAP', response=ii,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+            lz[[paste('VAP',ii)]]=data.frame(mot = 'VAP', part=ii,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
 
             # get predictions
             m = lm(VAP ~ motileCount_ln_z + Morph+Length_rel, ai)
@@ -1827,7 +2517,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
             bsim = sim(m, n.sim=nsim) 
             v = apply(bsim@coef, 2, quantile, prob=c(0.5))
             ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
-            lz[[paste('VSL',i)]]=data.frame(mot = 'VSL', response=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+            lz[[paste('VSL',i)]]=data.frame(mot = 'VSL', part=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
 
             # get predictions
             m = lm(VSL ~ motileCount_ln_z + Morph+Length_avg, ai)
@@ -1865,7 +2555,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
             bsim = sim(m, n.sim=nsim) 
             v = apply(bsim@coef, 2, quantile, prob=c(0.5))
             ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
-            lz[[paste('VSL',ii)]]=data.frame(mot = 'VSL', response=ii,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+            lz[[paste('VSL',ii)]]=data.frame(mot = 'VSL', part=ii,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
 
             # get predictions
             m = lm(VSL ~ motileCount_ln_z + Morph+Length_rel, ai)
@@ -1904,7 +2594,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
             bsim = sim(m, n.sim=nsim) 
             v = apply(bsim@coef, 2, quantile, prob=c(0.5))
             ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
-            lz[[paste('VCL',i)]]=data.frame(mot = 'VCL', response=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+            lz[[paste('VCL',i)]]=data.frame(mot = 'VCL', part=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
 
             # get predictions
             m = lm(VCL ~ motileCount_ln_z + Morph+Length_avg, ai)
@@ -1942,7 +2632,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
             bsim = sim(m, n.sim=nsim) 
             v = apply(bsim@coef, 2, quantile, prob=c(0.5))
             ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
-            lz[[paste('VCL',ii)]]=data.frame(mot = 'VCL', response=ii,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+            lz[[paste('VCL',ii)]]=data.frame(mot = 'VCL', part=ii,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
 
             # get predictions
             m = lm(VCL ~ motileCount_ln_z + Morph+Length_rel, ai)
@@ -1973,7 +2663,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
             }          
                
       llz = data.table(do.call(rbind,lz) ) 
-      llz[, response := factor(response, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
+      llz[, part := factor(part, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
       llz[effect == '(Intercept)', effect:='Independent\n(Intercept)']
       llz[effect == 'MorphSatellite', effect := 'Satellite\n(relative to Independent)']
       llz[effect == 'MorphFaeder', effect := 'Faeder\n(relative to Independent)']
@@ -1986,15 +2676,523 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       llz[mot=='VSL', mot:='Straight-line (VSL)']
       llz[mot=='VAP', mot:='Average-path (VAP)']
       llz[, mot := factor(mot, levels=rev(c("Curvilinear (VCL)", "Straight-line (VSL)", "Average-path (VAP)")))] 
+    # controlled for motile count & inbreeding  
+      lzi = list()
+      lpzi =list()
+      lprzi =list()
+      a[,motileCount_ln_z := scale(log(motileCount))]
+      a[,inbreeding_z := scale(inbreeding)]
+      ar[,motileCount_ln_z := scale(log(motileCount))]
+      ar[,inbreeding_z := scale(inbreeding)]
+      # VAP
+         for(i in unique(a$part)){
+            #i ='Nucleus'
+            ai = a[part == i]
+            m = lm(scale(VAP) ~ motileCount_ln_z+ inbreeding_z + Morph+scale(Length_avg), ai)
+            #summary(m)
+            #plot(allEffects(m))
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
+            lzi[[paste('VAP',i)]]=data.frame(mot = 'VAP', part=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
 
-      llpz = data.table(do.call(rbind,lp) ) 
-      llpz[, part := factor(part, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
-      llpz[, Morph := factor(Morph, levels=rev(c("Independent", "Satellite", "Faeder")))] 
+            # get predictions
+            m = lm(VAP ~ motileCount_ln_z + inbreeding_z + Morph+Length_avg, ai)
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            nd = list()
+            for(j in unique(ai$Morph)){
+              #j=1
+              nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z),inbreeding_z = mean(ai$inbreeding_z), Morph = j, Length_avg = seq(min(ai$Length_avg), max(ai$Length_avg), length.out = 200)) 
+              }
+            newD=do.call(rbind,nd)
+
+            # values to predict for
+            X <- model.matrix(~ motileCount_ln_z + inbreeding_z + Morph+Length_avg,data=newD) # exactly the model which was used has to be specified here 
+            newD$VAP <-(X%*%v) 
+            predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+            for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
+                            predmatrix[predmatrix < 0] <- 0
+                            newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                            newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                            #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+            newD$part=i
+            newD$mot = 'VAP'
+            setnames(newD, old = 'VAP', new = 'motility')
+            lpzi[[paste(i,newD$mot[1])]] = data.table(newD)
+
+            print(paste(i,newD$mot[1]))     
+            }          
+         for(i in unique(ar$part)){
+            #i ='Nucleus'
+            if(i == 'Midpiece'){ii = 'Midpiece_rel'}
+            if(i == 'Flagellum'){ii = 'Flagellum_rel'}
+            ai = ar[part == i]
+            m = lm(scale(VAP) ~ motileCount_ln_z + inbreeding_z+ Morph+scale(Length_rel), ai)
+            #summary(m)
+            #plot(allEffects(m))
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
+            lzi[[paste('VAP',ii)]]=data.frame(mot = 'VAP', part=ii,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+            # get predictions
+            m = lm(VAP ~ motileCount_ln_z +inbreeding_z+ Morph+Length_rel, ai)
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            nd = list()
+            for(j in unique(ai$Morph)){
+              #j=1
+              nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z),inbreeding_z = mean(ai$inbreeding_z), Morph = j, Length_rel = seq(min(ai$Length_rel), max(ai$Length_rel), length.out = 200)) 
+              }
+            newD=do.call(rbind,nd)
+
+            # values to predict for
+            X <- model.matrix(~ motileCount_ln_z +inbreeding_z + Morph+Length_rel,data=newD) # exactly the model which was used has to be specified here 
+            newD$VAP <-(X%*%v) 
+            predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+            for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
+                            predmatrix[predmatrix < 0] <- 0
+                            newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                            newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                            #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+            newD$part=ii
+            newD$mot = 'VAP'
+            setnames(newD, old = 'VAP', new = 'motility')
+            lpzi[[paste(ii,newD$mot[1])]] = data.table(newD)
+
+            print(paste(ii,newD$mot[1]))     
+            }            
+      # VSL
+         for(i in unique(a$part)){
+            #i ='Nucleus'
+            ai = a[part == i]
+            m = lm(scale(VSL) ~ motileCount_ln_z + inbreeding_z + Morph+scale(Length_avg), ai)
+            #summary(m)
+            #plot(allEffects(m))
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
+            lzi[[paste('VSL',i)]]=data.frame(mot = 'VSL', part=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+            # get predictions
+            m = lm(VSL ~ motileCount_ln_z + inbreeding_z + Morph+Length_avg, ai)
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            nd = list()
+            for(j in unique(ai$Morph)){
+              #j=1
+              nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z), inbreeding_z = mean(ai$inbreeding_z), Morph = j, Length_avg = seq(min(ai$Length_avg), max(ai$Length_avg), length.out = 200)) 
+              }
+            newD=do.call(rbind,nd)
+            X <- model.matrix(~ motileCount_ln_z +inbreeding_z + Morph+Length_avg,data=newD) # exactly the model which was used has to be specified here 
+            newD$VSL <-(X%*%v) 
+            predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+            for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
+                            predmatrix[predmatrix < 0] <- 0
+                            newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                            newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                            #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+            newD$part=i
+            newD$mot = 'VSL'
+            setnames(newD, old = 'VSL', new = 'motility')
+            lpzi[[paste(i,newD$mot[1])]] = data.table(newD)
+
+            print(paste(i,newD$mot[1]))     
+            }          
+         for(i in unique(ar$part)){
+            #i ='Nucleus'
+            if(i == 'Midpiece'){ii = 'Midpiece_rel'}
+            if(i == 'Flagellum'){ii = 'Flagellum_rel'}
+            ai = ar[part == i]
+            m = lm(scale(VSL) ~ motileCount_ln_z+ Morph+scale(Length_rel), ai)
+            #summary(m)
+            #plot(allEffects(m))
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
+            lzi[[paste('VSL',ii)]]=data.frame(mot = 'VSL', part=ii,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+            # get predictions
+            m = lm(VSL ~ motileCount_ln_z + Morph+Length_rel, ai)
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            nd = list()
+            for(j in unique(ai$Morph)){
+              #j=1
+              nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z), inbreeding_z = mean(ai$inbreeding_z),Morph = j, Length_rel = seq(min(ai$Length_rel), max(ai$Length_rel), length.out = 200)) 
+              }
+            newD=do.call(rbind,nd)
+
+            # values to predict for
+            X <- model.matrix(~ motileCount_ln_z + Morph+Length_rel,data=newD) # exactly the model which was used has to be specified here 
+            newD$VSL <-(X%*%v) 
+            predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+            for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
+                            predmatrix[predmatrix < 0] <- 0
+                            newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                            newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                            #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+            newD$part=ii
+            newD$mot = 'VSL'
+            setnames(newD, old = 'VSL', new = 'motility')
+            lpzi[[paste(ii,newD$mot[1])]] = data.table(newD)
+
+            print(paste(ii,newD$mot[1]))     
+            }            
+      # VCL
+         for(i in unique(a$part)){
+            #i ='Nucleus'
+            ai = a[part == i]
+            m = lm(scale(VCL) ~ motileCount_ln_z + inbreeding_z + Morph+scale(Length_avg), ai)
+            #summary(m)
+            #plot(allEffects(m))
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
+            lzi[[paste('VCL',i)]]=data.frame(mot = 'VCL', part=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+            # get predictions
+            m = lm(VCL ~ motileCount_ln_z + inbreeding_z + Morph+Length_avg, ai)
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            nd = list()
+            for(j in unique(ai$Morph)){
+              #j=1
+              nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z), inbreeding_z = mean(ai$inbreeding_z), Morph = j, Length_avg = seq(min(ai$Length_avg), max(ai$Length_avg), length.out = 200)) 
+              }
+            newD=do.call(rbind,nd)
+            X <- model.matrix(~ motileCount_ln_z + inbreeding_z + Morph+Length_avg,data=newD) # exactly the model which was used has to be specified here 
+            newD$VCL <-(X%*%v) 
+            predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+            for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
+                            predmatrix[predmatrix < 0] <- 0
+                            newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                            newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                            #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+            newD$part=i
+            newD$mot = 'VCL'
+            setnames(newD, old = 'VCL', new = 'motility')
+            lpzi[[paste(i,newD$mot[1])]] = data.table(newD)
+
+            print(paste(i,newD$mot[1]))     
+            }          
+         for(i in unique(ar$part)){
+            #i ='Nucleus'
+            if(i == 'Midpiece'){ii = 'Midpiece_rel'}
+            if(i == 'Flagellum'){ii = 'Flagellum_rel'}
+            ai = ar[part == i]
+            m = lm(scale(VCL) ~ motileCount_ln_z+ inbreeding_z + Morph+scale(Length_rel), ai)
+            #summary(m)
+            #plot(allEffects(m))
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
+            lzi[[paste('VCL',ii)]]=data.frame(mot = 'VCL', part=ii,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+            # get predictions
+            m = lm(VCL ~ motileCount_ln_z +inbreeding_z + Morph+Length_rel, ai)
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            nd = list()
+            for(j in unique(ai$Morph)){
+              #j=1
+              nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z), inbreeding_z = mean(ai$inbreeding_z),Morph = j, Length_rel = seq(min(ai$Length_rel), max(ai$Length_rel), length.out = 200)) 
+              }
+            newD=do.call(rbind,nd)
+
+            # values to predict for
+            X <- model.matrix(~ motileCount_ln_z +inbreeding_z + Morph+Length_rel,data=newD) # exactly the model which was used has to be specified here 
+            newD$VCL <-(X%*%v) 
+            predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+            for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
+                            predmatrix[predmatrix < 0] <- 0
+                            newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                            newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                            #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+            newD$part=ii
+            newD$mot = 'VCL'
+            setnames(newD, old = 'VCL', new = 'motility')
+            lpzi[[paste(ii,newD$mot[1])]] = data.table(newD)
+
+            print(paste(ii,newD$mot[1]))     
+            }          
+               
+      llzi = data.table(do.call(rbind,lzi) ) 
+      llzi[, part := factor(part, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
+      llzi[effect == '(Intercept)', effect:='Independent\n(Intercept)']
+      llzi[effect == 'MorphSatellite', effect := 'Satellite\n(relative to Independent)']
+      llzi[effect == 'MorphFaeder', effect := 'Faeder\n(relative to Independent)']
+      llzi[effect == 'scale(Length_avg)', effect := 'Length_µm']
+      llzi[effect == 'scale(Length_rel)', effect := 'Length_µm'] # dummy variable
+      
+      llzi[, effect := factor(effect, levels=c('Length_µm','motileCount_ln_z','inbreeding_z',"Faeder\n(relative to Independent)","Satellite\n(relative to Independent)","Independent\n(Intercept)"))] 
+
+      llzi[mot=='VCL', mot:='Curvilinear (VCL)']
+      llzi[mot=='VSL', mot:='Straight-line (VSL)']
+      llzi[mot=='VAP', mot:='Average-path (VAP)']
+      llzi[, mot := factor(mot, levels=rev(c("Curvilinear (VCL)", "Straight-line (VSL)", "Average-path (VAP)")))] 
+    # controlled for motile count & HL  
+      lzhl = list()
+      lpzhl =list()
+      lprzhl =list()
+      a[,motileCount_ln_z := scale(log(motileCount))]
+      a[,HL_z := scale(HL)]
+      ar[,motileCount_ln_z := scale(log(motileCount))]
+      ar[,HL_z := scale(HL)]
+      # VAP
+         for(i in unique(a$part)){
+            #i ='Nucleus'
+            ai = a[part == i]
+            m = lm(scale(VAP) ~ motileCount_ln_z+ HL_z + Morph+scale(Length_avg), ai)
+            #summary(m)
+            #plot(allEffects(m))
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
+            lzhl[[paste('VAP',i)]]=data.frame(mot = 'VAP', part=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+            # get predictions
+            m = lm(VAP ~ motileCount_ln_z + HL_z + Morph+Length_avg, ai)
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            nd = list()
+            for(j in unique(ai$Morph)){
+              #j=1
+              nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z),HL_z = mean(ai$HL_z), Morph = j, Length_avg = seq(min(ai$Length_avg), max(ai$Length_avg), length.out = 200)) 
+              }
+            newD=do.call(rbind,nd)
+
+            # values to predict for
+            X <- model.matrix(~ motileCount_ln_z + HL_z + Morph+Length_avg,data=newD) # exactly the model which was used has to be specified here 
+            newD$VAP <-(X%*%v) 
+            predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+            for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
+                            predmatrix[predmatrix < 0] <- 0
+                            newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                            newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                            #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+            newD$part=i
+            newD$mot = 'VAP'
+            setnames(newD, old = 'VAP', new = 'motility')
+            lpzhl[[paste(i,newD$mot[1])]] = data.table(newD)
+
+            print(paste(i,newD$mot[1]))     
+            }          
+         for(i in unique(ar$part)){
+            #i ='Nucleus'
+            if(i == 'Midpiece'){ii = 'Midpiece_rel'}
+            if(i == 'Flagellum'){ii = 'Flagellum_rel'}
+            ai = ar[part == i]
+            m = lm(scale(VAP) ~ motileCount_ln_z + HL_z+ Morph+scale(Length_rel), ai)
+            #summary(m)
+            #plot(allEffects(m))
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
+            lzhl[[paste('VAP',ii)]]=data.frame(mot = 'VAP', part=ii,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+            # get predictions
+            m = lm(VAP ~ motileCount_ln_z +HL_z+ Morph+Length_rel, ai)
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            nd = list()
+            for(j in unique(ai$Morph)){
+              #j=1
+              nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z),HL_z = mean(ai$HL_z), Morph = j, Length_rel = seq(min(ai$Length_rel), max(ai$Length_rel), length.out = 200)) 
+              }
+            newD=do.call(rbind,nd)
+
+            # values to predict for
+            X <- model.matrix(~ motileCount_ln_z +HL_z + Morph+Length_rel,data=newD) # exactly the model which was used has to be specified here 
+            newD$VAP <-(X%*%v) 
+            predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+            for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
+                            predmatrix[predmatrix < 0] <- 0
+                            newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                            newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                            #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+            newD$part=ii
+            newD$mot = 'VAP'
+            setnames(newD, old = 'VAP', new = 'motility')
+            lpzhl[[paste(ii,newD$mot[1])]] = data.table(newD)
+
+            print(paste(ii,newD$mot[1]))     
+            }            
+      # VSL
+         for(i in unique(a$part)){
+            #i ='Nucleus'
+            ai = a[part == i]
+            m = lm(scale(VSL) ~ motileCount_ln_z + HL_z + Morph+scale(Length_avg), ai)
+            #summary(m)
+            #plot(allEffects(m))
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
+            lzhl[[paste('VSL',i)]]=data.frame(mot = 'VSL', part=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+            # get predictions
+            m = lm(VSL ~ motileCount_ln_z + HL_z + Morph+Length_avg, ai)
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            nd = list()
+            for(j in unique(ai$Morph)){
+              #j=1
+              nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z), HL_z = mean(ai$HL_z), Morph = j, Length_avg = seq(min(ai$Length_avg), max(ai$Length_avg), length.out = 200)) 
+              }
+            newD=do.call(rbind,nd)
+            X <- model.matrix(~ motileCount_ln_z +HL_z + Morph+Length_avg,data=newD) # exactly the model which was used has to be specified here 
+            newD$VSL <-(X%*%v) 
+            predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+            for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
+                            predmatrix[predmatrix < 0] <- 0
+                            newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                            newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                            #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+            newD$part=i
+            newD$mot = 'VSL'
+            setnames(newD, old = 'VSL', new = 'motility')
+            lpzhl[[paste(i,newD$mot[1])]] = data.table(newD)
+
+            print(paste(i,newD$mot[1]))     
+            }          
+         for(i in unique(ar$part)){
+            #i ='Nucleus'
+            if(i == 'Midpiece'){ii = 'Midpiece_rel'}
+            if(i == 'Flagellum'){ii = 'Flagellum_rel'}
+            ai = ar[part == i]
+            m = lm(scale(VSL) ~ motileCount_ln_z+ Morph+scale(Length_rel), ai)
+            #summary(m)
+            #plot(allEffects(m))
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
+            lzhl[[paste('VSL',ii)]]=data.frame(mot = 'VSL', part=ii,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+            # get predictions
+            m = lm(VSL ~ motileCount_ln_z + Morph+Length_rel, ai)
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            nd = list()
+            for(j in unique(ai$Morph)){
+              #j=1
+              nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z), HL_z = mean(ai$HL_z),Morph = j, Length_rel = seq(min(ai$Length_rel), max(ai$Length_rel), length.out = 200)) 
+              }
+            newD=do.call(rbind,nd)
+
+            # values to predict for
+            X <- model.matrix(~ motileCount_ln_z + Morph+Length_rel,data=newD) # exactly the model which was used has to be specified here 
+            newD$VSL <-(X%*%v) 
+            predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+            for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
+                            predmatrix[predmatrix < 0] <- 0
+                            newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                            newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                            #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+            newD$part=ii
+            newD$mot = 'VSL'
+            setnames(newD, old = 'VSL', new = 'motility')
+            lpzhl[[paste(ii,newD$mot[1])]] = data.table(newD)
+
+            print(paste(ii,newD$mot[1]))     
+            }            
+      # VCL
+         for(i in unique(a$part)){
+            #i ='Nucleus'
+            ai = a[part == i]
+            m = lm(scale(VCL) ~ motileCount_ln_z + HL_z + Morph+scale(Length_avg), ai)
+            #summary(m)
+            #plot(allEffects(m))
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
+            lzhl[[paste('VCL',i)]]=data.frame(mot = 'VCL', part=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+            # get predictions
+            m = lm(VCL ~ motileCount_ln_z + HL_z + Morph+Length_avg, ai)
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            nd = list()
+            for(j in unique(ai$Morph)){
+              #j=1
+              nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z), HL_z = mean(ai$HL_z), Morph = j, Length_avg = seq(min(ai$Length_avg), max(ai$Length_avg), length.out = 200)) 
+              }
+            newD=do.call(rbind,nd)
+            X <- model.matrix(~ motileCount_ln_z + HL_z + Morph+Length_avg,data=newD) # exactly the model which was used has to be specified here 
+            newD$VCL <-(X%*%v) 
+            predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+            for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
+                            predmatrix[predmatrix < 0] <- 0
+                            newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                            newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                            #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+            newD$part=i
+            newD$mot = 'VCL'
+            setnames(newD, old = 'VCL', new = 'motility')
+            lpzhl[[paste(i,newD$mot[1])]] = data.table(newD)
+
+            print(paste(i,newD$mot[1]))     
+            }          
+         for(i in unique(ar$part)){
+            #i ='Nucleus'
+            if(i == 'Midpiece'){ii = 'Midpiece_rel'}
+            if(i == 'Flagellum'){ii = 'Flagellum_rel'}
+            ai = ar[part == i]
+            m = lm(scale(VCL) ~ motileCount_ln_z+ HL_z + Morph+scale(Length_rel), ai)
+            #summary(m)
+            #plot(allEffects(m))
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
+            lzhl[[paste('VCL',ii)]]=data.frame(mot = 'VCL', part=ii,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
+
+            # get predictions
+            m = lm(VCL ~ motileCount_ln_z +HL_z + Morph+Length_rel, ai)
+            bsim = sim(m, n.sim=nsim) 
+            v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+            nd = list()
+            for(j in unique(ai$Morph)){
+              #j=1
+              nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z), HL_z = mean(ai$HL_z),Morph = j, Length_rel = seq(min(ai$Length_rel), max(ai$Length_rel), length.out = 200)) 
+              }
+            newD=do.call(rbind,nd)
+
+            # values to predict for
+            X <- model.matrix(~ motileCount_ln_z +HL_z + Morph+Length_rel,data=newD) # exactly the model which was used has to be specified here 
+            newD$VCL <-(X%*%v) 
+            predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
+            for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
+                            predmatrix[predmatrix < 0] <- 0
+                            newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
+                            newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
+                            #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
+            newD$part=ii
+            newD$mot = 'VCL'
+            setnames(newD, old = 'VCL', new = 'motility')
+            lpzhl[[paste(ii,newD$mot[1])]] = data.table(newD)
+
+            print(paste(ii,newD$mot[1]))     
+            }          
+               
+      llzhl = data.table(do.call(rbind,lzhl) ) 
+      llzhl[, part := factor(part, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
+      llzhl[effect == '(Intercept)', effect:='Independent\n(Intercept)']
+      llzhl[effect == 'MorphSatellite', effect := 'Satellite\n(relative to Independent)']
+      llzhl[effect == 'MorphFaeder', effect := 'Faeder\n(relative to Independent)']
+      llzhl[effect == 'scale(Length_avg)', effect := 'Length_µm']
+      llzhl[effect == 'scale(Length_rel)', effect := 'Length_µm'] # dummy variable
+      
+      llzhl[, effect := factor(effect, levels=c('Length_µm','motileCount_ln_z','HL_z',"Faeder\n(relative to Independent)","Satellite\n(relative to Independent)","Independent\n(Intercept)"))] 
+
+      llzhl[mot=='VCL', mot:='Curvilinear (VCL)']
+      llzhl[mot=='VSL', mot:='Straight-line (VSL)']
+      llzhl[mot=='VAP', mot:='Average-path (VAP)']
+      llzhl[, mot := factor(mot, levels=rev(c("Curvilinear (VCL)", "Straight-line (VSL)", "Average-path (VAP)")))] 
 
 #+ effects_mot_morp, fig.width =7/2, fig.height = 2.5                
         g10 = 
-        ggplot(llz[effect%in%'Length_µm'], aes(y = response, x = estimate, col = response, shape = mot)) +
-          geom_errorbar(aes(xmin = lwr, xmax = upr, col = response), width = 0.1, position = position_dodge(width = 0.5) ) +
+        ggplot(llz[effect%in%'Length_µm'], aes(y = part, x = estimate, col = part, shape = mot)) +
+          geom_errorbar(aes(xmin = lwr, xmax = upr, col = part), width = 0.1, position = position_dodge(width = 0.5) ) +
           #ggtitle ("Sim based")+
           geom_point(position = position_dodge(width = 0.5)) +
           geom_vline(xintercept = 0, col = "red", lty =1)+
