@@ -422,15 +422,14 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
 #' - for each male 10 sperm measured from one of the two sampling occasions
 #' - motility for most individuals and for many in May and June
 #' - for all morpho data we have a motility measurement that corresponds with the sampling date, except for one male, where motility measured in May, but morpho from June sample
-#' - initial exploration of the motility is available from [here](https://rawcdn.githack.com/MartinBulla/ruff_sperm/60918bbc69163e2820df7c712c33d0ad11ea6e61/Output/motility.html).
-#' - to decide: 
-#'   - whether to control for pedigree
-#'   - for motility ~ morph analyses I, use
+#' - initial exploration of the motility is available from [here](https://rawcdn.githack
+#'.com/MartinBulla/ruff_sperm/60918bbc69163e2820df7c712c33d0ad11ea6e61/Output/motility.html).
+#' - for motility ~ morph analyses I, use
 #'      1. June motility values and for 4 males without June, May values. Is this ok or better to use male averages? 
-#'      2. bird_ID as random intercept - 50 males measured once 42 twice (June & May)
-#'   - motility models are controlled for number of tracked sperm, do we need to control also for issues (like few sperm, shit, running sample) or age?
-#'   - in motility ~ morphology - the motility measurement (with one exception) comes from the same sample as the morphology measurement. Is this ok? 
-#'
+#'      2. bird_ID as random intercept - 50 males measured once 42 twice (June & May) - TO DO
+#' - to decide: whether to control for pedigree, relatedness matrix based on microsatellite genotypes or nothing
+#' - to do: Run models taking the recordings with issues out and check whether the model outcomes differ
+
 #' ***
 #' ## Exploration
 #+ inbr_HL,fig.width=4, fig.height = 4
