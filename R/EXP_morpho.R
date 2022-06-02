@@ -345,7 +345,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       # merge
         aw = merge(aw,h, by.x = 'bird_ID', by.y = 'OriginalRing')
         a = merge(a,h, by.x = 'bird_ID', by.y = 'OriginalRing')
-        z = fread("Data/Dat_HL.txt")
+        z = fread(here::here("Data/Dat_HL.txt"))
         aw = merge(aw,z[,.(sampleid, HL)], by.x = 'bird_ID', by.y = 'sampleid')
         a = merge(a,z[,.(sampleid, HL)], by.x = 'bird_ID', by.y = 'sampleid')
 
@@ -417,7 +417,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     # export for Mihai
       a$CV = cv_$CV[match(a$bird_ID, cv_$bird_ID)]
       #save(b,br,a,ar, file = 'Data/ruff_sperm_for_Mihai.RData')
-
+#'
 #' ## Basic info
 #' - for each male 10 sperm measured from one of the two sampling occasions
 #' - motility for most individuals and for many in May and June
@@ -429,12 +429,12 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
 #'      2. bird_ID as random intercept - 50 males measured once 42 twice (June & May) - TO DO
 #' - to decide: whether to control for pedigree, relatedness matrix based on microsatellite genotypes or nothing
 #' - to do: Run models taking the recordings with issues out and check whether the model outcomes differ
-
+#'
 #' ***
 #' ## Exploration
-#+ inbr_HL,fig.width=4, fig.height = 4
-  ggplot(aw, aes(x = HL, y = inbreeding)) + geom_point() + geom_abline(slope = 1, col = 'red')
-#+ inbr_morph, fig.width=4, fig.height = 4
+#+ inbr_HL,fig.width=2.5, fig.height = 2.5
+    ggplot(aw, aes(x = HL, y = inbreeding)) + geom_point() + xlab('homozygosity by locus') + geom_abline(slope = 1, col = 'red')
+#+ inbr_morph, fig.width=2.5, fig.height = 2.5
   ggplot(aw, aes(x = Morph, y = inbreeding)) +
           geom_dotplot(binaxis = 'y', stackdir = 'center',
                         position = position_dodge(), col = 'grey', fill = 'lightgrey', dotsize = 0.75)+
@@ -447,11 +447,11 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
             plot.title = element_text(size=9)
             )  
 #+ inbr_part, fig.width=8, fig.height = 4
-  ggplot(aw, aes(x = Morph, y = inbreeding)) +
-          geom_dotplot(binaxis = 'y', stackdir = 'center',
-                        position = position_dodge(), col = 'grey', fill = 'lightgrey', dotsize = 0.75)+
-          geom_boxplot(aes(col = Morph), fill = NA, alpha = 0.2) + 
-          stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
+  ggplot(a, aes(x = inbreeding, y = Length_avg)) +
+          stat_smooth(method = 'rlm') +
+          geom_point(aes(col = Morph), alpha = 0.5) + 
+          scale_color_viridis(discrete=TRUE)+
+          facet_wrap(~part, scales = 'free_y', nrow = 2)+
           #stat_summary(fun.y=mean, geom="point", color="red", fill="red") +
           scale_color_viridis(discrete=TRUE)+
           theme_bw() +
@@ -474,7 +474,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
             #axis.text.x = element_blank(),
             plot.title = element_text(size=9)
             ) #panel.spacing.y = unit(0, "mm")) #,     
-#+ inbr_velo fig.width=8, fig.height = 4     
+#+ inbr_velo, fig.width=2.5, fig.height = 4     
   ga1 = 
     ggplot(aw, aes(x = inbreeding, y = VAP)) +
       geom_smooth(method = 'rlm') +
@@ -521,8 +521,8 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     rbind(ggplotGrob(ga1), ggplotGrob(ga2), ggplotGrob(ga3), size = "first")
     )
 
-#+ HL_morph, fig.width=4, fig.height = 4
-  ggplot(aw, aes(x = Morp, y = HL)) +
+#+ HL_morph, fig.width=2.5, fig.height = 2.5
+  ggplot(aw, aes(x = Morph, y = HL)) +
           geom_dotplot(binaxis = 'y', stackdir = 'center',
                         position = position_dodge(), col = 'grey', fill = 'lightgrey', dotsize = 0.75)+
           geom_boxplot(aes(col = Morph), fill = NA, alpha = 0.2) + 
@@ -565,7 +565,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
             #axis.text.x = element_blank(),
             plot.title = element_text(size=9)
             ) #panel.spacing.y = unit(0, "mm")) #,     
-#+ HL_velo fig.width=8, fig.height = 4     
+#+ HL_velo, fig.width=2.5, fig.height = 4     
   ga1 = 
     ggplot(aw, aes(x = HL, y = VAP)) +
       geom_smooth(method = 'rlm') +
@@ -614,7 +614,9 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
   grid.draw(
     rbind(ggplotGrob(ga1), ggplotGrob(ga2), ggplotGrob(ga3), size = "first")
     )
-
+#' 
+#' <span style="color: red;">!!! No strong morph-specific effects of inbreeding & inconsistent (unpredicted) effects of inbreeding on sperm traits!!!  </span>  
+#' <br>
 #+ fig.width=8, fig.height = 10
   b[, order_ := mean(Length_µm), by = bird_ID]
   b_ = b[part =='Total']
@@ -634,7 +636,8 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     #$, legend.position = "none")
   g
   ggsave(here::here('Output/morpho_within_male_boxplots_ordered.png'), g, width = 20, height = 15, units = 'cm')
-  
+#' ***
+
 #+ cor_parts, figures-side, fig.show="hold", out.width="50%", fig.dim = c(8, 8)
   #fig.width=5, fig.height = 5
   chart.Correlation(bw[, c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')], histogram=TRUE, pch=19)
@@ -649,7 +652,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
   #dev.off()
 
 #' 
-#' <span style="color: red;">!!! Nucleus strongly predict head and tail total sperm length. !!!  </span>  
+#' <span style="color: red;">!!! Nucleus strongly predicts head and tail the total sperm length. !!!  </span>  
 #' <br>
 #' 
 #' ***
@@ -2027,7 +2030,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
                 )
         g
         ggsave(here::here('Output/morpho_effectSizes_virid_CV.png'),g, width = 12, height =10, units = 'cm')
-#+ effect_sizes_motil_ALL, fig.width =4, fig.height = 2 
+#+ effect_sizes_motil_ALL, fig.width =6, fig.height = 5 
         llvx[,model := 'linear on June recordings']
         llvq[,model := 'mixed, all recordings']
         llvm[,model := 'mixed, all recordings & control for month']
@@ -3714,75 +3717,6 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
           size = "first"), 
           width = 18, height =8, units = 'cm') 
 
-#' <span style="color: red;">!!! Perhaps a tendency for longer acrosomes making slower sperm and longer other traits making faster sperm !!!</span>  
+#' <span style="color: red;">!!! Perhaps a tendency for longer acrosome making slower sperm and longer other traits making faster sperm !!!</span>  
 
-#' Clustering
-  require('apcluster') 
-  require('Rcpp')                                                                                                                       
-  bw[, ID := .I]
-  aw[, ID := .I]
-
-  get_clusters <- function(apc) {
-    x <- lapply(apc@clusters, function(x) data.table(ID = names(x) %>% as.numeric()))
-    for (i in 1:length(x)) x[[i]][, clust_ID := i]
-    rbindlist(x)
-  }
-
-  #  all data
-    apc = apclusterK
-    apc <- apcluster(corSimMat(r = 1), bw[, .(VAP, VSL, VCL, Acrosome, Flagellum, Head, Midpiece, Nucleus, Tail, Total, Midpiece_rel, Flagellum_rel)], q = 0 ,  details = TRUE)
-    apc = apclusterK(corSimMat(r = 1), bw[, .(VAP, VSL, VCL, Acrosome, Flagellum, Head, Midpiece, Nucleus, Tail, Total, Midpiece_rel, Flagellum_rel)],  K = 3,  details = TRUE)
-    
-    apc <- apcluster(corSimMat(r = 1), bw[, .(Head, Midpiece, Tail, Total)], q = 0 ,  details = TRUE)
-    apc = apclusterK(corSimMat(r = 1), bw[, .(Acrosome, Flagellum, Head, Midpiece, Nucleus, Tail, Total)],  K = 3,  details = TRUE)
-
-
-    apc <- apcluster(negDistMat(r=2) , bw[, .(VAP, VSL, VCL, Acrosome, Flagellum, Head, Midpiece, Nucleus, Tail, Total, Midpiece_rel, Flagellum_rel)], q = 0 ,  details = TRUE)
-    apc = apclusterK(negDistMat(r = 2), bw[, .(VAP, VSL, VCL, Acrosome, Flagellum, Head, Midpiece, Nucleus, Tail, Total, Midpiece_rel, Flagellum_rel)],  K = 3,  details = TRUE)
-    apc <- apcluster(expSimMat(r=2) , bw[, .(VAP, VSL, VCL, Acrosome, Flagellum, Head, Midpiece, Nucleus, Tail, Total, Midpiece_rel, Flagellum_rel)], q = 0 ,  details = TRUE)
-    #apc = apclusterK(expSimMat(r = 2), bw[, .(VAP, VSL, VCL, Acrosome, Flagellum, Head, Midpiece, Nucleus, Tail, Total, Midpiece_rel, Flagellum_rel)],  K = 3,  details = TRUE)
-    apc <- apcluster(linKernel() , bw[, .(VAP, VSL, VCL, Acrosome, Flagellum, Head, Midpiece, Nucleus, Tail, Total, Midpiece_rel, Flagellum_rel)], q = 0 ,  details = TRUE)
-
-    cc <- get_clusters(apc)
-
-    O <- merge(cc, bw, by = "ID")
-
-    #O[, .N, .(clust_ID, Morph)]
-
-    #dev.new()
-    ggplot(O, aes(x = clust_ID, y = Morph)) +
-    geom_count()
-
-    plot(apc, bw[, .(VAP, VSL, VCL, Acrosome, Flagellum, Head, Midpiece, Nucleus, Tail, Total, Midpiece_rel, Flagellum_rel)])
-    heatmap(apc)
-
-#  averages   
-    apc <- apcluster(corSimMat(r = 1), aw[, .(VAP, VSL, VCL, Acrosome, Flagellum, Head, Midpiece, Nucleus, Tail, Total, Midpiece_rel, Flagellum_rel)], q = 0 ,  details = TRUE)
-     apc = apclusterK(corSimMat(r = 1), aw[, .(VAP, VSL, VCL, Acrosome, Flagellum, Head, Midpiece, Nucleus, Tail, Total, Midpiece_rel, Flagellum_rel)],  K = 3,  details = TRUE)
-    
-    apc <- apcluster(corSimMat(r = 1), aw[, .(Head, Midpiece, Tail, Total)], q = 0 ,  details = TRUE)
-    apc <- apclusterK(corSimMat(r = 1), aw[, .(Head, Midpiece, Tail, Total)], K = 3 ,  details = TRUE)
-
-    apc <- apcluster(corSimMat(r = 1), aw[, .(VAP, VSL, VCL)], q = 0 ,  details = TRUE)
-    apc <- apclusterK(corSimMat(r = 1), aw[, .(VAP, VSL, VCL)], K = 3 ,  details = TRUE)
-
-    apc <- apcluster(negDistMat(r=2) , aw[, .(VAP, VSL, VCL, Acrosome, Flagellum, Head, Midpiece, Nucleus, Tail, Total, Midpiece_rel, Flagellum_rel)], q = 0.5 ,  details = TRUE)
-     apc = apclusterK(negDistMat(r = 2), aw[, .(VAP, VSL, VCL, Acrosome, Flagellum, Head, Midpiece, Nucleus, Tail, Total, Midpiece_rel, Flagellum_rel)],  K = 3,  details = TRUE)
-    
-    apc <- apcluster(expSimMat(r=2) , aw[, .(VAP, VSL, VCL, Acrosome, Flagellum, Head, Midpiece, Nucleus, Tail, Total, Midpiece_rel, Flagellum_rel)], q = 0 ,  details = TRUE)
-     
-     apc = apclusterK(expSimMat(r = 2), aw[, .(VAP, VSL, VCL, Acrosome, Flagellum, Head, Midpiece, Nucleus, Tail, Total, Midpiece_rel, Flagellum_rel)],  K = 3,  details = TRUE)
-
-    cc <- get_clusters(apc)
-
-    O <- merge(cc, aw, by = "ID")
-
-    O[, .N, .(clust_ID, Morph)]
-
-    #dev.new()
-    ggplot(O, aes(x = clust_ID, y = Morph)) +
-    geom_count()
-
-    plot(apc, aw[, .(Head, Midpiece, Tail, Total)])
-    heatmap(apc)
 # End     
